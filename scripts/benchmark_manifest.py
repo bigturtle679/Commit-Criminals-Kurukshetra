@@ -37,8 +37,11 @@ def main():
     manifest=Path(args.manifest).resolve();patients=validate_manifest(json.loads(manifest.read_text()))
     if args.validate_only:print(f'Validated {len(patients)} patients');return
     out=Path(args.output);out.mkdir(parents=True,exist_ok=False)
-    meta={'code_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'dirty_diff_sha256':hashlib.sha256(subprocess.check_output(['git','diff','HEAD'],cwd=ROOT)).hexdigest(),'manifest_sha256':checkpoint_hash(manifest),'torch':torch.__version__,'cuda':torch.version.cuda,'models':args.models,'patient_count':len(patients),'timing':'first patient per model includes cold load; later patients warm cache; end-to-end includes exports'}
-    (out/'metadata.json').write_text(json.dumps(meta,indent=2));rows=[]
+    meta={'code_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'dirty_diff_sha256':hashlib.sha256(subprocess.check_output(['git','diff','HEAD'],cwd=ROOT)).hexdigest(),'manifest_sha256':checkpoint_hash(manifest),'manifest_path':str(manifest),'torch':torch.__version__,'cuda':torch.version.cuda,'models':args.models,'patient_count':len(patients),'timing':'first patient per model includes cold load; later patients warm cache; end-to-end includes exports'}
+    (out/'metadata.json').write_text(json.dumps(meta,indent=2))
+    (out/'manifest.json').write_text(manifest.read_text())
+    (out/'source.patch').write_bytes(subprocess.check_output(['git','diff','HEAD'],cwd=ROOT))
+    rows=[]
     for model in args.models:
         try:
             if model=='ensemble':
