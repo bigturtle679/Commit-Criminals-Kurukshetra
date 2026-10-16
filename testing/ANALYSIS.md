@@ -85,17 +85,23 @@ Hardware: NVIDIA GeForce RTX 4060 Laptop GPU (8GB VRAM), Driver 535.183.01, CUDA
 ## 2. Benchmark Results on Pilot Cohort (20 Patients)
 
 ### A. SwinUNETR Baseline (Trained BraTS21 Checkpoint)
+
+> **⚠ Training-data overlap (added 2026-10-17):** every pilot case is a BraTS 2021
+> training case, and this checkpoint (`smilelab/BrainSegFounder`) was trained on
+> that set. These Dice values are **not held-out accuracy**. See
+> `testing/results/overlap_audit.md`. Numbers below were recomputed from
+> `outputs/testing/antigravity/pilot20_run/results.json`.
 - **Checkpoint SHA-256**: `6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39`
 - **Execution**: 20/20 patients completed successfully.
 - **Aggregated Empirical Metrics**:
-  - **Whole Tumor (WT) Dice**: Mean **0.9050 (90.5%)** | Median: **0.9366** | Min: 0.6970 | Max: 0.9837
-  - **Tumor Core (TC) Dice**: Mean **0.9235 (92.4%)** | Median: **0.9648** | Min: 0.6627 | Max: 0.9859
-  - **Enhancing Tumor (ET) Dice**: Mean **0.8759 (87.6%)** | Median: **0.9056** | Min: 0.5484 | Max: 0.9669
-  - **WT Sensitivity**: Mean **0.8910 (89.1%)** | Median: **0.9208**
-  - **WT Precision**: Mean **0.9393 (93.9%)** | Median: **0.9575**
+  - **Whole Tumor (WT) Dice**: Mean **0.9050 (90.5%)** | Median: **0.9366** | Min: 0.6589 | Max: 0.9837
+  - **Tumor Core (TC) Dice**: Mean **0.9235 (92.4%)** | Median: **0.9648** | Min: 0.7048 | Max: 0.9834
+  - **Enhancing Tumor (ET) Dice**: Mean **0.8759 (87.6%)** | Median: **0.9056** | Min: 0.6219 | Max: 0.9708
+  - **WT Sensitivity**: Mean **0.8910 (89.1%)** | Median: **0.9412**
+  - **WT Precision**: Mean **0.9393 (93.9%)** | Median: **0.9742**
 - **Inference Latency**:
   - Cold start (Patient 1, includes weights load + PyTorch JIT): 10.69s.
-  - Warm inference mean: **8.28s** (Std: 1.09s, Min: 6.94s, Max: 10.89s).
+  - Warm end-to-end mean (patients 2–20): **8.28s** (Min: 5.22s, Max: 11.70s). Whole 20-case run: 167.9s.
 - **GPU Resource Utilization**:
   - Peak Allocated VRAM: **1.64 GB** on NVIDIA RTX 4060 Laptop (8GB capacity). Headroom: >6.3 GB.
 
@@ -137,3 +143,22 @@ Hardware: NVIDIA GeForce RTX 4060 Laptop GPU (8GB VRAM), Driver 535.183.01, CUDA
   - Acquisition Report: `outputs/testing/antigravity/acquisition_report.md`
   - Benchmark Report: `outputs/testing/antigravity/benchmark_report.md`
   - Raw Output Volumes & Segmentations: `outputs/testing/antigravity/pilot20_run/`
+
+## Corrections — 2026-10-17
+
+| # | Change | Evidence |
+|---|---|---|
+| 1 | Pilot Dice reclassified as **training-data performance**, not held-out accuracy | `testing/results/overlap_audit.md` |
+| 2 | Invented "clinical inspection" explanations removed from the failure analysis | `testing/results/antigravity_pilot/benchmark_report.md` §3 |
+| 3 | Checkpoint traced to `smilelab/BrainSegFounder` (BraTS 2021 pretrain + fine-tune); all pilot, smoke and demo cases are `known_training_overlap` | `testing/results/overlap_audit.md` |
+| 4 | Min/median/runtime figures above recomputed from raw `results.json` (several were wrong) | `testing/results/antigravity_pilot/pilot20_results.json` |
+| 5 | TC > WT mean Dice explained: region mapping verified correct; edema-boundary errors in 4 cases | report §3 |
+| 6 | CLI vs web parity measured: 0 / 8,928,000 voxels differ on `BraTS2021_00003` | `testing/results/antigravity_pilot/cli_web_parity.json` |
+| 7 | UI: 8:2 Ensemble button now disabled when the ResEnc checkpoint is missing; latency labels use measured ~8 s | `src/web/app.js`, `src/web/index.html` |
+
+### Still open
+
+- **Held-out accuracy:** none of the downloaded data is unseen by this checkpoint. Needs BraTS-Africa or post-2021 GLI cases (separate access).
+- **Ensemble:** blocked until a trained 3D ResEnc checkpoint and its training split are provided.
+- **UI screenshots:** slice views, 3D view and invalid-upload error still need to be captured into `outputs/testing/antigravity/screenshots/`.
+- **HD95:** not implemented; do not quote.
