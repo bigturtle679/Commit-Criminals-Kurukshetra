@@ -5,7 +5,7 @@ const $ = id => document.getElementById(id);
 let currentJob = null;
 let currentView = 3; // 3: Multiplanar Grid, 0: Axial, 1: Coronal, 2: Sagittal, 4: 3D Render
 let isBusy = false;
-let selectedModel = 'swinunetr';
+let selectedModel = 'ensemble';
 let selectedCase = '00002';
 let viewerReady = true;
 
