@@ -179,7 +179,8 @@ def execute(job_id, paths, expert, expert_et, name, model_name='ensemble'):
         job.update(status='complete', message='Analysis complete', result=result)
     except Exception as e:
         traceback.print_exc()
-        job.update(status='error', message=str(e))
+        msg = str(e).replace(str(ROOT), '.')
+        job.update(status='error', message=msg)
     (RUNS / job_id / 'job.json').write_text(json.dumps(job, indent=2))
 
 
@@ -266,9 +267,11 @@ async def analyze(
                     dest.write(chunk)
             paths[key] = path
     except Exception as e:
-        JOBS[uid].update(status='error', message=str(e))
-        (RUNS / uid / 'job.json').write_text(json.dumps(JOBS[uid], indent=2))
-        raise HTTPException(400, str(e))
+        with GUARD:
+            JOBS.pop(uid, None)
+        shutil.rmtree(RUNS / uid, ignore_errors=True)
+        msg = str(e).replace(str(ROOT), '.')
+        raise HTTPException(400, msg)
     model_name = model if model in ('ensemble', 'swinunetr', 'segresnet') else 'ensemble'
     POOL.submit(execute, uid, paths, paths.get('expert'), expert_et, f'Patient MRI ({model_name.upper()})', model_name=model_name)
     return {'id': uid}
@@ -278,6 +281,11 @@ async def analyze(
 def job(uid: str):
     if not uid.isalnum() or len(uid) > 64 or uid not in JOBS:
         raise HTTPException(404, 'Analysis not found.')
+    job_dir = RUNS / uid
+    cutoff = time.time() - (RETENTION_HOURS * 3600.0)
+    if is_run_expired(job_dir, cutoff):
+        sweep_expired_runs()
+        raise HTTPException(404, 'Analysis has expired under the 24-hour retention policy.')
     return JOBS[uid]
 
 
@@ -289,11 +297,15 @@ def file(uid: str, name: str):
     }
     if not uid.isalnum() or len(uid) > 64 or uid not in JOBS:
         raise HTTPException(404, 'Analysis not found.')
+    job_dir = (RUNS / uid).resolve()
+    cutoff = time.time() - (RETENTION_HOURS * 3600.0)
+    if is_run_expired(job_dir, cutoff):
+        sweep_expired_runs()
+        raise HTTPException(404, 'Analysis has expired under the 24-hour retention policy.')
     if name not in allowed:
         raise HTTPException(404, 'Artifact not found.')
 
     runs_root = RUNS.resolve()
-    job_dir = (RUNS / uid).resolve()
     if not job_dir.is_relative_to(runs_root):
         raise HTTPException(403, 'Path traversal forbidden.')
 

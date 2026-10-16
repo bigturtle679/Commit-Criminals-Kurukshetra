@@ -217,3 +217,60 @@ class TestApiSecurityAndDownloads:
     def test_missing_job_returns_404(self, client):
         res = client.get('/api/jobs/nonexistentjobid123')
         assert res.status_code == 404
+
+    def test_expired_job_endpoint_access_returns_404(self, client):
+        # Create an expired run directory
+        old_uid = 'expiredtestuid123'
+        job_dir = RUNS / old_uid
+        job_dir.mkdir(parents=True, exist_ok=True)
+        old_ts = time.time() - (26 * 3600)  # 26 hours ago
+        job_data = {
+            'id': old_uid,
+            'status': 'complete',
+            'created_ts': old_ts,
+            'created_at': datetime.fromtimestamp(old_ts, timezone.utc).isoformat(),
+        }
+        (job_dir / 'job.json').write_text(json.dumps(job_data))
+        JOBS[old_uid] = job_data
+
+        try:
+            res = client.get(f'/api/jobs/{old_uid}')
+            assert res.status_code == 404
+            assert 'expired' in res.json()['detail'].lower()
+        finally:
+            shutil.rmtree(job_dir, ignore_errors=True)
+            JOBS.pop(old_uid, None)
+
+    def test_expired_file_endpoint_access_returns_404(self, client):
+        old_uid = 'expiredfiletestuid123'
+        job_dir = RUNS / old_uid
+        job_dir.mkdir(parents=True, exist_ok=True)
+        old_ts = time.time() - (26 * 3600)
+        job_data = {
+            'id': old_uid,
+            'status': 'complete',
+            'created_ts': old_ts,
+            'created_at': datetime.fromtimestamp(old_ts, timezone.utc).isoformat(),
+        }
+        (job_dir / 'job.json').write_text(json.dumps(job_data))
+        (job_dir / 'report.json').write_text('{"dummy": true}')
+        JOBS[old_uid] = job_data
+
+        try:
+            res = client.get(f'/api/files/{old_uid}/report.json')
+            assert res.status_code == 404
+            assert 'expired' in res.json()['detail'].lower()
+        finally:
+            shutil.rmtree(job_dir, ignore_errors=True)
+            JOBS.pop(old_uid, None)
+
+    def test_invalid_upload_extension_rejected(self, client):
+        files = {
+            't1c': ('brain.png', b'fake png data', 'image/png'),
+            't1': ('t1.nii.gz', b'dummy', 'application/gzip'),
+            't2': ('t2.nii.gz', b'dummy', 'application/gzip'),
+            'flair': ('flair.nii.gz', b'dummy', 'application/gzip'),
+        }
+        res = client.post('/api/analyze', files=files)
+        assert res.status_code == 400
+        assert 'nifti' in res.json()['detail'].lower()
