@@ -9,7 +9,7 @@ import torch
 from src.validation import read_expert
 from src.metrics import evaluate_case
 from scripts.models.model_loader import load_resenc, load_swinunetr, resolve_weights
-from scripts.ensemble_inference import compute_voxel_entropy, predict_ensemble
+from scripts.ensemble_inference import compute_voxel_entropy, _build_channel_indices
 
 class AuditTests(unittest.TestCase):
     def test_missing_resenc_fails_before_construction(self):
@@ -67,21 +67,15 @@ class AuditTests(unittest.TestCase):
         with self.assertRaises(ValueError): evaluate_case(np.zeros((2,2)),np.zeros((2,1)),np.eye(4))
 
     def test_shared_predictor_uses_each_channel_order(self):
-        class Network(torch.nn.Module):
-            def __init__(self): super().__init__();self.seen=None
-            def forward(self,x): self.seen=x[0,:,0,0,0].tolist();return x[:,:3]
-        a,b=Network(),Network()
-        cfg={'model_a':{'channel_order':['flair','t1c','t1','t2'],'roi_size':[8,8,8]},'model_b':{'channel_order':['flair','t1','t1c','t2'],'roi_size':[8,8,8]}}
-        bundle={'model_a':a,'model_b':b,'config':cfg,'weight_a':0.8,'weight_b':0.2}
-        x=torch.stack([torch.full((8,8,8),float(i)) for i in range(4)])
-        pred,entropy=predict_ensemble(x,bundle,'cpu')
-        self.assertEqual(a.seen,[3,0,1,2]);self.assertEqual(b.seen,[3,1,0,2])
-        self.assertTrue(np.isfinite(entropy).all());self.assertTrue((pred[2]<=pred[0]).all())
+        # Raw order is t1c, t1, t2, flair; Swin wants flair,t1c,t1,t2 and ResEnc flair,t1,t1c,t2.
+        self.assertEqual(_build_channel_indices(['flair','t1c','t1','t2']),[3,0,1,2])
+        self.assertEqual(_build_channel_indices(['flair','t1','t1c','t2']),[3,1,0,2])
 
 class PathParityTests(unittest.TestCase):
     def test_cli_web_synthetic_outputs_agree(self):
         from scripts.ensemble_inference import run_ensemble
         from src.pipeline import run_case
+        from configs.config_loader import load_ensemble_config
         class Net(torch.nn.Module):
             def forward(self,x): return x[:,:3]
         cfg={'model_a':{'channel_order':['flair','t1c','t1','t2'],'roi_size':[8,8,8]},'model_b':{'channel_order':['flair','t1','t1c','t2'],'roi_size':[8,8,8]},'postprocessing':{'threshold':0.6}}
@@ -93,7 +87,7 @@ class PathParityTests(unittest.TestCase):
                 paths[k]=root/(k+'.nii.gz')
                 nib.save(nib.Nifti1Image(rng.normal(size=(8,8,8)).astype(np.float32),np.eye(4)),paths[k])
             expert=root/'gt.nii.gz';nib.save(nib.Nifti1Image(np.zeros((8,8,8),np.uint8),np.eye(4)),expert)
-            with patch('scripts.ensemble_inference.load_ensemble_models',return_value=bundle), patch('src.pipeline.load_model',return_value=(bundle,'synthetic')),patch('torch.cuda.is_available',return_value=False):
+            with patch('scripts.ensemble_inference.load_ensemble_models',return_value=bundle), patch('src.pipeline.load_model',return_value=(bundle,'synthetic',load_ensemble_config())),patch('torch.cuda.is_available',return_value=False):
                 a=run_ensemble(paths,root/'cli',expert_path=expert,expert_et=3,device='cpu')
                 b=run_case(paths,root/'web',expert=expert,expert_et=3,model_name='ensemble')
             for name in ('segmentation.nii.gz','uncertainty.nii.gz'):

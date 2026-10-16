@@ -1,12 +1,16 @@
 from pathlib import Path
-import json, uuid, threading, shutil, traceback
+import json, uuid, threading, shutil, time, traceback, logging
+from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query, Body
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 import sys
 sys.path.insert(0, str(Path(__file__).parent))
-from pipeline import ROOT, run_case
+from pipeline import ROOT, run_case, _gpu_name
+from review_store import load_review, save_review, ReviewConflict
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title='NeuroScope Local · 3D Brain Tumor Segmentation')
 RUNS = ROOT / 'work/runs'
@@ -15,6 +19,93 @@ JOBS = {}
 POOL = ThreadPoolExecutor(max_workers=1)
 GUARD = threading.Lock()
 app.mount('/static', StaticFiles(directory=ROOT / 'src/web'), name='static')
+
+# Upload retention: delete run directories older than this many hours (default: 24h)
+RETENTION_HOURS = 24
+
+
+def is_run_expired(run_dir: Path, cutoff_ts: float) -> bool:
+    """Determine if a run directory is expired based on persistent metadata or timestamps.
+
+    Checks created_ts (Unix timestamp) or created_at (ISO 8601 UTC string) in job.json.
+    Falls back to directory filesystem timestamps if metadata is unparseable.
+    """
+    job_file = run_dir / 'job.json'
+    if job_file.exists():
+        try:
+            data = json.loads(job_file.read_text(encoding='utf-8'))
+            if 'created_ts' in data and isinstance(data['created_ts'], (int, float)):
+                return float(data['created_ts']) < cutoff_ts
+            if 'created_at' in data and isinstance(data['created_at'], str):
+                dt = datetime.fromisoformat(data['created_at'].replace('Z', '+00:00'))
+                return dt.timestamp() < cutoff_ts
+        except Exception:
+            pass
+    try:
+        stat = run_dir.stat()
+        ts = getattr(stat, 'st_ctime', stat.st_mtime)
+        return ts < cutoff_ts
+    except Exception:
+        return False
+
+
+def sweep_expired_runs(runs_dir: Path = RUNS, retention_hours: float = RETENTION_HOURS,
+                       jobs_dict: dict | None = None, active_ids: set | None = None) -> list[str]:
+    """Perform a sweep of expired run directories older than retention_hours.
+
+    Returns a list of successfully deleted job IDs.
+    Thread-safe, verifies deletion, and safeguards active jobs.
+    """
+    if jobs_dict is None:
+        jobs_dict = JOBS
+    cutoff = time.time() - (retention_hours * 3600.0)
+
+    if active_ids is None:
+        with GUARD:
+            active_ids = {
+                uid for uid, job in jobs_dict.items()
+                if job.get('status') in ('queued', 'running')
+            }
+
+    deleted = []
+    if not runs_dir.exists():
+        return deleted
+
+    for run_dir in list(runs_dir.iterdir()):
+        if not run_dir.is_dir():
+            continue
+        uid = run_dir.name
+        if uid in active_ids:
+            continue
+        try:
+            if is_run_expired(run_dir, cutoff):
+                shutil.rmtree(run_dir, ignore_errors=False)
+                if not run_dir.exists():
+                    with GUARD:
+                        jobs_dict.pop(uid, None)
+                    deleted.append(uid)
+                    logger.info("Cleaned up expired run: %s", uid)
+                else:
+                    logger.error("Failed to delete expired run directory: %s", run_dir)
+        except Exception as e:
+            logger.warning("Error during cleanup of %s: %s", uid, e)
+
+    return deleted
+
+
+def _cleanup_worker():
+    """Background worker thread that periodically triggers cleanup sweeps."""
+    while True:
+        try:
+            sweep_expired_runs()
+        except Exception as e:
+            logger.warning("Background cleanup sweep error: %s", e)
+        time.sleep(3600)
+
+
+# Start cleanup thread as daemon
+_cleanup_thread = threading.Thread(target=_cleanup_worker, daemon=True, name='run-cleanup')
+_cleanup_thread.start()
 
 PATIENT_CASES = {
     '00000': {
@@ -52,17 +143,20 @@ def index():
 @app.get('/api/status')
 def status():
     import torch
-    dev_name = torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'Apple Silicon (MPS)' if (hasattr(torch.backends, 'mps') and torch.backends.mps.is_available()) else 'CPU'
+    dev_name = _gpu_name()
     return {
         'gpu': dev_name,
         'cuda_available': torch.cuda.is_available(),
         'demo_ready': len(list((ROOT / 'data/demo').glob('*.nii.gz'))) >= 5 or len(list((ROOT / 'data/synthetic_demo').glob('*.nii.gz'))) >= 4,
         'models_available': [
-            {'id': 'ensemble', 'name': '8:2 Ensemble (SwinUNETR + nnU-Net ResEnc)', 'badge': 'Requires both trained checkpoints', 'speed': 'Not benchmarked', 'available': (ROOT / 'models/resenc_brats/resenc_m_brats.pt').is_file() and (ROOT / 'models/swinunetr_brats/model_weights_BRATS-finetune.pt').is_file()},
-            {'id': 'swinunetr', 'name': 'SwinUNETR (Vision Transformer)', 'badge': '20-case BraTS21 pilot (cases seen in training)', 'speed': '~8s (RTX 4060, measured)'},
-            {'id': 'segresnet', 'name': 'SegResNet (3D CNN Autoencoder)', 'badge': 'BraTS baseline', 'speed': '~3s'}
+            {'id': 'ensemble', 'name': '8:2 Ensemble (SwinUNETR + nnU-Net ResEnc)', 'badge': 'Weighted probability fusion',
+             'available': (ROOT / 'models/resenc_brats/resenc_m_brats.pt').is_file() and (ROOT / 'models/swinunetr_brats/model_weights_BRATS-finetune.pt').is_file()},
+            {'id': 'swinunetr', 'name': 'SwinUNETR (Vision Transformer)', 'badge': 'Transformer baseline',
+             'available': (ROOT / 'models/swinunetr_brats/model_weights_BRATS-finetune.pt').is_file()},
+            {'id': 'segresnet', 'name': 'SegResNet (3D CNN Autoencoder)', 'badge': 'Convolutional baseline',
+             'available': (ROOT / 'models/brats_mri_segmentation/models/model.pt').is_file()}
         ],
-        'default_model': 'swinunetr',
+        'default_model': 'ensemble',
         'patient_cases': [
             {
                 'id': k,
@@ -80,7 +174,7 @@ def jobs():
     return list(JOBS.values())
 
 
-def execute(job_id, paths, expert, expert_et, name, model_name='swinunetr'):
+def execute(job_id, paths, expert, expert_et, name, model_name='ensemble'):
     job = JOBS[job_id]
     def update(message):
         job.update(status='running', message=message)
@@ -89,7 +183,8 @@ def execute(job_id, paths, expert, expert_et, name, model_name='swinunetr'):
         job.update(status='complete', message='Analysis complete', result=result)
     except Exception as e:
         traceback.print_exc()
-        job.update(status='error', message=str(e))
+        msg = str(e).replace(str(ROOT), '.')
+        job.update(status='error', message=msg)
     (RUNS / job_id / 'job.json').write_text(json.dumps(job, indent=2))
 
 
@@ -98,13 +193,30 @@ def new_job():
         if any(j['status'] in ('queued', 'running') for j in JOBS.values()):
             raise HTTPException(409, 'An analysis is already running. Please wait for it to finish.')
         uid = uuid.uuid4().hex
-        (RUNS / uid).mkdir()
-        JOBS[uid] = {'id': uid, 'status': 'queued', 'message': 'Queued for local RTX 4060 GPU'}
+        job_dir = RUNS / uid
+        job_dir.mkdir(parents=True, exist_ok=True)
+        now_utc = datetime.now(timezone.utc)
+        job_record = {
+            'id': uid,
+            'status': 'queued',
+            'message': f'Queued for {_gpu_name()} inference',
+            'created_at': now_utc.isoformat(),
+            'created_ts': now_utc.timestamp(),
+        }
+        (job_dir / 'job.json').write_text(json.dumps(job_record, indent=2))
+        JOBS[uid] = job_record
         return uid
 
 
+def validate_model(model):
+    if model not in ('ensemble', 'swinunetr', 'segresnet'):
+        raise HTTPException(400, 'Unknown model. Choose ensemble, swinunetr or segresnet.')
+    return model
+
+
 @app.post('/api/demo')
-def demo(model: str = Query('swinunetr'), case: str = Query('00000')):
+def demo(model: str = Query('ensemble'), case: str = Query('00000')):
+    model_name = validate_model(model)
     case_info = PATIENT_CASES.get(case, PATIENT_CASES['00000'])
     folder = case_info['folder']
     code = case_info['code']
@@ -120,7 +232,6 @@ def demo(model: str = Query('swinunetr'), case: str = Query('00000')):
         raise HTTPException(404, f"MRI scans missing for case {case_info['name']}.")
 
     uid = new_job()
-    model_name = model if model in ('ensemble', 'swinunetr', 'segresnet') else 'swinunetr'
     POOL.submit(
         execute,
         uid,
@@ -141,8 +252,9 @@ async def analyze(
     flair: UploadFile = File(...),
     expert: UploadFile | None = File(None),
     expert_et: int = Form(4),
-    model: str = Form('swinunetr')
+    model: str = Form('ensemble')
 ):
+    model_name = validate_model(model)
     if expert_et not in (3, 4):
         raise HTTPException(400, 'Expert ET label must be 3 or 4.')
     files = {'t1c': t1c, 't1': t1, 't2': t2, 'flair': flair}
@@ -166,35 +278,102 @@ async def analyze(
                     dest.write(chunk)
             paths[key] = path
     except Exception as e:
-        JOBS[uid].update(status='error', message=str(e))
-        raise HTTPException(400, str(e))
-    model_name = model if model in ('ensemble', 'swinunetr', 'segresnet') else 'swinunetr'
+        with GUARD:
+            JOBS.pop(uid, None)
+        shutil.rmtree(RUNS / uid, ignore_errors=True)
+        msg = str(e).replace(str(ROOT), '.')
+        raise HTTPException(400, msg)
     POOL.submit(execute, uid, paths, paths.get('expert'), expert_et, f'Patient MRI ({model_name.upper()})', model_name=model_name)
     return {'id': uid}
 
 
 @app.get('/api/jobs/{uid}')
 def job(uid: str):
+    if not uid.isalnum() or len(uid) > 64 or uid not in JOBS:
+        raise HTTPException(404, 'Analysis not found.')
+    job_dir = RUNS / uid
+    cutoff = time.time() - (RETENTION_HOURS * 3600.0)
+    if is_run_expired(job_dir, cutoff):
+        sweep_expired_runs()
+        raise HTTPException(404, 'Analysis has expired under the 24-hour retention policy.')
+    return JOBS[uid]
+
+
+def review_metadata(uid):
     if uid not in JOBS:
         raise HTTPException(404, 'Analysis not found.')
-    return JOBS[uid]
+    if JOBS[uid]['status'] != 'complete':
+        raise HTTPException(409, 'Wait for the analysis to complete before reviewing it.')
+    folder = RUNS / uid
+    result = JOBS[uid]['result']
+    affine, shape = result.get('affine'), result.get('shape')
+    # Older runs do not have geometry in their report; read the header only.
+    if affine is None and (folder / 't1c.nii.gz').exists():
+        import nibabel as nib
+        reference = nib.load(str(folder / 't1c.nii.gz'))
+        affine, shape = reference.affine.tolist(), list(reference.shape)
+    return dict(affine=affine, shape=shape,
+                available_modalities=[m for m in ('t1', 't1c', 't2', 'flair') if (folder / f'{m}.nii.gz').exists()],
+                input_hashes=result.get('input_hashes'), has_expert=(folder / 'expert.nii.gz').exists())
+
+
+@app.get('/api/jobs/{uid}/review')
+def get_review(uid: str):
+    metadata = review_metadata(uid)
+    return {**load_review(RUNS / uid), 'metadata': metadata}
+
+
+@app.put('/api/jobs/{uid}/review')
+def put_review(uid: str, document: dict = Body(...)):
+    metadata = review_metadata(uid)
+    try:
+        return {**save_review(RUNS / uid, document, metadata), 'metadata': metadata}
+    except ReviewConflict as error:
+        raise HTTPException(409, str(error))
+    except (ValueError, TypeError, KeyError) as error:
+        raise HTTPException(400, str(error))
 
 
 @app.get('/api/files/{uid}/{name}')
 def file(uid: str, name: str):
-    allowed = {'flair.nii.gz', 't1c.nii.gz', 'segmentation.nii.gz', 'expert.nii.gz', 'brain.obj', 'tumor.obj', 'core.obj', 'report.json', 'uncertainty.nii.gz'}
-    if uid not in JOBS or name not in allowed:
-        raise HTTPException(404)
-    path = RUNS / uid / name
-    if not path.exists():
-        raise HTTPException(404)
+    allowed = {
+        'flair.nii.gz', 't1c.nii.gz', 't1.nii.gz', 't2.nii.gz', 'segmentation.nii.gz', 'expert.nii.gz',
+        'uncertainty.nii.gz', 'brain.obj', 'tumor.obj', 'core.obj', 'et.obj', 'report.json'
+    }
+    if not uid.isalnum() or len(uid) > 64 or uid not in JOBS:
+        raise HTTPException(404, 'Analysis not found.')
+    job_dir = (RUNS / uid).resolve()
+    cutoff = time.time() - (RETENTION_HOURS * 3600.0)
+    if is_run_expired(job_dir, cutoff):
+        sweep_expired_runs()
+        raise HTTPException(404, 'Analysis has expired under the 24-hour retention policy.')
+    if name not in allowed:
+        raise HTTPException(404, 'Artifact not found.')
+
+    runs_root = RUNS.resolve()
+    if not job_dir.is_relative_to(runs_root):
+        raise HTTPException(403, 'Path traversal forbidden.')
+
+    path = (job_dir / name).resolve()
+    if not path.is_relative_to(job_dir) or not path.exists():
+        raise HTTPException(404, 'Artifact not found.')
     return FileResponse(path, filename=name)
 
 
+# Startup recovery: reload persisted jobs and mark unfinished jobs as interrupted
 for p in RUNS.glob('*/job.json'):
     try:
         j = json.loads(p.read_text())
-        if j['status'] in ('complete', 'error'):
-            JOBS[j['id']] = j
-    except (ValueError, KeyError):
+        if j.get('status') in ('queued', 'running'):
+            j['status'] = 'error'
+            j['message'] = 'Analysis interrupted by server restart'
+            p.write_text(json.dumps(j, indent=2))
+        JOBS[j['id']] = j
+    except (ValueError, KeyError, json.JSONDecodeError):
         pass
+
+# Initial cleanup sweep at server startup
+try:
+    sweep_expired_runs()
+except Exception as _e:
+    logger.warning("Startup cleanup sweep failed: %s", _e)
