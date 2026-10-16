@@ -1,0 +1,5 @@
+.brain-illustration { position: relative; width: 85%; height: 85%; object-fit: contain; filter: drop-shadow(0 24px 32px #8b72a529); }
+.nav-cta { color: #40364f; }
+.primary { text-decoration: none; }
+.brain-stage { pointer-events: none; }
+@media (max-width: 700px) { .brain-illustration { width: 90%; height: 90%; } }

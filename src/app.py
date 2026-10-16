@@ -2,8 +2,8 @@ from pathlib import Path
 import json, uuid, threading, shutil, time, traceback, logging
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query, Body
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query, Body, Request
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 import sys
 sys.path.insert(0, str(Path(__file__).parent))
@@ -20,6 +20,7 @@ JOBS = {}
 POOL = ThreadPoolExecutor(max_workers=1)
 GUARD = threading.Lock()
 app.mount('/static', StaticFiles(directory=ROOT / 'src/web'), name='static')
+app.mount('/landing-static', StaticFiles(directory=ROOT / 'frontend'), name='landing-static')
 
 # Upload retention: delete run directories older than this many hours (default: 24h)
 RETENTION_HOURS = 24
@@ -137,7 +138,14 @@ PATIENT_CASES = {
 
 
 @app.get('/')
-def index():
+def index(request: Request):
+    if 'analysis' in request.query_params:
+        return RedirectResponse('/workspace?' + request.url.query, status_code=307)
+    return FileResponse(ROOT / 'frontend/home.html')
+
+
+@app.get('/workspace')
+def workspace():
     return FileResponse(ROOT / 'src/web/index.html')
 
 
