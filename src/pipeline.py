@@ -43,7 +43,7 @@ def load_model(model_name='swinunetr'):
         sd = state.get('state_dict', state.get('model', state))
         model.load_state_dict(sd, strict=True)
         model = model.eval().cuda()
-        title = 'MONAI SwinUNETR (Vision Transformer) · BraTS SOTA'
+        title = 'MONAI SwinUNETR (Vision Transformer) · BraTS21 checkpoint'
         MODELS['swinunetr'] = (model, title)
         return MODELS['swinunetr']
 
@@ -106,34 +106,26 @@ def region_masks(labels, enhancing=4):
     }
 
 
-def compute_rano_criteria(volumes):
+def compute_volume_summary(volumes):
     v_wt = volumes.get('WT', 0.0)
     v_tc = volumes.get('TC', 0.0)
     v_et = volumes.get('ET', 0.0)
     v_ed = volumes.get('ED', 0.0)
 
-    # RANO 2.0 defines measurable lesions as having volume >= 1.0 mL (or cross product >= 100 mm^2)
-    measurable = v_et >= 1.0 or v_wt >= 1.0
-    
     if v_wt > 0:
         et_ratio = v_et / v_wt
         ed_ratio = v_ed / v_wt
     else:
         et_ratio = ed_ratio = 0.0
 
-    if et_ratio >= 0.35:
-        burden_type = "Contrast-Enhancing Dominant (High-Grade Glioma Phenotype)"
-    elif ed_ratio >= 0.60:
-        burden_type = "Infiltrative / Vasogenic Edema Dominant (Marked Mass Effect)"
-    else:
-        burden_type = "Mixed Core & Infiltrative Component"
-
     return {
-        "measurable_lesion_rano": measurable,
-        "primary_burden_type": burden_type,
+        "whole_tumor_ml": v_wt,
+        "tumor_core_ml": v_tc,
+        "enhancing_tumor_ml": v_et,
+        "edema_region_ml": v_ed,
         "enhancing_fraction_pct": round(et_ratio * 100, 1),
         "edema_fraction_pct": round(ed_ratio * 100, 1),
-        "clinical_summary": f"Estimated whole tumor volume of {v_wt:.1f} mL ({'measurable' if measurable else 'sub-centimeter'}) with {v_et:.1f} mL active enhancing component."
+        "summary": f"Predicted whole-tumor region: {v_wt:.1f} mL; enhancing region: {v_et:.1f} mL. These are segmentation measurements, not a response assessment."
     }
 
 
@@ -143,6 +135,8 @@ def run_case(paths, out, update=lambda message: None, expert=None, expert_et=4, 
     out.mkdir(parents=True, exist_ok=True)
     
     update('Validating MRI dimensions and coordinate alignment')
+    # Keep T1c as the output reference grid. The two checkpoints were trained
+    # with different channel orders, so arrange channels only after validation.
     imgs = [read_image(paths[k]) for k in ('t1c', 't1', 't2', 'flair')]
     original = imgs[0]
     for img in imgs[1:]:
@@ -168,6 +162,9 @@ def run_case(paths, out, update=lambda message: None, expert=None, expert_et=4, 
             can = resample_from_to(can, target, order=1)
         channels.append(can.get_fdata(dtype=np.float32))
 
+    if model_name == 'swinunetr':
+        # Official BraTS21 folds JSON: FLAIR, T1ce, T1, T2.
+        channels = [channels[i] for i in (3, 0, 1, 2)]
     arr = np.stack(channels)
     foreground = np.any(arr != 0, axis=0)
     positions = np.where(foreground)
@@ -179,10 +176,13 @@ def run_case(paths, out, update=lambda message: None, expert=None, expert_et=4, 
         model, model_title = load_model(model_name)
         torch.cuda.reset_peak_memory_stats()
         model_display = "SwinUNETR Transformer" if "Swin" in model_title else "SegResNet CNN"
-        update(f'Segmenting on RTX 4060 with {model_display} (96³ sliding patches)')
+        # 128^3 is the published Swin setting, but it exceeded available VRAM
+        # with the local app running on this 8 GB laptop. 96^3 was measured here.
+        roi_size = (96, 96, 96)
+        update(f'Segmenting on RTX 4060 with {model_display} ({roi_size[0]}³ sliding patches)')
         with torch.inference_mode(), torch.autocast('cuda', dtype=torch.float16):
             logits = sliding_window_inference(
-                x, (96, 96, 96), 1, model, overlap=0.5, mode='gaussian', sw_device='cuda', device='cpu'
+                x, roi_size, 1, model, overlap=0.5, mode='gaussian', sw_device='cuda', device='cpu'
             )
         torch.cuda.synchronize()
         peak = round(torch.cuda.max_memory_allocated() / 1024**2, 1)
@@ -226,7 +226,7 @@ def run_case(paths, out, update=lambda message: None, expert=None, expert_et=4, 
         normalized = np.where(gt == expert_et, 4, gt).astype(np.uint8)
         nib.save(nib.Nifti1Image(normalized, original.affine, header), out / 'expert.nii.gz')
 
-    update('Synthesizing 3D polygonal meshes and RANO report')
+    update('Synthesizing 3D polygonal meshes and measurement report')
     meshes = []
     # 1. Brain shell
     if mesh(imgs[3].get_fdata() != 0, original.affine, out / 'brain.obj'):
@@ -238,14 +238,16 @@ def run_case(paths, out, update=lambda message: None, expert=None, expert_et=4, 
     if mesh(regions['TC'], original.affine, out / 'core.obj'):
         meshes.append('core')
 
-    rano_assessment = compute_rano_criteria(volumes)
+    volume_summary = compute_volume_summary(volumes)
 
     result = {
         'case_name': case_name,
         'model_name': model_name,
         'model': model_title,
+        'input_channel_order': ['FLAIR', 'T1c', 'T1', 'T2'] if model_name == 'swinunetr' else ['T1c', 'T1', 'T2', 'FLAIR'],
+        'sliding_window_roi': list(roi_size),
         'volumes_ml': volumes,
-        'rano_criteria': rano_assessment,
+        'volume_summary': volume_summary,
         'metrics': metrics,
         'runtime_seconds': round(time.perf_counter() - started, 2),
         'peak_gpu_mib': peak,
