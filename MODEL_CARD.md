@@ -51,48 +51,73 @@ Alternative paths (checked in order):
 If a checkpoint is not found at any of these locations, the application will raise a
 `CheckpointNotFoundError` with the list of searched paths.
 
-## Checkpoint Provenance
+## Checkpoint Provenance & Verification
 
-> **Status: UNVERIFIED**
+> **Integrity Hash Status: SYSTEM IMPLEMENTED · Provenance Status: UNVERIFIED**
 >
-> The exact training data, training procedure, and licensing terms for the specific
-> checkpoint files used in this project have not been independently verified. The
-> checkpoint filenames and architecture configurations match publicly available
-> BraTS challenge models, but their exact provenance must be confirmed by the team
-> member who obtained them.
+> The application calculates SHA-256 hashes of the exact checkpoint files loaded for each inference run
+> and records them in the output report (`report.json` and `evaluation_summary.json`).
+>
+> **Important Scientific Distinction**:
+> SHA-256 hashes verify byte-level file integrity and run-to-run reproducibility. A cryptographic hash
+> **does not** establish model authorship, training data provenance, licensing compliance, or clinical validity.
+> The specific checkpoint files used in this project have not been independently audited or clinically certified.
+
+### Independent Checkpoint Hash Verification:
+
+To independently verify the SHA-256 hash of a local checkpoint file:
+
+```bash
+# Linux / macOS
+sha256sum models/swinunetr_brats/model_weights_BRATS-finetune.pt
+sha256sum models/resenc_brats/resenc_m_brats.pt
+
+# Windows PowerShell
+Get-FileHash models/swinunetr_brats/model_weights_BRATS-finetune.pt -Algorithm SHA256
+Get-FileHash models/resenc_brats/resenc_m_brats.pt -Algorithm SHA256
+```
 
 ### What must be verified before claiming benchmark results:
 
-1. Training dataset (BraTS 2021, MSD, or other)
-2. Training/validation split used
+1. Training dataset origin and de-identification provenance (e.g. BraTS 2021, MSD, or other)
+2. Training/validation split used during model training
 3. Any fine-tuning performed after the original training
-4. License terms of the checkpoint files
-5. Whether evaluation cases overlap with training data
+4. Commercial and research license terms of the checkpoint weights
+5. Explicit confirmation that evaluation cases do not overlap with training data
 
 ## Intended Use
 
-- **Primary use**: Research and teaching demonstration of 3D brain tumor segmentation
-- **NOT intended for**: Clinical diagnosis, treatment planning, or medical decision-making
-- **Users**: Researchers, students, and hackathon evaluators
+- **Primary use**: Research and educational demonstration of 3D multi-modal brain tumor segmentation
+- **NOT intended for**: Primary clinical diagnosis, treatment planning, radiation therapy contouring, or medical decision-making
+- **Users**: Researchers, machine learning engineers, educators, and hackathon evaluators
 
 ## Limitations
 
-1. **Not a diagnostic tool** — Output represents model estimates, not expert-verified findings
-2. **Dataset bias** — Models trained on BraTS data (adult gliomas from specific institutions)
-3. **Preprocessing dependency** — Results assume skull-stripped, co-registered MRI inputs
-4. **No clinical validation** — Segmentation accuracy ≠ clinical diagnostic accuracy
-5. **Population generalization** — Performance may differ on scans from other scanners, protocols, or patient populations
+1. **Not a diagnostic tool** — Output represents statistical model estimates, not expert-verified clinical findings
+2. **Dataset bias** — Models trained on BraTS data (adult gliomas from specific participating academic centers)
+3. **Preprocessing dependency** — Predictions assume skull-stripped, co-registered MRI inputs on a 1mm isotropic grid
+4. **No clinical validation** — Algorithmic Dice scores on benchmarks do not equate to clinical efficacy or patient safety
+5. **Population generalization** — Performance may degrade on scans from unseen scanners, field strengths (e.g., 1.5T vs 3.0T), non-standard protocols, or pediatric populations
 
-## Evaluation
+## Evaluation Protocol & Status
 
-| Status | Description |
-|---|---|
-| ✅ Application code implemented | Backend, frontend, API, validation |
-| ✅ CPU-compatible tests passed | Ensemble math, hierarchy, entropy, volume |
-| ❓ Checkpoint loading verified | Requires GPU machine with checkpoints |
-| ❓ Real MRI inference verified | Requires GPU machine with MRI data |
-| ❓ Segmentation quality evaluated | Requires 10+ held-out labelled cases |
-| ❓ GPU performance measured | Requires target hardware |
+The evaluation suite (`scripts/evaluate_ensemble.py`) evaluates multi-modal cases against expert ground-truth masks:
+
+```bash
+# Run patient-level held-out evaluation
+python scripts/evaluate_ensemble.py --manifest configs/evaluation_manifest_template.json --output-dir outputs/evaluation --device cuda
+```
+
+| Dimension | Verification Status | Current Evidence |
+|---|---|---|
+| **Pipeline Consolidation** | ✅ COMPLETE | Single authoritative `run_ensemble` path; `pipeline.py` delegates directly |
+| **Config Validation** | ✅ COMPLETE | `config_loader.py` enforces strict types, non-finite rejection, and normalized weights |
+| **Safe Checkpoint Loading** | ✅ COMPLETE | `weights_only=True` default enforced; no auto-fallback; strict state-dict validation |
+| **24-Hour Retention** | ✅ COMPLETE | Persistent UTC timestamps; restart recovery; verified deletion; traversal protected |
+| **Evaluation Harness** | ✅ COMPLETE | Reproducible script; patient separation; BraTS metrics (WT, TC, ET Dice/Sens) |
+| **CPU Test Suite** | ✅ COMPLETE | Automated tests pass without checkpoints or GPU |
+| **Patient-Level Evaluation** | ⚠️ **PENDING REAL DATA** | Requires ≥10 held-out, non-overlapping labelled patient MRI cases |
+| **GPU Inference & VRAM** | ⚠️ **PENDING GPU** | Requires target GPU machine (≥6 GB VRAM) to verify runtime < 120s and memory |
 
 ## References
 

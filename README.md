@@ -88,6 +88,7 @@ src/
 
 scripts/
   ensemble_inference.py   Core ensemble engine (8:2 fusion, hierarchy, entropy)
+  evaluate_ensemble.py    Patient-level cohort evaluation harness
   models/
     model_loader.py       Checkpoint loading with validation
     resenc_unet.py        nnU-Net ResEnc architecture
@@ -95,6 +96,7 @@ scripts/
 configs/
   config_loader.py    Centralized configuration validation and schema checks
   ensemble.json       Ensemble weights, channel orders, thresholds
+  evaluation_manifest_template.json  Held-out patient cohort manifest schema
 
 models/               Model checkpoints (not in Git)
 tests/                Comprehensive unit and integration test suite
