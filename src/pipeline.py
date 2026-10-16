@@ -1,12 +1,23 @@
 """NeuroScope 3D inference pipeline — orchestration and output layer.
 
-Coordinates MRI validation, model loading, inference dispatch, spatial
-restoration, mesh generation, volume calculation and report assembly.
+Coordinates MRI validation, inference dispatch, spatial restoration,
+mesh generation, volume calculation, and report assembly.
 
-Inference engine:
-- Ensemble mode routes through scripts/ensemble_inference.py (single source of truth)
-- Single-model modes (swinunetr, segresnet) use inline sliding window inference
-- Model loading delegated to scripts/models/model_loader.py with checkpoint validation
+ARCHITECTURE:
+- Ensemble inference is delegated to scripts/ensemble_inference.py
+  (single authoritative implementation — no duplicate inference here)
+- Model loading is delegated to scripts/models/model_loader.py
+- Configuration is loaded via configs/config_loader.py
+- Metrics are computed via src/metrics.py
+
+This module is responsible ONLY for:
+- Input validation and case preparation
+- Calling the authoritative inference API
+- Mesh generation for 3D visualization
+- Volume summary computation
+- Expert-mask handling (label normalization for viewer)
+- Report generation and provenance assembly
+- Packaging the response expected by the web application
 """
 import hashlib
 import json
@@ -19,9 +30,6 @@ from pathlib import Path
 import nibabel as nib
 import numpy as np
 import torch
-from nibabel.processing import resample_to_output, resample_from_to
-from monai.inferers import sliding_window_inference
-from monai.transforms import NormalizeIntensity
 from skimage.measure import marching_cubes
 
 from metrics import compute_dice, compute_sensitivity, calculate_volume_ml
@@ -91,34 +99,41 @@ def load_model(model_name='ensemble'):
 
     if model_name in ('ensemble', '8_2', 'swin_resenc'):
         from scripts.models.model_loader import load_ensemble_models, get_device
+        from configs.config_loader import load_ensemble_config
+        vcfg = load_ensemble_config()
         ens = load_ensemble_models(device=get_device(device))
         title = f"8:2 Hybrid Ensemble ({ens['desc_a']} + {ens['desc_b']})"
-        MODELS['ensemble'] = (ens, title)
+        MODELS['ensemble'] = (ens, title, vcfg)
         return MODELS['ensemble']
 
     elif model_name in ('swinunetr', 'swin_unetr', 'swin'):
         from scripts.models.model_loader import load_swinunetr, get_device
         model, desc, path = load_swinunetr(device=get_device(device))
         title = f'MONAI {desc}'
-        MODELS['swinunetr'] = (model, title)
+        MODELS['swinunetr'] = (model, title, None)
         return MODELS['swinunetr']
 
     elif model_name in ('segresnet', 'resnet'):
         from scripts.models.model_loader import load_segresnet, get_device
         model, desc, path = load_segresnet(device=get_device(device))
         title = f'MONAI {desc}'
-        MODELS['segresnet'] = (model, title)
+        MODELS['segresnet'] = (model, title, None)
         return MODELS['segresnet']
 
     else:
         raise ValueError(f"Unknown model '{model_name}'. Choose 'ensemble', 'swinunetr' or 'segresnet'.")
 
 
-def read_image(path):
-    """Validate and load a NIfTI MRI volume.
+def read_image(path, is_expert_mask=False):
+    """Validate and load a NIfTI MRI volume or expert mask.
 
     Checks: 3D shape, voxel count, spatial units, affine validity,
-    finite values, and non-constant intensity.
+    finite values. For MRI volumes, also checks non-constant intensity.
+    For expert masks, allows all-zero masks (valid in evaluation scenarios).
+
+    Args:
+        path: Path to NIfTI file
+        is_expert_mask: If True, skip MRI-specific intensity validation
     """
     path = Path(path)
 
@@ -151,10 +166,17 @@ def read_image(path):
     a = img.get_fdata(dtype=np.float32)
     if not np.isfinite(a).all():
         raise ValueError(f'{path.name} contains NaN or Inf values.')
-    if not np.any(a):
-        raise ValueError(f'{path.name} is entirely zero/blank.')
-    if np.std(a[a != 0]) < 1e-6:
-        raise ValueError(f'{path.name} has constant intensity (no tissue contrast).')
+
+    if not is_expert_mask:
+        # MRI-specific checks: reject all-zero and constant intensity
+        if not np.any(a):
+            raise ValueError(f'{path.name} is entirely zero/blank.')
+        if np.std(a[a != 0]) < 1e-6:
+            raise ValueError(f'{path.name} has constant intensity (no tissue contrast).')
+    else:
+        # Expert mask validation: check label values
+        unique_labels = set(np.unique(a).astype(int))
+        # Don't reject all-zero masks — valid evaluation scenario
 
     return img
 
@@ -218,6 +240,9 @@ def run_case(paths, out, update=lambda message: None, expert=None,
              expert_et=4, case_name='Uploaded MRI', model_name='ensemble'):
     """Run the full inference pipeline on a set of MRI volumes.
 
+    For ensemble mode (default), delegates to scripts/ensemble_inference.py
+    which is the SINGLE authoritative inference implementation.
+
     Args:
         paths: dict with keys 't1c', 't1', 't2', 'flair' → file paths
         out: output directory for artifacts
@@ -240,6 +265,8 @@ def run_case(paths, out, update=lambda message: None, expert=None,
             input_hashes[k] = 'unavailable'
 
     update('Validating MRI dimensions and coordinate alignment')
+
+    # Validate all four MRI modalities
     imgs = [read_image(paths[k]) for k in ('t1c', 't1', 't2', 'flair')]
     original = imgs[0]  # T1c is the output reference grid
     for img in imgs[1:]:
@@ -254,8 +281,8 @@ def run_case(paths, out, update=lambda message: None, expert=None,
                 'share the same spatial coordinate system.'
             )
 
-    # Expert mask validation (shape AND affine)
-    expert_img = read_image(expert) if expert else None
+    # Expert mask validation (shape AND affine, with mask-specific rules)
+    expert_img = read_image(expert, is_expert_mask=True) if expert else None
     if expert_img is not None:
         if expert_img.shape != original.shape:
             raise ValueError('Expert mask shape does not match the MRI volumes.')
@@ -265,86 +292,91 @@ def run_case(paths, out, update=lambda message: None, expert=None,
                 'Both must be in the same spatial coordinate system.'
             )
 
-    update('Standardizing to 1 mm isotropic RAS grid')
-    canonical = nib.as_closest_canonical(original)
-    if not np.allclose(nib.affines.voxel_sizes(canonical.affine), [1, 1, 1], atol=1e-3):
-        canonical = resample_to_output(canonical, voxel_sizes=(1, 1, 1), order=1)
-    target = (canonical.shape, canonical.affine)
-    if np.prod(canonical.shape) > 35_000_000:
-        raise ValueError('Resampled MRI is too large. Use a prepared BraTS-style case.')
-
-    channels = []
-    for img in imgs:
-        can = nib.as_closest_canonical(img)
-        if can.shape != target[0] or not np.allclose(can.affine, target[1], atol=1e-3):
-            can = resample_from_to(can, target, order=1)
-        channels.append(can.get_fdata(dtype=np.float32))
-
-    # channels order: [t1c, t1, t2, flair] matching imgs order
-    raw_arr = np.stack(channels)
-    foreground = np.any(raw_arr != 0, axis=0)
-    positions = np.where(foreground)
-    slices = tuple(
-        slice(max(0, int(p.min()) - 4), min(raw_arr.shape[i + 1], int(p.max()) + 5))
-        for i, p in enumerate(positions)
-    )
-    norm_arr = NormalizeIntensity(nonzero=True, channel_wise=True)(raw_arr).as_tensor()
-
     device = _get_device()
-    roi_size = (96, 96, 96)
     peak = 0.0
 
     with LOCK:
-        bundle, model_title = load_model(model_name)
+        bundle_tuple = load_model(model_name)
         if torch.cuda.is_available():
             torch.cuda.reset_peak_memory_stats()
 
         if model_name in ('ensemble', '8_2', 'swin_resenc'):
-            update(f'Segmenting with 8:2 Hybrid Ensemble ({bundle["desc_a"]} + {bundle["desc_b"]})')
-            # SwinUNETR (Model A): [FLAIR, T1c, T1, T2] → indices [3, 0, 1, 2]
-            x_a = norm_arr[[3, 0, 1, 2]][(slice(None),) + slices].unsqueeze(0).contiguous().to(device)
-            # ResEnc (Model B): [FLAIR, T1, T1c, T2] → indices [3, 1, 0, 2]
-            x_b = norm_arr[[3, 1, 0, 2]][(slice(None),) + slices].unsqueeze(0).contiguous().to(device)
+            # ============================================================
+            # ENSEMBLE MODE: Delegate to the authoritative implementation
+            # in scripts/ensemble_inference.py. No duplicate inference here.
+            # ============================================================
+            bundle, model_title, vcfg = bundle_tuple
 
-            with torch.inference_mode():
-                logits_a = sliding_window_inference(
-                    x_a, roi_size, 1, bundle['model_a'],
-                    overlap=0.5, mode='gaussian', sw_device=device, device='cpu'
-                )
-                logits_b = sliding_window_inference(
-                    x_b, roi_size, 1, bundle['model_b'],
-                    overlap=0.5, mode='gaussian', sw_device=device, device='cpu'
-                )
-                prob_a = torch.sigmoid(logits_a[0].float())
-                prob_b = torch.sigmoid(logits_b[0].float())
-                prob = bundle['weight_a'] * prob_a + bundle['weight_b'] * prob_b
+            from scripts.ensemble_inference import run_ensemble
+            ens_result = run_ensemble(
+                mri_paths=paths,
+                out_dir=str(out),
+                validated_config=vcfg,
+                expert_path=expert,
+                expert_et=expert_et,
+                device=device,
+                update=update,
+                models_bundle=bundle,
+            )
 
-                # Enforce BraTS hierarchy: ET <= TC <= WT
-                from scripts.ensemble_inference import enforce_hierarchy, compute_voxel_entropy
-                p_tc, p_wt, p_et = enforce_hierarchy(prob[0], prob[1], prob[2])
-                pred = torch.stack([p_tc >= 0.5, p_wt >= 0.5, p_et >= 0.5]).numpy()
-
-                # Voxel entropy uncertainty map
-                ent_crop = compute_voxel_entropy(torch.stack([p_tc, p_wt, p_et])).mean(dim=0).numpy()
-                full_ent = np.zeros(canonical.shape, dtype=np.float32)
-                full_ent[slices] = ent_crop
-                ent_native = resample_from_to(
-                    nib.Nifti1Image(full_ent, canonical.affine),
-                    (original.shape, original.affine), order=1
-                )
-                nib.save(
-                    nib.Nifti1Image(np.asarray(ent_native.dataobj, dtype=np.float32),
-                                   original.affine, original.header),
-                    out / 'uncertainty.nii.gz'
-                )
+            # Extract results from authoritative inference
+            seg_data = ens_result['_seg_data']
+            regions = ens_result['_regions']
+            ref_img = ens_result['_ref_img']
+            volumes = ens_result['volumes_ml']
+            metrics = ens_result.get('metrics')
 
             input_channel_order = {
-                'model_a': ['FLAIR', 'T1c', 'T1', 'T2'],
-                'model_b': ['FLAIR', 'T1', 'T1c', 'T2']
+                'model_a': vcfg['model_a']['channel_order'],
+                'model_b': vcfg['model_b']['channel_order'],
             }
+            roi_size = vcfg['model_a']['roi_size']
+            checkpoint_hashes = ens_result.get('checkpoint_hashes', {})
 
         else:
+            # Single-model mode (swinunetr or segresnet) — inline inference
+            # These are secondary modes; ensemble is the production default.
+            bundle, model_title, _ = bundle_tuple
             model = bundle
+
+            from monai.inferers import sliding_window_inference
+            from monai.transforms import NormalizeIntensity
+            from nibabel.processing import resample_to_output, resample_from_to
+            from configs.config_loader import load_ensemble_config
+
+            # Try to read ROI from config; fall back for single-model mode
+            try:
+                vcfg = load_ensemble_config()
+                roi_size = vcfg['model_a']['roi_size']
+            except Exception:
+                roi_size = (96, 96, 96)
+
+            update(f'Standardizing to 1 mm isotropic RAS grid')
+            canonical = nib.as_closest_canonical(original)
+            if not np.allclose(nib.affines.voxel_sizes(canonical.affine), [1, 1, 1], atol=1e-3):
+                canonical = resample_to_output(canonical, voxel_sizes=(1, 1, 1), order=1)
+            target = (canonical.shape, canonical.affine)
+            if np.prod(canonical.shape) > 35_000_000:
+                raise ValueError('Resampled MRI is too large. Use a prepared BraTS-style case.')
+
+            channels = []
+            for img in imgs:
+                can = nib.as_closest_canonical(img)
+                if can.shape != target[0] or not np.allclose(can.affine, target[1], atol=1e-3):
+                    can = resample_from_to(can, target, order=1)
+                channels.append(can.get_fdata(dtype=np.float32))
+
+            raw_arr = np.stack(channels)
+            foreground = np.any(raw_arr != 0, axis=0)
+            positions = np.where(foreground)
+            if len(positions[0]) == 0:
+                raise ValueError("No non-zero foreground voxels found across MRI sequences")
+            slices = tuple(
+                slice(max(0, int(p.min()) - 4), min(raw_arr.shape[i + 1], int(p.max()) + 5))
+                for i, p in enumerate(positions)
+            )
+            norm_arr = NormalizeIntensity(nonzero=True, channel_wise=True)(raw_arr).as_tensor()
+
             model_display = "SwinUNETR Transformer" if "Swin" in model_title else "SegResNet CNN"
             update(f'Segmenting with {model_display} ({roi_size[0]}³ sliding patches)')
             # SwinUNETR: [FLAIR, T1c, T1, T2]; SegResNet: [T1c, T1, T2, FLAIR]
@@ -363,58 +395,71 @@ def run_case(paths, out, update=lambda message: None, expert=None,
             else:
                 input_channel_order = ['T1c', 'T1', 'T2', 'FLAIR']
 
+            # Convert to BraTS labels
+            labels = np.where(pred[2], 4, np.where(pred[0], 1, np.where(pred[1], 2, 0))).astype(np.uint8)
+            full = np.zeros(canonical.shape, np.uint8)
+            full[slices] = labels
+
+            update('Projecting predictions back to native patient space')
+            seg = resample_from_to(
+                nib.Nifti1Image(full, canonical.affine),
+                (original.shape, original.affine), order=0
+            )
+            seg_data = np.asarray(seg.dataobj, dtype=np.uint8)
+            header = original.header.copy()
+            header.set_data_dtype(np.uint8)
+            nib.save(nib.Nifti1Image(seg_data, original.affine, header), out / 'segmentation.nii.gz')
+
+            ref_img = original
+            regions = region_masks(seg_data)
+            volumes = {k: calculate_volume_ml(m, original.affine) for k, m in regions.items()}
+            volumes['ED'] = calculate_volume_ml(seg_data == 2, original.affine)
+            checkpoint_hashes = {}
+
+            # Expert mask evaluation for single-model mode
+            metrics = None
+            if expert_img is not None:
+                gt = expert_img.get_fdata()
+                allowed = {0, 1, 2, expert_et}
+                if not set(np.unique(gt).astype(int)).issubset(allowed):
+                    raise ValueError(
+                        f'Expert mask labels do not match convention. '
+                        f'Expected subset of {allowed}, got {set(np.unique(gt).astype(int))}'
+                    )
+                gt_regions = region_masks(gt, expert_et)
+                metrics = {}
+                for k, p in regions.items():
+                    g = gt_regions[k]
+                    metrics[k] = {
+                        'dice': compute_dice(p, g),
+                        'sensitivity': compute_sensitivity(p, g),
+                    }
+
         if torch.cuda.is_available():
             torch.cuda.synchronize()
             peak = round(torch.cuda.max_memory_allocated() / 1024**2, 1)
 
-    # Convert model output channels to BraTS discrete labels
-    # Channels: 0: TC, 1: WT, 2: ET
-    labels = np.where(pred[2], 4, np.where(pred[0], 1, np.where(pred[1], 2, 0))).astype(np.uint8)
-    full = np.zeros(canonical.shape, np.uint8)
-    full[slices] = labels
-
-    update('Projecting predictions back to native patient space')
-    seg = resample_from_to(
-        nib.Nifti1Image(full, canonical.affine),
-        (original.shape, original.affine), order=0
-    )
-    seg_data = np.asarray(seg.dataobj, dtype=np.uint8)
-    header = original.header.copy()
-    header.set_data_dtype(np.uint8)
-
-    nib.save(nib.Nifti1Image(seg_data, original.affine, header), out / 'segmentation.nii.gz')
+    # Save reference MRI files for viewer
     nib.save(imgs[3], out / 'flair.nii.gz')
     nib.save(original, out / 't1c.nii.gz')
 
-    # Volume calculations using metrics.py (single source of truth)
-    regions = region_masks(seg_data)
-    volumes = {
-        k: calculate_volume_ml(m, original.affine)
-        for k, m in regions.items()
-    }
-    volumes['ED'] = calculate_volume_ml(seg_data == 2, original.affine)
+    # Ensure segmentation is saved (ensemble mode saves it internally)
+    if not (out / 'segmentation.nii.gz').exists():
+        header = ref_img.header.copy()
+        header.set_data_dtype(np.uint8)
+        nib.save(nib.Nifti1Image(seg_data, ref_img.affine, header), out / 'segmentation.nii.gz')
 
-    # Expert mask evaluation using metrics.py
-    metrics = None
-    if expert_img is not None:
+    # Compute edema volume if not already present
+    if 'ED' not in volumes:
+        volumes['ED'] = calculate_volume_ml(seg_data == 2, ref_img.affine)
+
+    # Expert mask: normalize and save for viewer
+    if expert_img is not None and metrics is not None:
         gt = expert_img.get_fdata()
-        allowed = {0, 1, 2, expert_et}
-        if not set(np.unique(gt).astype(int)).issubset(allowed):
-            raise ValueError(
-                f'Expert mask labels do not match convention. '
-                f'Expected subset of {allowed}, got {set(np.unique(gt).astype(int))}'
-            )
-        gt_regions = region_masks(gt, expert_et)
-        metrics = {}
-        for k, p in regions.items():
-            g = gt_regions[k]
-            metrics[k] = {
-                'dice': compute_dice(p, g),
-                'sensitivity': compute_sensitivity(p, g),
-            }
-        # Normalize expert mask to standard BraTS 2021 convention for viewer
         normalized = np.where(gt == expert_et, 4, gt).astype(np.uint8)
-        nib.save(nib.Nifti1Image(normalized, original.affine, header), out / 'expert.nii.gz')
+        header = ref_img.header.copy()
+        header.set_data_dtype(np.uint8)
+        nib.save(nib.Nifti1Image(normalized, ref_img.affine, header), out / 'expert.nii.gz')
 
     update('Synthesizing 3D polygonal meshes and measurement report')
     meshes = []
@@ -451,6 +496,7 @@ def run_case(paths, out, update=lambda message: None, expert=None,
         'meshes': meshes,
         'timestamp': time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         'input_hashes': input_hashes,
+        'checkpoint_hashes': checkpoint_hashes,
         'code_commit': _git_commit(),
         'preprocessing': {
             'canonical': 'RAS',
