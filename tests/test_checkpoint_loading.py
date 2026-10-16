@@ -65,6 +65,12 @@ class TestCheckpointResolution:
         assert result == existing
 
 
+class UnsafeDummyObject:
+    """Non-tensor object used to test weights_only=True rejection."""
+    def __init__(self):
+        self.secret = 42
+
+
 class TestStrictLoading:
     def test_valid_checkpoint_loads(self, tmp_path):
         """A checkpoint that exactly matches the model should load."""
@@ -133,6 +139,20 @@ class TestStrictLoading:
         model = SimpleModel()
         with pytest.raises(CheckpointLoadError, match='valid state dict'):
             _load_state_dict(model, ckpt_path, 'TestModel')
+
+    def test_weights_only_safe_loading_enforced(self, tmp_path):
+        """A checkpoint containing arbitrary non-tensor classes must be rejected by default (weights_only=True)."""
+        ckpt_path = tmp_path / 'arbitrary_payload.pt'
+        torch.save({'state_dict': SimpleModel().state_dict(), 'custom': UnsafeDummyObject()}, ckpt_path)
+
+        model = SimpleModel()
+        # Default must reject unsafe objects
+        with pytest.raises(CheckpointLoadError, match='weights_only=True'):
+            _load_state_dict(model, ckpt_path, 'TestModel', allow_unsafe_legacy_weights=False)
+
+        # Opt-in allows loading if explicitly permitted
+        fresh_model = SimpleModel()
+        _load_state_dict(fresh_model, ckpt_path, 'TestModel', allow_unsafe_legacy_weights=True)
 
 
 class TestPrefixStripping:
