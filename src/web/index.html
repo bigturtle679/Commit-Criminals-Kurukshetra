@@ -33,8 +33,13 @@
         <span id="gpu-text">Detecting hardware…</span>
       </div>
       <div class="status-pill model-pill">
+<<<<<<< HEAD
+        <span class="model-indicator-tag">NEXT ANALYSIS</span>
+        <span id="header-model-name">8:2 Ensemble</span>
+=======
         <span class="model-indicator-tag">ACTIVE AI</span>
         <span id="header-model-name">8:2 Hybrid Ensemble</span>
+>>>>>>> main
       </div>
       <div class="status-pill offline-pill">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -45,6 +50,8 @@
       </div>
     </div>
   </header>
+
+  <p class="research-disclaimer">Research and teaching prototype only. Suspected tumour regions predicted by the model and estimated volumes are not a diagnosis or treatment advice. Public, de-identified research data only.</p>
 
   <!-- Main Container -->
   <main class="main-container">
@@ -70,6 +77,38 @@
       <!-- Left Sidebar: Controls & Pipeline -->
       <aside class="sidebar-panel">
         
+        <section class="card review-panel" aria-labelledby="review-heading">
+          <h3 id="review-heading">Spatial bookmarks &amp; blind practice</h3>
+          <p>Self-guided practice. Submitted observations are saved before answers are revealed.</p>
+          <label><input type="checkbox" id="blind-next"> Open the next case in blind mode</label>
+          <button type="button" id="start-blind">Start blind attempt</button>
+          <p id="review-stage" role="status">Open an analysis to review</p>
+          <p id="review-exposure"></p>
+          <label>Saved attempts <select id="attempt-history"><option value="">Ordinary case notes</option></select></label>
+          <button type="button" id="exit-blind" hidden>Return to normal viewing (shows answers)</button>
+          <p id="bookmark-kind">Ordinary case notes</p>
+          <form id="bookmark-form">
+            <label>Bookmark title <input id="bookmark-title" maxlength="100" required autocomplete="off"></label>
+            <label>Observation <textarea id="bookmark-note" maxlength="2000" rows="3"></textarea></label>
+            <button type="submit" id="bookmark-save" disabled>Save current location</button>
+            <button type="button" id="bookmark-cancel">Cancel edit</button>
+          </form>
+          <ol id="bookmark-list" aria-label="Spatial bookmarks"></ol>
+          <button type="button" id="submit-attempt" hidden>Submit observations</button>
+          <button type="button" id="submit-empty" hidden>Submit: no areas bookmarked</button>
+          <button type="button" id="reveal-prediction" hidden>Reveal model prediction</button>
+          <button type="button" id="reveal-expert" hidden>Reveal expert reference</button>
+          <p id="no-expert" hidden>No expert reference available.</p>
+          <div id="reflection-wrap" hidden>
+            <label>Reflection after submission <textarea id="reflection" maxlength="2000" rows="3"></textarea></label>
+            <button type="button" id="save-reflection">Save reflection</button>
+          </div>
+          <p id="review-message" role="status" aria-live="polite"></p>
+          <button type="button" id="retry-review" hidden>Retry save / load</button>
+          <button type="button" id="reload-review" hidden>Reload saved review (discard unsaved change)</button>
+          <button type="button" id="export-review" disabled>Export review JSON</button>
+        </section>
+
         <!-- Model Selection Card -->
         <section class="card model-card">
           <div class="card-header">
@@ -80,23 +119,18 @@
             </div>
           </div>
           
-          <div class="model-toggle-group">
-            <button type="button" class="model-btn active" data-model="swinunetr" id="btn-swinunetr">
-              <div class="model-btn-top">
-                <span class="model-badge sota">TESTED ON 3 CASES</span>
-                <span class="model-latency">~5s</span>
-              </div>
-              <div class="model-title">SwinUNETR (Vision Transformer)</div>
-              <div class="model-desc">BraTS21 checkpoint with 3D shifted-window attention.</div>
+          <div class="model-toggle-group" role="group" aria-label="Model for next analysis">
+            <button type="button" class="model-btn active" data-model="ensemble" id="btn-ensemble" aria-pressed="true" aria-controls="model-details">
+              <span class="model-title">8:2 Ensemble</span>
+              <span class="model-desc">SwinUNETR + ResEnc · weighted probability fusion</span>
             </button>
-
-            <button type="button" class="model-btn" data-model="segresnet" id="btn-segresnet">
-              <div class="model-btn-top">
-                <span class="model-badge">BRATS WINNER</span>
-                <span class="model-latency">~3s</span>
-              </div>
-              <div class="model-title">SegResNet (3D CNN)</div>
-              <div class="model-desc">NVIDIA ResNet with variational autoencoder regularization.</div>
+            <button type="button" class="model-btn" data-model="swinunetr" id="btn-swinunetr" aria-pressed="false" aria-controls="model-details">
+              <span class="model-title">SwinUNETR</span>
+              <span class="model-desc">3D shifted-window transformer · BraTS21 checkpoint</span>
+            </button>
+            <button type="button" class="model-btn" data-model="segresnet" id="btn-segresnet" aria-pressed="false" aria-controls="model-details">
+              <span class="model-title">SegResNet</span>
+              <span class="model-desc">3D residual convolutional network · MONAI bundle</span>
             </button>
 
             <button type="button" class="model-btn" data-model="ensemble" id="btn-ensemble">
@@ -108,6 +142,8 @@
               <div class="model-desc">SwinUNETR (80%) + nnU-Net ResEnc (20%) with entropy uncertainty.</div>
             </button>
           </div>
+          <div id="model-details" class="model-details" aria-live="polite" aria-atomic="true"></div>
+          <p class="model-selection-note">Applies to your next analysis. Run a patient case or upload scans to generate a new result. The displayed result keeps its original model.</p>
         </section>
 
         <!-- Real Patient Cases Selection Card -->
@@ -126,7 +162,7 @@
             <button type="button" class="patient-case-btn active-case" data-case="00002" id="case-btn-00002">
               <div class="patient-case-header">
                 <span class="case-code">CASE 02 · GLI-00002</span>
-                <span class="case-tag tag-contrast">ACTIVE ENHANCING CORE</span>
+                <span class="case-tag tag-contrast">PUBLIC RESEARCH CASE</span>
               </div>
               <div class="patient-case-name">BraTS GLI-00002</div>
               <div class="patient-case-summary">Four MRI sequences and an expert mask for comparing model predictions.</div>
@@ -139,7 +175,7 @@
             <button type="button" class="patient-case-btn" data-case="00000" id="case-btn-00000">
               <div class="patient-case-header">
                 <span class="case-code">CASE 01 · GLI-00000</span>
-                <span class="case-tag tag-edema">EDEMA-DOMINANT</span>
+                <span class="case-tag tag-edema">PUBLIC RESEARCH CASE</span>
               </div>
               <div class="patient-case-name">BraTS GLI-00000</div>
               <div class="patient-case-summary">Four MRI sequences and an expert mask for comparing model predictions.</div>
@@ -152,7 +188,7 @@
             <button type="button" class="patient-case-btn" data-case="00003" id="case-btn-00003">
               <div class="patient-case-header">
                 <span class="case-code">CASE 03 · GLI-00003</span>
-                <span class="case-tag tag-mixed">MIXED MORPHOLOGY</span>
+                <span class="case-tag tag-mixed">PUBLIC RESEARCH CASE</span>
               </div>
               <div class="patient-case-name">BraTS GLI-00003</div>
               <div class="patient-case-summary">Four MRI sequences and an expert mask for comparing model predictions.</div>
@@ -311,7 +347,9 @@
               <label class="toolbar-label">
                 <span>MRI Scan:</span>
                 <select id="select-background">
-                  <option value="t1c">T1-CE (Enhancing Core View)</option>
+                  <option value="t1">T1</option>
+                  <option value="t2">T2</option>
+                  <option value="t1c" selected>T1-CE (Enhancing Core View)</option>
                   <option value="flair">T2-FLAIR (Peritumoral Edema View)</option>
                 </select>
               </label>
@@ -340,18 +378,18 @@
                 <span>Brain Shell</span>
               </label>
               <label class="checkbox-tag">
-                <input type="checkbox" id="chk-mesh-tumor" checked>
+                <input type="checkbox" id="chk-mesh-tumor" checked disabled>
                 <span>Whole Tumor</span>
               </label>
               <label class="checkbox-tag">
-                <input type="checkbox" id="chk-mesh-core" checked>
+                <input type="checkbox" id="chk-mesh-core" checked disabled>
                 <span>Tumor Core</span>
               </label>
             </div>
           </div>
 
           <!-- Color-Coded Anatomical Subregion Legend -->
-          <div class="anatomical-legend">
+          <div class="anatomical-legend" data-answer="prediction" hidden>
             <div class="legend-item">
               <span class="legend-swatch necrotic"></span>
               <div class="legend-text">
@@ -379,7 +417,7 @@
         </div>
 
         <!-- Quantitative Volumetric Diagnostics Grid -->
-        <div class="metrics-grid">
+        <div class="metrics-grid" data-answer="prediction" hidden>
           <div class="metric-card wt-card">
             <div class="metric-top">
               <span class="metric-name">WHOLE TUMOR (WT)</span>
@@ -430,7 +468,7 @@
         </div>
 
         <!-- Relative Volumetric Composition Stacked Bar -->
-        <div class="card composition-card">
+        <div class="card composition-card" data-answer="prediction" hidden>
           <div class="card-title-row">
             <h4>Volumetric Subregion Partition</h4>
             <span class="card-aux" id="composition-total">Total Burden: —</span>
@@ -451,7 +489,7 @@
         <div class="assessment-grid">
           
           <!-- Descriptive volume measurements -->
-          <div class="card rano-card">
+          <div class="card rano-card" data-answer="prediction" hidden>
             <div class="card-header-simple">
               <span class="card-pill rano-pill">SEGMENTATION MEASUREMENTS</span>
               <h3>Predicted Region Volumes</h3>
@@ -470,7 +508,7 @@
           </div>
 
           <!-- Reference Ground Truth Evaluation (Dice & Sensitivity) -->
-          <div class="card validation-card">
+          <div class="card validation-card" data-answer="expert" hidden>
             <div class="card-header-simple">
               <span class="card-pill">ACCURACY METRICS</span>
               <h3>Ground Truth Benchmark</h3>
@@ -496,13 +534,13 @@
         </div>
 
         <!-- Export Suite -->
-        <div class="card export-card">
+        <div class="card export-card" data-answer="prediction" hidden>
           <div class="export-header">
             <div>
               <h3>Clinical Deliverables & Exports</h3>
               <p class="card-caption">All outputs are co-registered in native patient coordinates</p>
             </div>
-            <button id="btn-print-report" class="btn-print">
+            <button id="btn-print-report" data-answer="report" hidden class="btn-print">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="6 9 6 2 18 2 18 9"/>
                 <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
@@ -513,22 +551,26 @@
           </div>
 
           <div class="export-buttons-row">
-            <a id="link-download-mask" class="btn-export disabled" download="segmentation.nii.gz">
+            <a id="link-download-mask" data-answer="prediction" hidden class="btn-export disabled" download="segmentation.nii.gz">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               <span>Download NIfTI Mask (.nii.gz)</span>
             </a>
 
+<<<<<<< HEAD
+            <a id="link-download-mesh" data-answer="prediction" hidden class="btn-export disabled" download="tumor.obj">
+=======
             <a id="link-download-uncertainty" class="btn-export disabled" download="uncertainty.nii.gz">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               <span>Download Uncertainty (.nii.gz)</span>
             </a>
 
             <a id="link-download-mesh" class="btn-export disabled" download="tumor.obj">
+>>>>>>> main
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
               <span>Download 3D Tumor Mesh (.obj)</span>
             </a>
 
-            <a id="link-download-report" class="btn-export disabled" download="report.json">
+            <a id="link-download-report" data-answer="report" hidden class="btn-export disabled" download="report.json">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
               <span>Download Structured Report (.json)</span>
             </a>
