@@ -113,7 +113,6 @@ function setModel(modelId) {
   const info = MODEL_INFO[modelId];
   if (!info || isBusy) return;
   selectedModel = modelId;
-<<<<<<< HEAD
   document.querySelectorAll('.model-btn').forEach(button => {
     const selected = button.dataset.model === modelId;
     button.classList.toggle('active', selected);
@@ -121,31 +120,33 @@ function setModel(modelId) {
   });
   $('header-model-name').textContent = info.name;
   const details = $('model-details');
-  details.replaceChildren();
-  const title = document.createElement('h4');
-  title.textContent = `About ${info.name}`;
-  details.append(title);
-  for (const [label, text] of [
-    ['', info.description], ['Advantages', info.advantages],
-    ['Limitations', info.limitations], ['Use it for', info.use],
-    ['Inputs / outputs', 'Four aligned MRI sequences: T1, T1Gd, T2 and FLAIR. Outputs: whole tumor, tumor core and enhancing tumor masks.']
-  ]) {
-    const paragraph = document.createElement('p');
-    if (label) {
-      const heading = document.createElement('strong');
-      heading.textContent = `${label}: `;
-      paragraph.append(heading);
+  if (details) {
+    details.replaceChildren();
+    const title = document.createElement('h4');
+    title.textContent = `About ${info.name}`;
+    details.append(title);
+    for (const [label, text] of [
+      ['', info.description], ['Advantages', info.advantages],
+      ['Limitations', info.limitations], ['Use it for', info.use],
+      ['Inputs / outputs', 'Four aligned MRI sequences: T1, T1Gd, T2 and FLAIR. Outputs: whole tumor, tumor core and enhancing tumor masks.']
+    ]) {
+      const paragraph = document.createElement('p');
+      if (label) {
+        const heading = document.createElement('strong');
+        heading.textContent = `${label}: `;
+        paragraph.append(heading);
+      }
+      paragraph.append(document.createTextNode(text));
+      details.append(paragraph);
     }
-    paragraph.append(document.createTextNode(text));
-    details.append(paragraph);
-  }
-  if (info.source) {
-    const source = document.createElement('a');
-    source.href = info.source;
-    source.target = '_blank';
-    source.rel = 'noopener noreferrer';
-    source.textContent = 'Architecture reference ↗';
-    details.append(source);
+    if (info.source) {
+      const source = document.createElement('a');
+      source.href = info.source;
+      source.target = '_blank';
+      source.rel = 'noopener noreferrer';
+      source.textContent = 'Architecture reference ↗';
+      details.append(source);
+    }
   }
 }
 
@@ -153,20 +154,6 @@ document.querySelectorAll('.model-btn').forEach(button => {
   button.onclick = () => setModel(button.dataset.model);
 });
 setModel(selectedModel);
-=======
-  const isSwin = modelId === 'swinunetr';
-  const isEns = modelId === 'ensemble';
-  const isRes = modelId === 'segresnet';
-  $('btn-swinunetr').classList.toggle('active', isSwin);
-  $('btn-segresnet').classList.toggle('active', isRes);
-  if ($('btn-ensemble')) $('btn-ensemble').classList.toggle('active', isEns);
-  $('header-model-name').textContent = isEns ? '8:2 Hybrid Ensemble' : (isSwin ? 'SwinUNETR (Transformer)' : 'SegResNet (CNN)');
-}
-
-$('btn-swinunetr').onclick = () => setModel('swinunetr');
-$('btn-segresnet').onclick = () => setModel('segresnet');
-if ($('btn-ensemble')) $('btn-ensemble').onclick = () => setModel('ensemble');
->>>>>>> main
 
 // Update Patient Case Selection
 function setCaseActive(caseId) {
@@ -206,9 +193,6 @@ async function loadViewer(token, requestedWorld) {
 
   if (overlayMode !== 'none') {
     const isExpert = overlayMode === 'expert';
-<<<<<<< HEAD
-    if (!isExpert || review.document.metadata.has_expert) {
-=======
     const isUncertainty = overlayMode === 'uncertainty';
     const hasUncertainty = Boolean(currentJob.result?.uncertainty?.available);
     if (isUncertainty && hasUncertainty) {
@@ -219,8 +203,7 @@ async function loadViewer(token, requestedWorld) {
         cal_min: 0.0,
         cal_max: 1.0
       });
-    } else if (!isExpert || currentJob.result.metrics) {
->>>>>>> main
+    } else if (!isExpert || (review?.document?.metadata?.has_expert ?? Boolean(currentJob.result?.metrics))) {
       volumes.push({
         url: getFileUrl(`${overlayMode}.nii.gz`),
         opacity: opacity,
@@ -522,12 +505,9 @@ async function launchAnalysis(endpoint, options = {}) {
   if (isBusy) return;
   if (review?.saving || review?.pending) { setStatus('Save or reload the pending review change before switching cases.', true); return; }
   setBusy(true);
-<<<<<<< HEAD
-  setStatus(`Running ${MODEL_INFO[selectedModel].name} segmentation…`);
-=======
-  const gpuLabel = $('gpu-text')?.textContent || 'GPU';
-  setStatus(`Running 3D segmentation on ${gpuLabel}…`);
->>>>>>> main
+  const modelName = MODEL_INFO[selectedModel]?.name || '8:2 Hybrid Ensemble';
+  const gpuLabel = $('gpu-text')?.textContent || 'Hardware';
+  setStatus(`Running ${modelName} segmentation on ${gpuLabel}…`);
 
   try {
     const blind = $('blind-next').checked;

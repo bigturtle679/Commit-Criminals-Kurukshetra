@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-"""Local BraTS-style research inference with SwinUNETR and SegResNet support."""
-import json, time, threading, hashlib
-=======
 """NeuroScope 3D inference pipeline — orchestration and output layer.
 
 Coordinates MRI validation, inference dispatch, spatial restoration,
@@ -29,7 +25,6 @@ import logging
 import subprocess
 import time
 import threading
->>>>>>> main
 from pathlib import Path
 
 import nibabel as nib
@@ -286,23 +281,6 @@ def run_case(paths, out, update=lambda message: None, expert=None,
                 'share the same spatial coordinate system.'
             )
 
-<<<<<<< HEAD
-    input_hashes = {}
-    for modality in ('t1', 't1c', 't2', 'flair'):
-        digest = hashlib.sha256()
-        with Path(paths[modality]).open('rb') as source:
-            for chunk in iter(lambda: source.read(1024 * 1024), b''):
-                digest.update(chunk)
-        input_hashes[modality] = digest.hexdigest()
-
-    update('Standardizing to 1 mm isotropic RAS grid')
-    canonical = nib.as_closest_canonical(original)
-    if not np.allclose(nib.affines.voxel_sizes(canonical.affine), [1, 1, 1], atol=1e-3):
-        canonical = resample_to_output(canonical, voxel_sizes=(1, 1, 1), order=1)
-    target = (canonical.shape, canonical.affine)
-    if np.prod(canonical.shape) > 35_000_000:
-        raise ValueError('Resampled MRI is too large for this laptop. Use a prepared BraTS-style case.')
-=======
     # Expert mask validation (shape AND affine, with mask-specific rules)
     expert_img = read_image(expert, is_expert_mask=True) if expert else None
     if expert_img is not None:
@@ -313,7 +291,6 @@ def run_case(paths, out, update=lambda message: None, expert=None,
                 'Expert mask affine does not match the MRI affine. '
                 'Both must be in the same spatial coordinate system.'
             )
->>>>>>> main
 
     device = _get_device()
     peak = 0.0

@@ -5,16 +5,16 @@ from concurrent.futures import ThreadPoolExecutor
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query, Body
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-<<<<<<< HEAD
-from pipeline import ROOT, run_case
-from review_store import load_review, save_review, ReviewConflict
-=======
 import sys
 sys.path.insert(0, str(Path(__file__).parent))
-from pipeline import ROOT, run_case, _gpu_name
+from pipeline import ROOT, run_case
+try:
+    from pipeline import _gpu_name
+except ImportError:
+    _gpu_name = lambda: 'CPU'
+from review_store import load_review, save_review, ReviewConflict
 
 logger = logging.getLogger(__name__)
->>>>>>> main
 
 app = FastAPI(title='NeuroScope Local · 3D Brain Tumor Segmentation')
 RUNS = ROOT / 'work/runs'
@@ -217,10 +217,7 @@ def validate_model(model):
 
 @app.post('/api/demo')
 def demo(model: str = Query('ensemble'), case: str = Query('00000')):
-<<<<<<< HEAD
     model_name = validate_model(model)
-=======
->>>>>>> main
     case_info = PATIENT_CASES.get(case, PATIENT_CASES['00000'])
     folder = case_info['folder']
     code = case_info['code']
@@ -236,10 +233,6 @@ def demo(model: str = Query('ensemble'), case: str = Query('00000')):
         raise HTTPException(404, f"MRI scans missing for case {case_info['name']}.")
 
     uid = new_job()
-<<<<<<< HEAD
-=======
-    model_name = model if model in ('ensemble', 'swinunetr', 'segresnet') else 'ensemble'
->>>>>>> main
     POOL.submit(
         execute,
         uid,
@@ -286,17 +279,12 @@ async def analyze(
                     dest.write(chunk)
             paths[key] = path
     except Exception as e:
-<<<<<<< HEAD
-        JOBS[uid].update(status='error', message=str(e))
-        raise HTTPException(400, str(e))
-=======
         with GUARD:
             JOBS.pop(uid, None)
         shutil.rmtree(RUNS / uid, ignore_errors=True)
         msg = str(e).replace(str(ROOT), '.')
         raise HTTPException(400, msg)
-    model_name = model if model in ('ensemble', 'swinunetr', 'segresnet') else 'ensemble'
->>>>>>> main
+    model_name = validate_model(model)
     POOL.submit(execute, uid, paths, paths.get('expert'), expert_et, f'Patient MRI ({model_name.upper()})', model_name=model_name)
     return {'id': uid}
 
@@ -350,16 +338,8 @@ def put_review(uid: str, document: dict = Body(...)):
 
 @app.get('/api/files/{uid}/{name}')
 def file(uid: str, name: str):
-<<<<<<< HEAD
-    allowed = {'flair.nii.gz', 't1c.nii.gz', 't1.nii.gz', 't2.nii.gz', 'segmentation.nii.gz', 'expert.nii.gz', 'brain.obj', 'tumor.obj', 'core.obj', 'report.json'}
-    if uid not in JOBS or name not in allowed:
-        raise HTTPException(404)
-    path = RUNS / uid / name
-    if not path.exists():
-        raise HTTPException(404)
-=======
     allowed = {
-        'flair.nii.gz', 't1c.nii.gz', 'segmentation.nii.gz', 'expert.nii.gz',
+        'flair.nii.gz', 't1c.nii.gz', 't1.nii.gz', 't2.nii.gz', 'segmentation.nii.gz', 'expert.nii.gz',
         'uncertainty.nii.gz', 'brain.obj', 'tumor.obj', 'core.obj', 'et.obj', 'report.json'
     }
     if not uid.isalnum() or len(uid) > 64 or uid not in JOBS:
@@ -379,7 +359,6 @@ def file(uid: str, name: str):
     path = (job_dir / name).resolve()
     if not path.is_relative_to(job_dir) or not path.exists():
         raise HTTPException(404, 'Artifact not found.')
->>>>>>> main
     return FileResponse(path, filename=name)
 
 

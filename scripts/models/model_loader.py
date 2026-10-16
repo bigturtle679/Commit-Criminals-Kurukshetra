@@ -19,6 +19,24 @@ from scripts.models.resenc_unet import ResEncUNet
 
 logger = logging.getLogger(__name__)
 
+# Register safe globals for PyTorch 2.6+ compatibility with checkpoints containing NumPy scalar types
+try:
+    import numpy as np
+    if hasattr(torch.serialization, 'add_safe_globals'):
+        _safe = []
+        if hasattr(np, '_core') and hasattr(np._core, 'multiarray'):
+            _safe.append((np._core.multiarray.scalar, 'numpy.core.multiarray.scalar'))
+        elif hasattr(np, 'core') and hasattr(np.core, 'multiarray'):
+            _safe.append((np.core.multiarray.scalar, 'numpy.core.multiarray.scalar'))
+        if hasattr(np, 'dtype'):
+            _safe.append((np.dtype, 'numpy.dtype'))
+        if hasattr(np, 'dtypes') and hasattr(np.dtypes, 'Float32DType'):
+            _safe.append(np.dtypes.Float32DType)
+        if _safe:
+            torch.serialization.add_safe_globals(_safe)
+except Exception:
+    pass
+
 ROOT = Path(__file__).resolve().parents[2]
 
 

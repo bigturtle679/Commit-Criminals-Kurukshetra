@@ -1,4 +1,5 @@
 # Local ML environment, datasets, and downloaded weights
+.venv
 .venv/
 /models/
 /data/
