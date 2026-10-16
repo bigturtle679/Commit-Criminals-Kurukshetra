@@ -5,6 +5,7 @@
 work/
 outputs/
 __pycache__/
+project-context.txt
 .DS_Store
 *.nii
 *.nii.gz

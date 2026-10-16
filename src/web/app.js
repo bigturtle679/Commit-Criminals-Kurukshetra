@@ -113,6 +113,7 @@ function setModel(modelId) {
   const info = MODEL_INFO[modelId];
   if (!info || isBusy) return;
   selectedModel = modelId;
+<<<<<<< HEAD
   document.querySelectorAll('.model-btn').forEach(button => {
     const selected = button.dataset.model === modelId;
     button.classList.toggle('active', selected);
@@ -152,6 +153,20 @@ document.querySelectorAll('.model-btn').forEach(button => {
   button.onclick = () => setModel(button.dataset.model);
 });
 setModel(selectedModel);
+=======
+  const isSwin = modelId === 'swinunetr';
+  const isEns = modelId === 'ensemble';
+  const isRes = modelId === 'segresnet';
+  $('btn-swinunetr').classList.toggle('active', isSwin);
+  $('btn-segresnet').classList.toggle('active', isRes);
+  if ($('btn-ensemble')) $('btn-ensemble').classList.toggle('active', isEns);
+  $('header-model-name').textContent = isEns ? '8:2 Hybrid Ensemble' : (isSwin ? 'SwinUNETR (Transformer)' : 'SegResNet (CNN)');
+}
+
+$('btn-swinunetr').onclick = () => setModel('swinunetr');
+$('btn-segresnet').onclick = () => setModel('segresnet');
+if ($('btn-ensemble')) $('btn-ensemble').onclick = () => setModel('ensemble');
+>>>>>>> main
 
 // Update Patient Case Selection
 function setCaseActive(caseId) {
@@ -191,7 +206,21 @@ async function loadViewer(token, requestedWorld) {
 
   if (overlayMode !== 'none') {
     const isExpert = overlayMode === 'expert';
+<<<<<<< HEAD
     if (!isExpert || review.document.metadata.has_expert) {
+=======
+    const isUncertainty = overlayMode === 'uncertainty';
+    const hasUncertainty = Boolean(currentJob.result?.uncertainty?.available);
+    if (isUncertainty && hasUncertainty) {
+      volumes.push({
+        url: getFileUrl('uncertainty.nii.gz'),
+        opacity: opacity,
+        colormap: 'warm',
+        cal_min: 0.0,
+        cal_max: 1.0
+      });
+    } else if (!isExpert || currentJob.result.metrics) {
+>>>>>>> main
       volumes.push({
         url: getFileUrl(`${overlayMode}.nii.gz`),
         opacity: opacity,
@@ -204,7 +233,7 @@ async function loadViewer(token, requestedWorld) {
   await nv.loadVolumes(volumes);
   if (token !== viewerGeneration || currentJob?.id !== jobId) return;
 
-  if (nv.volumes.length > 1) {
+  if (nv.volumes.length > 1 && overlayMode !== 'uncertainty') {
     // Custom clinical BraTS subregion palette
     // 0: Background, 1: Necrotic/Non-enhancing Core (Amber), 2: Edema (Teal), 3: Unused, 4: Enhancing Tumor (Rose)
     nv.volumes[1].setColormapLabel({
@@ -306,30 +335,58 @@ function renderResultPanels(job) {
   // Telemetry Run Info
   $('run-telemetry').textContent = `Runtime: ${res.runtime_seconds.toFixed(2)}s · GPU Peak: ${(res.peak_gpu_mib / 1024).toFixed(2)} GB · Dimensions: ${res.shape.join('×')}`;
 
-  // Ground Truth Benchmark Scores Table
+  // Ground Truth Benchmark Scores Table - safe DOM construction
   const tbody = $('scores-body');
   tbody.replaceChildren();
   if (res.metrics && review.access.expert) {
     for (const [key, score] of Object.entries(res.metrics)) {
       const tr = document.createElement('tr');
+      const tdKey = document.createElement('td');
+      const strong = document.createElement('strong');
+      strong.textContent = key;
+      tdKey.appendChild(strong);
+
       const dsc = score.dice === null ? 'N/A' : `${(score.dice * 100).toFixed(1)}%`;
       const sens = score.sensitivity === null ? 'N/A' : `${(score.sensitivity * 100).toFixed(1)}%`;
 
-      tr.innerHTML = `
-        <td><strong>${key}</strong></td>
-        <td><span class="score-badge">${dsc}</span></td>
-        <td><span class="score-badge">${sens}</span></td>
-      `;
+      const tdDsc = document.createElement('td');
+      const badgeDsc = document.createElement('span');
+      badgeDsc.className = 'score-badge';
+      badgeDsc.textContent = dsc;
+      tdDsc.appendChild(badgeDsc);
+
+      const tdSens = document.createElement('td');
+      const badgeSens = document.createElement('span');
+      badgeSens.className = 'score-badge';
+      badgeSens.textContent = sens;
+      tdSens.appendChild(badgeSens);
+
+      tr.append(tdKey, tdDsc, tdSens);
       tbody.appendChild(tr);
     }
   } else {
-    tbody.innerHTML = '<tr><td colspan="3" class="muted-td">No expert reference provided. Run against BraTS demo to measure Dice/Sensitivity.</td></tr>';
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = 3;
+    td.className = 'muted-td';
+    td.textContent = 'No expert reference provided. Run against BraTS demo to measure Dice/Sensitivity.';
+    tr.appendChild(td);
+    tbody.appendChild(tr);
   }
 
   // Overlay dropdown options availability
   const expertOption = $('select-overlay').querySelector('[value=expert]');
   if (expertOption) expertOption.disabled = !res.metrics;
   if (!res.metrics && $('select-overlay').value === 'expert') {
+    $('select-overlay').value = 'segmentation';
+  }
+
+  const uncOption = $('opt-uncertainty');
+  const hasUncertainty = Boolean(res.uncertainty?.available);
+  if (uncOption) {
+    uncOption.disabled = !hasUncertainty;
+  }
+  if (!hasUncertainty && $('select-overlay').value === 'uncertainty') {
     $('select-overlay').value = 'segmentation';
   }
 
@@ -341,6 +398,12 @@ function renderResultPanels(job) {
   const reportLink = $('link-download-report');
   reportLink.href = getFileUrl('report.json');
   reportLink.classList.remove('disabled');
+
+  const uncLink = $('link-download-uncertainty');
+  if (uncLink) {
+    uncLink.href = getFileUrl('uncertainty.nii.gz');
+    uncLink.classList.toggle('disabled', !hasUncertainty);
+  }
 
   const meshLink = $('link-download-mesh');
   meshLink.href = getFileUrl('tumor.obj');
@@ -459,7 +522,12 @@ async function launchAnalysis(endpoint, options = {}) {
   if (isBusy) return;
   if (review?.saving || review?.pending) { setStatus('Save or reload the pending review change before switching cases.', true); return; }
   setBusy(true);
+<<<<<<< HEAD
   setStatus(`Running ${MODEL_INFO[selectedModel].name} segmentation…`);
+=======
+  const gpuLabel = $('gpu-text')?.textContent || 'GPU';
+  setStatus(`Running 3D segmentation on ${gpuLabel}…`);
+>>>>>>> main
 
   try {
     const blind = $('blind-next').checked;
