@@ -93,12 +93,19 @@ scripts/
     resenc_unet.py        nnU-Net ResEnc architecture
 
 configs/
-  ensemble.json           Ensemble weights, channel orders, thresholds
+  config_loader.py    Centralized configuration validation and schema checks
+  ensemble.json       Ensemble weights, channel orders, thresholds
 
-models/                   Model checkpoints (not in Git)
-tests/                    Unit and integration tests
-notes/                    Research documentation and design decisions
+models/               Model checkpoints (not in Git)
+tests/                Comprehensive unit and integration test suite
+notes/                Research documentation and design decisions
 ```
+
+## Security & Privacy
+
+- **Data Retention**: Uploaded patient MRI files and generated artifacts are automatically purged after 24 hours by a background cleanup worker (`RETENTION_HOURS=24`).
+- **Strict Model Provenance**: Checkpoints require exact architecture validation and strict weight loading. Corrupt, partial, or mismatched checkpoints are rejected immediately without unsafe fallbacks. Checkpoint SHA-256 hashes are recorded in inference reports.
+- **Path Traversal Protection**: File download endpoints strictly resolve paths within designated output directories and reject any path traversal attempts.
 
 ## API Endpoints
 
