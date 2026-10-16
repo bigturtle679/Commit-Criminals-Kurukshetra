@@ -1,5 +1,6 @@
 from pathlib import Path
 import json, uuid, threading, shutil, time, traceback, logging
+from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
 from fastapi.responses import FileResponse
@@ -18,51 +19,91 @@ POOL = ThreadPoolExecutor(max_workers=1)
 GUARD = threading.Lock()
 app.mount('/static', StaticFiles(directory=ROOT / 'src/web'), name='static')
 
-# Upload retention: delete run directories older than this many hours
+# Upload retention: delete run directories older than this many hours (default: 24h)
 RETENTION_HOURS = 24
 
 
-def _cleanup_old_runs():
-    """Delete run directories older than RETENTION_HOURS.
+def is_run_expired(run_dir: Path, cutoff_ts: float) -> bool:
+    """Determine if a run directory is expired based on persistent metadata or timestamps.
 
-    Skips directories for jobs currently queued or running.
-    Runs in a background thread to avoid blocking the main event loop.
+    Checks created_ts (Unix timestamp) or created_at (ISO 8601 UTC string) in job.json.
+    Falls back to directory filesystem timestamps if metadata is unparseable.
     """
+    job_file = run_dir / 'job.json'
+    if job_file.exists():
+        try:
+            data = json.loads(job_file.read_text(encoding='utf-8'))
+            if 'created_ts' in data and isinstance(data['created_ts'], (int, float)):
+                return float(data['created_ts']) < cutoff_ts
+            if 'created_at' in data and isinstance(data['created_at'], str):
+                dt = datetime.fromisoformat(data['created_at'].replace('Z', '+00:00'))
+                return dt.timestamp() < cutoff_ts
+        except Exception:
+            pass
+    try:
+        stat = run_dir.stat()
+        ts = getattr(stat, 'st_ctime', stat.st_mtime)
+        return ts < cutoff_ts
+    except Exception:
+        return False
+
+
+def sweep_expired_runs(runs_dir: Path = RUNS, retention_hours: float = RETENTION_HOURS,
+                       jobs_dict: dict | None = None, active_ids: set | None = None) -> list[str]:
+    """Perform a sweep of expired run directories older than retention_hours.
+
+    Returns a list of successfully deleted job IDs.
+    Thread-safe, verifies deletion, and safeguards active jobs.
+    """
+    if jobs_dict is None:
+        jobs_dict = JOBS
+    cutoff = time.time() - (retention_hours * 3600.0)
+
+    if active_ids is None:
+        with GUARD:
+            active_ids = {
+                uid for uid, job in jobs_dict.items()
+                if job.get('status') in ('queued', 'running')
+            }
+
+    deleted = []
+    if not runs_dir.exists():
+        return deleted
+
+    for run_dir in list(runs_dir.iterdir()):
+        if not run_dir.is_dir():
+            continue
+        uid = run_dir.name
+        if uid in active_ids:
+            continue
+        try:
+            if is_run_expired(run_dir, cutoff):
+                shutil.rmtree(run_dir, ignore_errors=False)
+                if not run_dir.exists():
+                    with GUARD:
+                        jobs_dict.pop(uid, None)
+                    deleted.append(uid)
+                    logger.info("Cleaned up expired run: %s", uid)
+                else:
+                    logger.error("Failed to delete expired run directory: %s", run_dir)
+        except Exception as e:
+            logger.warning("Error during cleanup of %s: %s", uid, e)
+
+    return deleted
+
+
+def _cleanup_worker():
+    """Background worker thread that periodically triggers cleanup sweeps."""
     while True:
         try:
-            cutoff = time.time() - RETENTION_HOURS * 3600
-            active_ids = set()
-            with GUARD:
-                active_ids = {
-                    uid for uid, job in JOBS.items()
-                    if job.get('status') in ('queued', 'running')
-                }
-
-            for run_dir in RUNS.iterdir():
-                if not run_dir.is_dir():
-                    continue
-                uid = run_dir.name
-                if uid in active_ids:
-                    continue
-                try:
-                    mtime = run_dir.stat().st_mtime
-                    if mtime < cutoff:
-                        shutil.rmtree(run_dir, ignore_errors=True)
-                        # Remove from JOBS cache
-                        with GUARD:
-                            JOBS.pop(uid, None)
-                        logger.info("Cleaned up old run: %s", uid)
-                except Exception as e:
-                    logger.warning("Cleanup error for %s: %s", uid, e)
+            sweep_expired_runs()
         except Exception as e:
-            logger.warning("Cleanup sweep error: %s", e)
-
-        # Sleep for 1 hour between cleanup sweeps
+            logger.warning("Background cleanup sweep error: %s", e)
         time.sleep(3600)
 
 
 # Start cleanup thread as daemon
-_cleanup_thread = threading.Thread(target=_cleanup_old_runs, daemon=True, name='run-cleanup')
+_cleanup_thread = threading.Thread(target=_cleanup_worker, daemon=True, name='run-cleanup')
 _cleanup_thread.start()
 
 PATIENT_CASES = {
@@ -147,8 +188,18 @@ def new_job():
         if any(j['status'] in ('queued', 'running') for j in JOBS.values()):
             raise HTTPException(409, 'An analysis is already running. Please wait for it to finish.')
         uid = uuid.uuid4().hex
-        (RUNS / uid).mkdir()
-        JOBS[uid] = {'id': uid, 'status': 'queued', 'message': f'Queued for {_gpu_name()} inference'}
+        job_dir = RUNS / uid
+        job_dir.mkdir(parents=True, exist_ok=True)
+        now_utc = datetime.now(timezone.utc)
+        job_record = {
+            'id': uid,
+            'status': 'queued',
+            'message': f'Queued for {_gpu_name()} inference',
+            'created_at': now_utc.isoformat(),
+            'created_ts': now_utc.timestamp(),
+        }
+        (job_dir / 'job.json').write_text(json.dumps(job_record, indent=2))
+        JOBS[uid] = job_record
         return uid
 
 
@@ -216,6 +267,7 @@ async def analyze(
             paths[key] = path
     except Exception as e:
         JOBS[uid].update(status='error', message=str(e))
+        (RUNS / uid / 'job.json').write_text(json.dumps(JOBS[uid], indent=2))
         raise HTTPException(400, str(e))
     model_name = model if model in ('ensemble', 'swinunetr', 'segresnet') else 'ensemble'
     POOL.submit(execute, uid, paths, paths.get('expert'), expert_et, f'Patient MRI ({model_name.upper()})', model_name=model_name)
@@ -224,26 +276,47 @@ async def analyze(
 
 @app.get('/api/jobs/{uid}')
 def job(uid: str):
-    if uid not in JOBS:
+    if not uid.isalnum() or len(uid) > 64 or uid not in JOBS:
         raise HTTPException(404, 'Analysis not found.')
     return JOBS[uid]
 
 
 @app.get('/api/files/{uid}/{name}')
 def file(uid: str, name: str):
-    allowed = {'flair.nii.gz', 't1c.nii.gz', 'segmentation.nii.gz', 'expert.nii.gz', 'uncertainty.nii.gz', 'brain.obj', 'tumor.obj', 'core.obj', 'et.obj', 'report.json'}
-    if uid not in JOBS or name not in allowed:
-        raise HTTPException(404)
-    path = RUNS / uid / name
-    if not path.exists():
-        raise HTTPException(404)
+    allowed = {
+        'flair.nii.gz', 't1c.nii.gz', 'segmentation.nii.gz', 'expert.nii.gz',
+        'uncertainty.nii.gz', 'brain.obj', 'tumor.obj', 'core.obj', 'et.obj', 'report.json'
+    }
+    if not uid.isalnum() or len(uid) > 64 or uid not in JOBS:
+        raise HTTPException(404, 'Analysis not found.')
+    if name not in allowed:
+        raise HTTPException(404, 'Artifact not found.')
+
+    runs_root = RUNS.resolve()
+    job_dir = (RUNS / uid).resolve()
+    if not job_dir.is_relative_to(runs_root):
+        raise HTTPException(403, 'Path traversal forbidden.')
+
+    path = (job_dir / name).resolve()
+    if not path.is_relative_to(job_dir) or not path.exists():
+        raise HTTPException(404, 'Artifact not found.')
     return FileResponse(path, filename=name)
 
 
+# Startup recovery: reload persisted jobs and mark unfinished jobs as interrupted
 for p in RUNS.glob('*/job.json'):
     try:
         j = json.loads(p.read_text())
-        if j['status'] in ('complete', 'error'):
-            JOBS[j['id']] = j
-    except (ValueError, KeyError):
+        if j.get('status') in ('queued', 'running'):
+            j['status'] = 'error'
+            j['message'] = 'Analysis interrupted by server restart'
+            p.write_text(json.dumps(j, indent=2))
+        JOBS[j['id']] = j
+    except (ValueError, KeyError, json.JSONDecodeError):
         pass
+
+# Initial cleanup sweep at server startup
+try:
+    sweep_expired_runs()
+except Exception as _e:
+    logger.warning("Startup cleanup sweep failed: %s", _e)
