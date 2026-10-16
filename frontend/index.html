@@ -1,6 +1,11 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#e9eaf5"><meta name="description" content="NeuroScope 3D — a new perspective on brain imaging. Research interface prototype."><title>NeuroScope 3D — See Beyond the Scan.</title><link rel="stylesheet" href="styles.css"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#e9eaf5"><meta name="description" content="NeuroScope 3D — a new perspective on brain imaging. Research interface prototype."><title>NeuroScope 3D — See Beyond the Scan.</title><meta name="robots" content="index, follow">
+<meta property="og:title" content="NeuroScope 3D � See Beyond the Scan.">
+<meta property="og:description" content="A research-grade brain imaging interface. Explore a new dimension of understanding.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="styles.css"></head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <header class="navbar"><a class="brand" href="#" aria-label="NeuroScope 3D home"><span class="brand-icon">✳</span>Neuro<span>Scope</span><sup>3D</sup></a><button class="menu" aria-expanded="false" aria-controls="navigation">Menu <span>☰</span></button><nav id="navigation" aria-label="Main navigation"><a href="#about">Overview</a><a href="#workflow">How it works</a><a href="#research">Research</a></nav><button class="nav-cta" data-start>Launch workspace <span>↗</span></button></header>
@@ -16,4 +21,5 @@
 </main><footer><a class="brand" href="#">Neuro<span>Scope</span><sup>3D</sup></a><span>A new dimension of understanding.</span><span>Research interface · 2026</span></footer>
 <dialog id="workspace" aria-labelledby="dialog-title"><button class="close" aria-label="Close workspace">×</button><div class="eyebrow">RESEARCH WORKSPACE / PREVIEW</div><h2 id="dialog-title">Begin with a new perspective.</h2><p>This is an interface demo. Files stay on your device. No scan analysis or medical results are generated.</p><label class="file-zone" for="scan"><span class="upload-icon">↑</span><strong>Choose a research scan</strong><span>NIfTI (.nii, .nii.gz) or DICOM (.dcm)</span><input id="scan" type="file" accept=".nii,.gz,.dcm"></label><p id="file-status" role="status">Use de-identified research data only.</p><button class="primary done">Back to exploring <span>↗</span></button></dialog>
 <script src="app.js"></script></body></html>
+
 
