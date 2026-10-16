@@ -11,3 +11,8 @@
 
 /* Navbar scrolled state */
 .navbar.scrolled { box-shadow: 0 8px 40px #25273514; background: #ffffffcc; }
+
+/* Focus visible */
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid #7465ba; outline-offset: 5px; }
+.skip { position: absolute; top: -100px; left: 20px; z-index: 10; background: white; padding: 15px; }
+.skip:focus { top: 15px; }
