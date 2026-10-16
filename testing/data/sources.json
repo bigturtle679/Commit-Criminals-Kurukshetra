@@ -1,23 +1,38 @@
 {
-  "status": "inventory_not_yet_verified",
+  "status": "inventory_verified",
   "sources": [
     {
       "handle": "awsaf49/brats2020-training-data",
       "url": "https://www.kaggle.com/datasets/awsaf49/brats2020-training-data",
-      "version": null,
-      "file_inventory_verified": false
+      "version": "3",
+      "size_bytes": 7254224710,
+      "license": "CC0: Public Domain",
+      "format": "2D HDF5 slice arrays",
+      "file_inventory_verified": true,
+      "disposition": "excluded",
+      "rationale": "Repackaged as 2D HDF5 slices instead of 3D NIfTI; violates Protocol Rule 5 (cannot reconstruct 3D affine and spatial orientation)."
     },
     {
       "handle": "dschettler8845/brats-2021-task1",
       "url": "https://www.kaggle.com/datasets/dschettler8845/brats-2021-task1",
-      "version": null,
-      "file_inventory_verified": false
+      "version": "1",
+      "size_bytes": 13194773959,
+      "license": "Data files © Original Authors (BraTS Challenge Governance)",
+      "format": "3D NIfTI (.nii.gz)",
+      "file_inventory_verified": true,
+      "disposition": "deferred",
+      "rationale": "12.3 GB zip archive requires >25 GB uncompressed footprint (total >37.3 GB), exceeding available 37 GB disk partition."
     },
     {
       "handle": "reinheart/brats2022",
       "url": "https://www.kaggle.com/datasets/reinheart/brats2022",
-      "version": null,
-      "file_inventory_verified": false
+      "version": "1",
+      "size_bytes": 2668264720,
+      "license": "BraTS 2021 Open Challenge Data",
+      "format": "3D NIfTI (.nii)",
+      "file_inventory_verified": true,
+      "disposition": "acquired_and_verified",
+      "rationale": "Authentic BraTS21 3D NIfTI cohort; 454 patient directories audited; 185 complete labeled 5-modality cases verified with 1mm isotropic LAS/RAS geometry."
     }
   ],
   "official_directory": "https://www.med.upenn.edu/cbica/brats/"

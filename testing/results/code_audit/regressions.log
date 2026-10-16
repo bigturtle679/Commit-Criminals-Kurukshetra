@@ -1,0 +1,23 @@
+test_affine_mismatch_rejected (__main__.AuditTests.test_affine_mismatch_rejected) ... ok
+test_checkpoint_incompatible_keys_rejected (__main__.AuditTests.test_checkpoint_incompatible_keys_rejected) ... ok
+test_empty_expert_is_valid (__main__.AuditTests.test_empty_expert_is_valid) ... ok
+test_empty_metrics (__main__.AuditTests.test_empty_metrics) ... ok
+test_entropy_low_precision_endpoints (__main__.AuditTests.test_entropy_low_precision_endpoints) ... ok
+test_entropy_nonfinite_rejected (__main__.AuditTests.test_entropy_nonfinite_rejected) ... ok
+test_fractional_labels_rejected (__main__.AuditTests.test_fractional_labels_rejected) ... ok
+test_metrics_label_mapping_and_volume (__main__.AuditTests.test_metrics_label_mapping_and_volume) ... ok
+test_metrics_shape_guard (__main__.AuditTests.test_metrics_shape_guard) ... ok
+test_missing_explicit_swin_does_not_use_other_weights (__main__.AuditTests.test_missing_explicit_swin_does_not_use_other_weights) ... ok
+test_missing_resenc_fails_before_construction (__main__.AuditTests.test_missing_resenc_fails_before_construction) ... ok
+test_nonfinite_mask_rejected (__main__.AuditTests.test_nonfinite_mask_rejected) ... ok
+test_shape_mismatch_rejected (__main__.AuditTests.test_shape_mismatch_rejected) ... ok
+test_shared_predictor_uses_each_channel_order (__main__.AuditTests.test_shared_predictor_uses_each_channel_order) ... ok
+test_wrong_et_rejected (__main__.AuditTests.test_wrong_et_rejected) ... ok
+test_empty_manifest_rejected (__main__.ManifestTests.test_empty_manifest_rejected) ... ok
+test_tampered_input_rejected_before_inference (__main__.ManifestTests.test_tampered_input_rejected_before_inference) ... ok
+test_cli_web_synthetic_outputs_agree (__main__.PathParityTests.test_cli_web_synthetic_outputs_agree) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.536s
+
+OK

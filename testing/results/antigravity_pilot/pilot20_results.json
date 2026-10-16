@@ -1,0 +1,2027 @@
+[
+  {
+    "patient_id": "BraTS2021_00003",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 98.935,
+        "TC": 42.126,
+        "ET": 25.646,
+        "ED": 56.809
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 98.935,
+        "tumor_core_ml": 42.126,
+        "enhancing_tumor_ml": 25.646,
+        "edema_region_ml": 56.809,
+        "enhancing_fraction_pct": 25.9,
+        "edema_fraction_pct": 57.4,
+        "summary": "Predicted whole-tumor region: 98.9 mL; enhancing region: 25.6 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 97469,
+          "fp": 1466,
+          "fn": 1770,
+          "precision": 0.9852,
+          "dice": 0.9837,
+          "sensitivity": 0.9822,
+          "pred_volume_ml": 98.935,
+          "gt_volume_ml": 99.239,
+          "abs_volume_error_ml": 0.304,
+          "rel_volume_error_pct": 0.3
+        },
+        "TC": {
+          "tp": 40910,
+          "fp": 1216,
+          "fn": 556,
+          "precision": 0.9711,
+          "dice": 0.9788,
+          "sensitivity": 0.9866,
+          "pred_volume_ml": 42.126,
+          "gt_volume_ml": 41.466,
+          "abs_volume_error_ml": 0.66,
+          "rel_volume_error_pct": 1.6
+        },
+        "ET": {
+          "tp": 23552,
+          "fp": 2094,
+          "fn": 700,
+          "precision": 0.9183,
+          "dice": 0.944,
+          "sensitivity": 0.9711,
+          "pred_volume_ml": 25.646,
+          "gt_volume_ml": 24.252,
+          "abs_volume_error_ml": 1.394,
+          "rel_volume_error_pct": 5.7
+        }
+      },
+      "runtime_seconds": 10.64,
+      "peak_gpu_mib": 1643.3,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:03:22 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 10.686065011999744
+  },
+  {
+    "patient_id": "BraTS2021_00025",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 21.905,
+        "TC": 4.596,
+        "ET": 4.363,
+        "ED": 17.309
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 21.905,
+        "tumor_core_ml": 4.596,
+        "enhancing_tumor_ml": 4.363,
+        "edema_region_ml": 17.309,
+        "enhancing_fraction_pct": 19.9,
+        "edema_fraction_pct": 79.0,
+        "summary": "Predicted whole-tumor region: 21.9 mL; enhancing region: 4.4 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 21672,
+          "fp": 233,
+          "fn": 8885,
+          "precision": 0.9894,
+          "dice": 0.8262,
+          "sensitivity": 0.7092,
+          "pred_volume_ml": 21.905,
+          "gt_volume_ml": 30.557,
+          "abs_volume_error_ml": 8.652,
+          "rel_volume_error_pct": 28.3
+        },
+        "TC": {
+          "tp": 4436,
+          "fp": 160,
+          "fn": 1010,
+          "precision": 0.9652,
+          "dice": 0.8835,
+          "sensitivity": 0.8145,
+          "pred_volume_ml": 4.596,
+          "gt_volume_ml": 5.446,
+          "abs_volume_error_ml": 0.85,
+          "rel_volume_error_pct": 15.6
+        },
+        "ET": {
+          "tp": 3986,
+          "fp": 377,
+          "fn": 1164,
+          "precision": 0.9136,
+          "dice": 0.838,
+          "sensitivity": 0.774,
+          "pred_volume_ml": 4.363,
+          "gt_volume_ml": 5.15,
+          "abs_volume_error_ml": 0.787,
+          "rel_volume_error_pct": 15.3
+        }
+      },
+      "runtime_seconds": 10.02,
+      "peak_gpu_mib": 1644.4,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:03:32 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 10.048351440999795
+  },
+  {
+    "patient_id": "BraTS2021_00658",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 70.301,
+        "TC": 40.64,
+        "ET": 23.277,
+        "ED": 29.661
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 70.301,
+        "tumor_core_ml": 40.64,
+        "enhancing_tumor_ml": 23.277,
+        "edema_region_ml": 29.661,
+        "enhancing_fraction_pct": 33.1,
+        "edema_fraction_pct": 42.2,
+        "summary": "Predicted whole-tumor region: 70.3 mL; enhancing region: 23.3 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 67748,
+          "fp": 2553,
+          "fn": 3813,
+          "precision": 0.9637,
+          "dice": 0.9551,
+          "sensitivity": 0.9467,
+          "pred_volume_ml": 70.301,
+          "gt_volume_ml": 71.561,
+          "abs_volume_error_ml": 1.26,
+          "rel_volume_error_pct": 1.8
+        },
+        "TC": {
+          "tp": 39873,
+          "fp": 767,
+          "fn": 1556,
+          "precision": 0.9811,
+          "dice": 0.9717,
+          "sensitivity": 0.9624,
+          "pred_volume_ml": 40.64,
+          "gt_volume_ml": 41.429,
+          "abs_volume_error_ml": 0.789,
+          "rel_volume_error_pct": 1.9
+        },
+        "ET": {
+          "tp": 21775,
+          "fp": 1502,
+          "fn": 2830,
+          "precision": 0.9355,
+          "dice": 0.9095,
+          "sensitivity": 0.885,
+          "pred_volume_ml": 23.277,
+          "gt_volume_ml": 24.605,
+          "abs_volume_error_ml": 1.328,
+          "rel_volume_error_pct": 5.4
+        }
+      },
+      "runtime_seconds": 10.33,
+      "peak_gpu_mib": 1647.7,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:03:42 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 10.358988128999954
+  },
+  {
+    "patient_id": "BraTS2021_00733",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 82.882,
+        "TC": 37.386,
+        "ET": 20.934,
+        "ED": 45.496
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 82.882,
+        "tumor_core_ml": 37.386,
+        "enhancing_tumor_ml": 20.934,
+        "edema_region_ml": 45.496,
+        "enhancing_fraction_pct": 25.3,
+        "edema_fraction_pct": 54.9,
+        "summary": "Predicted whole-tumor region: 82.9 mL; enhancing region: 20.9 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 79732,
+          "fp": 3150,
+          "fn": 2081,
+          "precision": 0.962,
+          "dice": 0.9682,
+          "sensitivity": 0.9746,
+          "pred_volume_ml": 82.882,
+          "gt_volume_ml": 81.813,
+          "abs_volume_error_ml": 1.069,
+          "rel_volume_error_pct": 1.3
+        },
+        "TC": {
+          "tp": 36827,
+          "fp": 559,
+          "fn": 764,
+          "precision": 0.985,
+          "dice": 0.9824,
+          "sensitivity": 0.9797,
+          "pred_volume_ml": 37.386,
+          "gt_volume_ml": 37.591,
+          "abs_volume_error_ml": 0.205,
+          "rel_volume_error_pct": 0.5
+        },
+        "ET": {
+          "tp": 19643,
+          "fp": 1291,
+          "fn": 1003,
+          "precision": 0.9383,
+          "dice": 0.9448,
+          "sensitivity": 0.9514,
+          "pred_volume_ml": 20.934,
+          "gt_volume_ml": 20.646,
+          "abs_volume_error_ml": 0.288,
+          "rel_volume_error_pct": 1.4
+        }
+      },
+      "runtime_seconds": 8.34,
+      "peak_gpu_mib": 1641.1,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:03:51 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 8.361156881999705
+  },
+  {
+    "patient_id": "BraTS2021_00529",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 47.606,
+        "TC": 16.226,
+        "ET": 9.162,
+        "ED": 31.38
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 47.606,
+        "tumor_core_ml": 16.226,
+        "enhancing_tumor_ml": 9.162,
+        "edema_region_ml": 31.38,
+        "enhancing_fraction_pct": 19.2,
+        "edema_fraction_pct": 65.9,
+        "summary": "Predicted whole-tumor region: 47.6 mL; enhancing region: 9.2 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 45641,
+          "fp": 1965,
+          "fn": 9501,
+          "precision": 0.9587,
+          "dice": 0.8884,
+          "sensitivity": 0.8277,
+          "pred_volume_ml": 47.606,
+          "gt_volume_ml": 55.142,
+          "abs_volume_error_ml": 7.536,
+          "rel_volume_error_pct": 13.7
+        },
+        "TC": {
+          "tp": 15767,
+          "fp": 459,
+          "fn": 6344,
+          "precision": 0.9717,
+          "dice": 0.8225,
+          "sensitivity": 0.7131,
+          "pred_volume_ml": 16.226,
+          "gt_volume_ml": 22.111,
+          "abs_volume_error_ml": 5.885,
+          "rel_volume_error_pct": 26.6
+        },
+        "ET": {
+          "tp": 8490,
+          "fp": 672,
+          "fn": 4616,
+          "precision": 0.9267,
+          "dice": 0.7625,
+          "sensitivity": 0.6478,
+          "pred_volume_ml": 9.162,
+          "gt_volume_ml": 13.106,
+          "abs_volume_error_ml": 3.944,
+          "rel_volume_error_pct": 30.1
+        }
+      },
+      "runtime_seconds": 9.5,
+      "peak_gpu_mib": 1644.6,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:04:00 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 9.513719016999858
+  },
+  {
+    "patient_id": "BraTS2021_00096",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 114.18,
+        "TC": 25.153,
+        "ET": 14.991,
+        "ED": 89.027
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 114.18,
+        "tumor_core_ml": 25.153,
+        "enhancing_tumor_ml": 14.991,
+        "edema_region_ml": 89.027,
+        "enhancing_fraction_pct": 13.1,
+        "edema_fraction_pct": 78.0,
+        "summary": "Predicted whole-tumor region: 114.2 mL; enhancing region: 15.0 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 112517,
+          "fp": 1663,
+          "fn": 6798,
+          "precision": 0.9854,
+          "dice": 0.9638,
+          "sensitivity": 0.943,
+          "pred_volume_ml": 114.18,
+          "gt_volume_ml": 119.315,
+          "abs_volume_error_ml": 5.135,
+          "rel_volume_error_pct": 4.3
+        },
+        "TC": {
+          "tp": 24571,
+          "fp": 582,
+          "fn": 245,
+          "precision": 0.9769,
+          "dice": 0.9834,
+          "sensitivity": 0.9901,
+          "pred_volume_ml": 25.153,
+          "gt_volume_ml": 24.816,
+          "abs_volume_error_ml": 0.337,
+          "rel_volume_error_pct": 1.4
+        },
+        "ET": {
+          "tp": 14538,
+          "fp": 453,
+          "fn": 619,
+          "precision": 0.9698,
+          "dice": 0.9644,
+          "sensitivity": 0.9592,
+          "pred_volume_ml": 14.991,
+          "gt_volume_ml": 15.157,
+          "abs_volume_error_ml": 0.166,
+          "rel_volume_error_pct": 1.1
+        }
+      },
+      "runtime_seconds": 9.59,
+      "peak_gpu_mib": 1648.4,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:04:10 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 9.597574394999356
+  },
+  {
+    "patient_id": "BraTS2021_00774",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 143.3,
+        "TC": 15.057,
+        "ET": 14.574,
+        "ED": 128.243
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 143.3,
+        "tumor_core_ml": 15.057,
+        "enhancing_tumor_ml": 14.574,
+        "edema_region_ml": 128.243,
+        "enhancing_fraction_pct": 10.2,
+        "edema_fraction_pct": 89.5,
+        "summary": "Predicted whole-tumor region: 143.3 mL; enhancing region: 14.6 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 142359,
+          "fp": 941,
+          "fn": 9362,
+          "precision": 0.9934,
+          "dice": 0.9651,
+          "sensitivity": 0.9383,
+          "pred_volume_ml": 143.3,
+          "gt_volume_ml": 151.721,
+          "abs_volume_error_ml": 8.421,
+          "rel_volume_error_pct": 5.6
+        },
+        "TC": {
+          "tp": 14514,
+          "fp": 543,
+          "fn": 366,
+          "precision": 0.9639,
+          "dice": 0.9696,
+          "sensitivity": 0.9754,
+          "pred_volume_ml": 15.057,
+          "gt_volume_ml": 14.88,
+          "abs_volume_error_ml": 0.177,
+          "rel_volume_error_pct": 1.2
+        },
+        "ET": {
+          "tp": 14033,
+          "fp": 541,
+          "fn": 432,
+          "precision": 0.9629,
+          "dice": 0.9665,
+          "sensitivity": 0.9701,
+          "pred_volume_ml": 14.574,
+          "gt_volume_ml": 14.465,
+          "abs_volume_error_ml": 0.109,
+          "rel_volume_error_pct": 0.8
+        }
+      },
+      "runtime_seconds": 7.16,
+      "peak_gpu_mib": 1641.0,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:04:17 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 7.172125911999501
+  },
+  {
+    "patient_id": "BraTS2021_00501",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 112.857,
+        "TC": 11.55,
+        "ET": 7.33,
+        "ED": 101.307
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 112.857,
+        "tumor_core_ml": 11.55,
+        "enhancing_tumor_ml": 7.33,
+        "edema_region_ml": 101.307,
+        "enhancing_fraction_pct": 6.5,
+        "edema_fraction_pct": 89.8,
+        "summary": "Predicted whole-tumor region: 112.9 mL; enhancing region: 7.3 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 112197,
+          "fp": 660,
+          "fn": 81953,
+          "precision": 0.9942,
+          "dice": 0.7309,
+          "sensitivity": 0.5779,
+          "pred_volume_ml": 112.857,
+          "gt_volume_ml": 194.15,
+          "abs_volume_error_ml": 81.293,
+          "rel_volume_error_pct": 41.9
+        },
+        "TC": {
+          "tp": 11253,
+          "fp": 297,
+          "fn": 1121,
+          "precision": 0.9743,
+          "dice": 0.9407,
+          "sensitivity": 0.9094,
+          "pred_volume_ml": 11.55,
+          "gt_volume_ml": 12.374,
+          "abs_volume_error_ml": 0.824,
+          "rel_volume_error_pct": 6.7
+        },
+        "ET": {
+          "tp": 7056,
+          "fp": 274,
+          "fn": 1481,
+          "precision": 0.9626,
+          "dice": 0.8894,
+          "sensitivity": 0.8265,
+          "pred_volume_ml": 7.33,
+          "gt_volume_ml": 8.537,
+          "abs_volume_error_ml": 1.207,
+          "rel_volume_error_pct": 14.1
+        }
+      },
+      "runtime_seconds": 7.61,
+      "peak_gpu_mib": 1638.2,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:04:25 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 7.618699955999546
+  },
+  {
+    "patient_id": "BraTS2021_00684",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 19.49,
+        "TC": 2.233,
+        "ET": 1.661,
+        "ED": 17.257
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 19.49,
+        "tumor_core_ml": 2.233,
+        "enhancing_tumor_ml": 1.661,
+        "edema_region_ml": 17.257,
+        "enhancing_fraction_pct": 8.5,
+        "edema_fraction_pct": 88.5,
+        "summary": "Predicted whole-tumor region: 19.5 mL; enhancing region: 1.7 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 17287,
+          "fp": 2203,
+          "fn": 6042,
+          "precision": 0.887,
+          "dice": 0.8074,
+          "sensitivity": 0.741,
+          "pred_volume_ml": 19.49,
+          "gt_volume_ml": 23.329,
+          "abs_volume_error_ml": 3.839,
+          "rel_volume_error_pct": 16.5
+        },
+        "TC": {
+          "tp": 1979,
+          "fp": 254,
+          "fn": 946,
+          "precision": 0.8863,
+          "dice": 0.7674,
+          "sensitivity": 0.6766,
+          "pred_volume_ml": 2.233,
+          "gt_volume_ml": 2.925,
+          "abs_volume_error_ml": 0.692,
+          "rel_volume_error_pct": 23.7
+        },
+        "ET": {
+          "tp": 1426,
+          "fp": 235,
+          "fn": 1499,
+          "precision": 0.8585,
+          "dice": 0.6219,
+          "sensitivity": 0.4875,
+          "pred_volume_ml": 1.661,
+          "gt_volume_ml": 2.925,
+          "abs_volume_error_ml": 1.264,
+          "rel_volume_error_pct": 43.2
+        }
+      },
+      "runtime_seconds": 7.78,
+      "peak_gpu_mib": 1636.6,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:04:33 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 7.791987077000158
+  },
+  {
+    "patient_id": "BraTS2021_00024",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 101.156,
+        "TC": 5.727,
+        "ET": 5.437,
+        "ED": 95.429
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 101.156,
+        "tumor_core_ml": 5.727,
+        "enhancing_tumor_ml": 5.437,
+        "edema_region_ml": 95.429,
+        "enhancing_fraction_pct": 5.4,
+        "edema_fraction_pct": 94.3,
+        "summary": "Predicted whole-tumor region: 101.2 mL; enhancing region: 5.4 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 97966,
+          "fp": 3190,
+          "fn": 3485,
+          "precision": 0.9685,
+          "dice": 0.9671,
+          "sensitivity": 0.9656,
+          "pred_volume_ml": 101.156,
+          "gt_volume_ml": 101.451,
+          "abs_volume_error_ml": 0.295,
+          "rel_volume_error_pct": 0.3
+        },
+        "TC": {
+          "tp": 5570,
+          "fp": 157,
+          "fn": 355,
+          "precision": 0.9726,
+          "dice": 0.9561,
+          "sensitivity": 0.9401,
+          "pred_volume_ml": 5.727,
+          "gt_volume_ml": 5.925,
+          "abs_volume_error_ml": 0.198,
+          "rel_volume_error_pct": 3.3
+        },
+        "ET": {
+          "tp": 5262,
+          "fp": 175,
+          "fn": 418,
+          "precision": 0.9678,
+          "dice": 0.9467,
+          "sensitivity": 0.9264,
+          "pred_volume_ml": 5.437,
+          "gt_volume_ml": 5.68,
+          "abs_volume_error_ml": 0.243,
+          "rel_volume_error_pct": 4.3
+        }
+      },
+      "runtime_seconds": 7.58,
+      "peak_gpu_mib": 1644.4,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:04:40 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 7.595453486000224
+  },
+  {
+    "patient_id": "BraTS2021_00731",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 23.296,
+        "TC": 2.758,
+        "ET": 2.753,
+        "ED": 20.538
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 23.296,
+        "tumor_core_ml": 2.758,
+        "enhancing_tumor_ml": 2.753,
+        "edema_region_ml": 20.538,
+        "enhancing_fraction_pct": 11.8,
+        "edema_fraction_pct": 88.2,
+        "summary": "Predicted whole-tumor region: 23.3 mL; enhancing region: 2.8 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 11457,
+          "fp": 11839,
+          "fn": 22,
+          "precision": 0.4918,
+          "dice": 0.6589,
+          "sensitivity": 0.9981,
+          "pred_volume_ml": 23.296,
+          "gt_volume_ml": 11.479,
+          "abs_volume_error_ml": 11.817,
+          "rel_volume_error_pct": 102.9
+        },
+        "TC": {
+          "tp": 2744,
+          "fp": 14,
+          "fn": 905,
+          "precision": 0.9949,
+          "dice": 0.8566,
+          "sensitivity": 0.752,
+          "pred_volume_ml": 2.758,
+          "gt_volume_ml": 3.649,
+          "abs_volume_error_ml": 0.891,
+          "rel_volume_error_pct": 24.4
+        },
+        "ET": {
+          "tp": 2739,
+          "fp": 14,
+          "fn": 910,
+          "precision": 0.9949,
+          "dice": 0.8557,
+          "sensitivity": 0.7506,
+          "pred_volume_ml": 2.753,
+          "gt_volume_ml": 3.649,
+          "abs_volume_error_ml": 0.896,
+          "rel_volume_error_pct": 24.6
+        }
+      },
+      "runtime_seconds": 7.14,
+      "peak_gpu_mib": 1636.4,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:04:47 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 7.144917213000554
+  },
+  {
+    "patient_id": "BraTS2021_00026",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 65.752,
+        "TC": 32.778,
+        "ET": 29.969,
+        "ED": 32.974
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 65.752,
+        "tumor_core_ml": 32.778,
+        "enhancing_tumor_ml": 29.969,
+        "edema_region_ml": 32.974,
+        "enhancing_fraction_pct": 45.6,
+        "edema_fraction_pct": 50.1,
+        "summary": "Predicted whole-tumor region: 65.8 mL; enhancing region: 30.0 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 63025,
+          "fp": 2727,
+          "fn": 8531,
+          "precision": 0.9585,
+          "dice": 0.918,
+          "sensitivity": 0.8808,
+          "pred_volume_ml": 65.752,
+          "gt_volume_ml": 71.556,
+          "abs_volume_error_ml": 5.804,
+          "rel_volume_error_pct": 8.1
+        },
+        "TC": {
+          "tp": 31565,
+          "fp": 1213,
+          "fn": 2042,
+          "precision": 0.963,
+          "dice": 0.951,
+          "sensitivity": 0.9392,
+          "pred_volume_ml": 32.778,
+          "gt_volume_ml": 33.607,
+          "abs_volume_error_ml": 0.829,
+          "rel_volume_error_pct": 2.5
+        },
+        "ET": {
+          "tp": 28506,
+          "fp": 1463,
+          "fn": 2466,
+          "precision": 0.9512,
+          "dice": 0.9355,
+          "sensitivity": 0.9204,
+          "pred_volume_ml": 29.969,
+          "gt_volume_ml": 30.972,
+          "abs_volume_error_ml": 1.003,
+          "rel_volume_error_pct": 3.2
+        }
+      },
+      "runtime_seconds": 9.12,
+      "peak_gpu_mib": 1647.1,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:04:56 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 9.12986749799984
+  },
+  {
+    "patient_id": "BraTS2021_01157",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 111.897,
+        "TC": 53.433,
+        "ET": 27.497,
+        "ED": 58.464
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 111.897,
+        "tumor_core_ml": 53.433,
+        "enhancing_tumor_ml": 27.497,
+        "edema_region_ml": 58.464,
+        "enhancing_fraction_pct": 24.6,
+        "edema_fraction_pct": 52.2,
+        "summary": "Predicted whole-tumor region: 111.9 mL; enhancing region: 27.5 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 105809,
+          "fp": 6088,
+          "fn": 6530,
+          "precision": 0.9456,
+          "dice": 0.9437,
+          "sensitivity": 0.9419,
+          "pred_volume_ml": 111.897,
+          "gt_volume_ml": 112.339,
+          "abs_volume_error_ml": 0.442,
+          "rel_volume_error_pct": 0.4
+        },
+        "TC": {
+          "tp": 52788,
+          "fp": 645,
+          "fn": 3393,
+          "precision": 0.9879,
+          "dice": 0.9632,
+          "sensitivity": 0.9396,
+          "pred_volume_ml": 53.433,
+          "gt_volume_ml": 56.181,
+          "abs_volume_error_ml": 2.748,
+          "rel_volume_error_pct": 4.9
+        },
+        "ET": {
+          "tp": 26528,
+          "fp": 969,
+          "fn": 6769,
+          "precision": 0.9648,
+          "dice": 0.8727,
+          "sensitivity": 0.7967,
+          "pred_volume_ml": 27.497,
+          "gt_volume_ml": 33.297,
+          "abs_volume_error_ml": 5.8,
+          "rel_volume_error_pct": 17.4
+        }
+      },
+      "runtime_seconds": 8.34,
+      "peak_gpu_mib": 1644.4,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:05:05 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 8.350020492000112
+  },
+  {
+    "patient_id": "BraTS2021_00081",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 78.948,
+        "TC": 28.868,
+        "ET": 28.282,
+        "ED": 50.08
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 78.948,
+        "tumor_core_ml": 28.868,
+        "enhancing_tumor_ml": 28.282,
+        "edema_region_ml": 50.08,
+        "enhancing_fraction_pct": 35.8,
+        "edema_fraction_pct": 63.4,
+        "summary": "Predicted whole-tumor region: 78.9 mL; enhancing region: 28.3 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 77472,
+          "fp": 1476,
+          "fn": 2334,
+          "precision": 0.9813,
+          "dice": 0.976,
+          "sensitivity": 0.9708,
+          "pred_volume_ml": 78.948,
+          "gt_volume_ml": 79.806,
+          "abs_volume_error_ml": 0.858,
+          "rel_volume_error_pct": 1.1
+        },
+        "TC": {
+          "tp": 27548,
+          "fp": 1320,
+          "fn": 195,
+          "precision": 0.9543,
+          "dice": 0.9732,
+          "sensitivity": 0.993,
+          "pred_volume_ml": 28.868,
+          "gt_volume_ml": 27.743,
+          "abs_volume_error_ml": 1.125,
+          "rel_volume_error_pct": 4.1
+        },
+        "ET": {
+          "tp": 26946,
+          "fp": 1336,
+          "fn": 287,
+          "precision": 0.9528,
+          "dice": 0.9708,
+          "sensitivity": 0.9895,
+          "pred_volume_ml": 28.282,
+          "gt_volume_ml": 27.233,
+          "abs_volume_error_ml": 1.049,
+          "rel_volume_error_pct": 3.9
+        }
+      },
+      "runtime_seconds": 9.18,
+      "peak_gpu_mib": 1635.2,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:05:14 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 9.18374249199951
+  },
+  {
+    "patient_id": "BraTS2021_00054",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 89.573,
+        "TC": 69.821,
+        "ET": 46.295,
+        "ED": 19.752
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 89.573,
+        "tumor_core_ml": 69.821,
+        "enhancing_tumor_ml": 46.295,
+        "edema_region_ml": 19.752,
+        "enhancing_fraction_pct": 51.7,
+        "edema_fraction_pct": 22.1,
+        "summary": "Predicted whole-tumor region: 89.6 mL; enhancing region: 46.3 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 87775,
+          "fp": 1798,
+          "fn": 12711,
+          "precision": 0.9799,
+          "dice": 0.9237,
+          "sensitivity": 0.8735,
+          "pred_volume_ml": 89.573,
+          "gt_volume_ml": 100.486,
+          "abs_volume_error_ml": 10.913,
+          "rel_volume_error_pct": 10.9
+        },
+        "TC": {
+          "tp": 69316,
+          "fp": 505,
+          "fn": 20142,
+          "precision": 0.9928,
+          "dice": 0.8704,
+          "sensitivity": 0.7748,
+          "pred_volume_ml": 69.821,
+          "gt_volume_ml": 89.458,
+          "abs_volume_error_ml": 19.637,
+          "rel_volume_error_pct": 22.0
+        },
+        "ET": {
+          "tp": 39690,
+          "fp": 6605,
+          "fn": 16149,
+          "precision": 0.8573,
+          "dice": 0.7772,
+          "sensitivity": 0.7108,
+          "pred_volume_ml": 46.295,
+          "gt_volume_ml": 55.839,
+          "abs_volume_error_ml": 9.544,
+          "rel_volume_error_pct": 17.1
+        }
+      },
+      "runtime_seconds": 6.16,
+      "peak_gpu_mib": 1639.8,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:05:20 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 6.164453655000216
+  },
+  {
+    "patient_id": "BraTS2021_00697",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 133.706,
+        "TC": 68.896,
+        "ET": 42.825,
+        "ED": 64.81
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 133.706,
+        "tumor_core_ml": 68.896,
+        "enhancing_tumor_ml": 42.825,
+        "edema_region_ml": 64.81,
+        "enhancing_fraction_pct": 32.0,
+        "edema_fraction_pct": 48.5,
+        "summary": "Predicted whole-tumor region: 133.7 mL; enhancing region: 42.8 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 131438,
+          "fp": 2268,
+          "fn": 8302,
+          "precision": 0.983,
+          "dice": 0.9613,
+          "sensitivity": 0.9406,
+          "pred_volume_ml": 133.706,
+          "gt_volume_ml": 139.74,
+          "abs_volume_error_ml": 6.034,
+          "rel_volume_error_pct": 4.3
+        },
+        "TC": {
+          "tp": 68572,
+          "fp": 324,
+          "fn": 4277,
+          "precision": 0.9953,
+          "dice": 0.9675,
+          "sensitivity": 0.9413,
+          "pred_volume_ml": 68.896,
+          "gt_volume_ml": 72.849,
+          "abs_volume_error_ml": 3.953,
+          "rel_volume_error_pct": 5.4
+        },
+        "ET": {
+          "tp": 41428,
+          "fp": 1397,
+          "fn": 4271,
+          "precision": 0.9674,
+          "dice": 0.936,
+          "sensitivity": 0.9065,
+          "pred_volume_ml": 42.825,
+          "gt_volume_ml": 45.699,
+          "abs_volume_error_ml": 2.874,
+          "rel_volume_error_pct": 6.3
+        }
+      },
+      "runtime_seconds": 8.23,
+      "peak_gpu_mib": 1641.0,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:05:28 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 8.235305932000301
+  },
+  {
+    "patient_id": "BraTS2021_00714",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 192.289,
+        "TC": 98.45,
+        "ET": 44.408,
+        "ED": 93.839
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 192.289,
+        "tumor_core_ml": 98.45,
+        "enhancing_tumor_ml": 44.408,
+        "edema_region_ml": 93.839,
+        "enhancing_fraction_pct": 23.1,
+        "edema_fraction_pct": 48.8,
+        "summary": "Predicted whole-tumor region: 192.3 mL; enhancing region: 44.4 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 191640,
+          "fp": 649,
+          "fn": 21278,
+          "precision": 0.9966,
+          "dice": 0.9459,
+          "sensitivity": 0.9001,
+          "pred_volume_ml": 192.289,
+          "gt_volume_ml": 212.918,
+          "abs_volume_error_ml": 20.629,
+          "rel_volume_error_pct": 9.7
+        },
+        "TC": {
+          "tp": 97819,
+          "fp": 631,
+          "fn": 6179,
+          "precision": 0.9936,
+          "dice": 0.9664,
+          "sensitivity": 0.9406,
+          "pred_volume_ml": 98.45,
+          "gt_volume_ml": 103.998,
+          "abs_volume_error_ml": 5.548,
+          "rel_volume_error_pct": 5.3
+        },
+        "ET": {
+          "tp": 42952,
+          "fp": 1456,
+          "fn": 7909,
+          "precision": 0.9672,
+          "dice": 0.9017,
+          "sensitivity": 0.8445,
+          "pred_volume_ml": 44.408,
+          "gt_volume_ml": 50.861,
+          "abs_volume_error_ml": 6.453,
+          "rel_volume_error_pct": 12.7
+        }
+      },
+      "runtime_seconds": 6.54,
+      "peak_gpu_mib": 1637.4,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:05:35 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 6.546107897999718
+  },
+  {
+    "patient_id": "BraTS2021_01156",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 113.308,
+        "TC": 59.51,
+        "ET": 15.92,
+        "ED": 53.798
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 113.308,
+        "tumor_core_ml": 59.51,
+        "enhancing_tumor_ml": 15.92,
+        "edema_region_ml": 53.798,
+        "enhancing_fraction_pct": 14.1,
+        "edema_fraction_pct": 47.5,
+        "summary": "Predicted whole-tumor region: 113.3 mL; enhancing region: 15.9 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 100601,
+          "fp": 12707,
+          "fn": 2553,
+          "precision": 0.8879,
+          "dice": 0.9295,
+          "sensitivity": 0.9753,
+          "pred_volume_ml": 113.308,
+          "gt_volume_ml": 103.154,
+          "abs_volume_error_ml": 10.154,
+          "rel_volume_error_pct": 9.8
+        },
+        "TC": {
+          "tp": 58342,
+          "fp": 1168,
+          "fn": 1265,
+          "precision": 0.9804,
+          "dice": 0.9796,
+          "sensitivity": 0.9788,
+          "pred_volume_ml": 59.51,
+          "gt_volume_ml": 59.607,
+          "abs_volume_error_ml": 0.097,
+          "rel_volume_error_pct": 0.2
+        },
+        "ET": {
+          "tp": 14563,
+          "fp": 1357,
+          "fn": 3230,
+          "precision": 0.9148,
+          "dice": 0.8639,
+          "sensitivity": 0.8185,
+          "pred_volume_ml": 15.92,
+          "gt_volume_ml": 17.793,
+          "abs_volume_error_ml": 1.873,
+          "rel_volume_error_pct": 10.5
+        }
+      },
+      "runtime_seconds": 5.22,
+      "peak_gpu_mib": 1636.8,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:05:40 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 5.223881181999786
+  },
+  {
+    "patient_id": "BraTS2021_00008",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 20.124,
+        "TC": 0.442,
+        "ET": 0.439,
+        "ED": 19.682
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 20.124,
+        "tumor_core_ml": 0.442,
+        "enhancing_tumor_ml": 0.439,
+        "edema_region_ml": 19.682,
+        "enhancing_fraction_pct": 2.2,
+        "edema_fraction_pct": 97.8,
+        "summary": "Predicted whole-tumor region: 20.1 mL; enhancing region: 0.4 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 17778,
+          "fp": 2346,
+          "fn": 684,
+          "precision": 0.8834,
+          "dice": 0.9215,
+          "sensitivity": 0.963,
+          "pred_volume_ml": 20.124,
+          "gt_volume_ml": 18.462,
+          "abs_volume_error_ml": 1.662,
+          "rel_volume_error_pct": 9.0
+        },
+        "TC": {
+          "tp": 271,
+          "fp": 171,
+          "fn": 56,
+          "precision": 0.6131,
+          "dice": 0.7048,
+          "sensitivity": 0.8287,
+          "pred_volume_ml": 0.442,
+          "gt_volume_ml": 0.327,
+          "abs_volume_error_ml": 0.115,
+          "rel_volume_error_pct": 35.2
+        },
+        "ET": {
+          "tp": 255,
+          "fp": 184,
+          "fn": 56,
+          "precision": 0.5809,
+          "dice": 0.68,
+          "sensitivity": 0.8199,
+          "pred_volume_ml": 0.439,
+          "gt_volume_ml": 0.311,
+          "abs_volume_error_ml": 0.128,
+          "rel_volume_error_pct": 41.2
+        }
+      },
+      "runtime_seconds": 7.49,
+      "peak_gpu_mib": 1639.8,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:05:48 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 7.500216854999962
+  },
+  {
+    "patient_id": "BraTS2021_00513",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "swinunetr",
+    "checkpoint_sha256": {
+      "swinunetr": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "swinunetr",
+      "model": "MONAI SwinUNETR (Vision Transformer) \u00b7 BraTS21 checkpoint",
+      "input_channel_order": [
+        "FLAIR",
+        "T1c",
+        "T1",
+        "T2"
+      ],
+      "ensemble_settings": null,
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 141.519,
+        "TC": 85.381,
+        "ET": 53.016,
+        "ED": 56.138
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 141.519,
+        "tumor_core_ml": 85.381,
+        "enhancing_tumor_ml": 53.016,
+        "edema_region_ml": 56.138,
+        "enhancing_fraction_pct": 37.5,
+        "edema_fraction_pct": 39.7,
+        "summary": "Predicted whole-tumor region: 141.5 mL; enhancing region: 53.0 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "tp": 140254,
+          "fp": 1265,
+          "fn": 42181,
+          "precision": 0.9911,
+          "dice": 0.8659,
+          "sensitivity": 0.7688,
+          "pred_volume_ml": 141.519,
+          "gt_volume_ml": 182.435,
+          "abs_volume_error_ml": 40.916,
+          "rel_volume_error_pct": 22.4
+        },
+        "TC": {
+          "tp": 85113,
+          "fp": 268,
+          "fn": 2886,
+          "precision": 0.9969,
+          "dice": 0.9818,
+          "sensitivity": 0.9672,
+          "pred_volume_ml": 85.381,
+          "gt_volume_ml": 87.999,
+          "abs_volume_error_ml": 2.618,
+          "rel_volume_error_pct": 3.0
+        },
+        "ET": {
+          "tp": 49652,
+          "fp": 3364,
+          "fn": 3252,
+          "precision": 0.9365,
+          "dice": 0.9375,
+          "sensitivity": 0.9385,
+          "pred_volume_ml": 53.016,
+          "gt_volume_ml": 52.904,
+          "abs_volume_error_ml": 0.112,
+          "rel_volume_error_pct": 0.2
+        }
+      },
+      "runtime_seconds": 11.69,
+      "peak_gpu_mib": 1647.0,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core"
+      ],
+      "timestamp": "2026-10-16 18:05:59 UTC",
+      "note": "Research demonstration, not intended for primary clinical diagnosis. Voxel metrics computed via exact spatial affine determinant."
+    },
+    "end_to_end_seconds": 11.70443596899986
+  },
+  {
+    "model": "ensemble",
+    "status": "blocked",
+    "reason": "Trained checkpoint missing: ['models/resenc_brats/resenc_m_brats.pt']. Random inference is disabled."
+  }
+]

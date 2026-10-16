@@ -1,0 +1,8 @@
+PASS: test_ensemble_weights_and_config
+PASS: test_soft_probability_fusion
+PASS: test_hierarchy_enforcement
+PASS: test_voxel_entropy_uncertainty
+PASS: test_physical_volume_calculation
+PASS: test_resenc_model_instantiation
+
+ALL ENSEMBLE UNIT TESTS PASSED! (6/6)

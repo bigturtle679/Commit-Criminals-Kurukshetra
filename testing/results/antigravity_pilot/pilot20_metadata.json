@@ -1,0 +1,14 @@
+{
+  "code_commit": "5cbc5cc614e09482149b4304ee2060c6a838f783",
+  "dirty_diff_sha256": "36bdccf43102c6bb1d22443bf27e6d2e69639c91196c5acbcec591b99bc34b8e",
+  "manifest_sha256": "8c6da29de2ac840fdfd27d03794e19e3cf093cd666addc9561a466a0eb139c69",
+  "manifest_path": "/home/ryie/Documents/Codex/DI-02-Hackathon-2026-10-16/testing/data/manifest.json",
+  "torch": "2.6.0+cu124",
+  "cuda": "12.4",
+  "models": [
+    "swinunetr",
+    "ensemble"
+  ],
+  "patient_count": 20,
+  "timing": "first patient per model includes cold load; later patients warm cache; end-to-end includes exports"
+}

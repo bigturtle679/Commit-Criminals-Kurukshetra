@@ -1,0 +1,12 @@
+============================================================
+RUNNING NUMERICAL STABILITY & UNDERFLOW/OVERFLOW TEST SUITE
+============================================================
+PASS: test_entropy_underflow_and_log_zero (log(0) guard verified)
+PASS: test_sigmoid_overflow_extreme_logits (exp() overflow guard verified)
+PASS: test_dice_division_by_zero_underflow (0/0 division guard verified)
+SKIP: trained ResEnc parameter check (checkpoint missing); Swin parameter check passed
+PASS: test_forward_pass_underflow_overflow (normal, spike, and zero inputs tested)
+PASS: test_fp16_autocast_dynamic_range (FP16 stays safely within dynamic range)
+============================================================
+NUMERICAL STABILITY CHECKS COMPLETED; see explicit SKIP messages above
+============================================================

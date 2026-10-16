@@ -1,0 +1,15 @@
+{
+  "code_commit": "5cbc5cc614e09482149b4304ee2060c6a838f783",
+  "dirty_diff_sha256": "e3031eed925d3ad63e9fd4ef5ca398f79b3012d747b47d38aabdce16a6b8f03d",
+  "manifest_sha256": "be7bc45c846717ab8ab68e41fba8d3bc70d4bedaedcb76763305ce3a71f8429a",
+  "manifest_path": "/home/ryie/Documents/Codex/DI-02-Hackathon-2026-10-16/testing/data/local_smoke_manifest.json",
+  "torch": "2.6.0+cu124",
+  "cuda": "12.4",
+  "models": [
+    "swinunetr",
+    "segresnet",
+    "ensemble"
+  ],
+  "patient_count": 3,
+  "timing": "first patient per model includes cold load; later patients warm cache; end-to-end includes exports"
+}

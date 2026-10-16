@@ -1,0 +1,89 @@
+{
+  "selection_seed": 42,
+  "patients": [
+    {
+      "patient_id": "BraTS2021_00003",
+      "source": "reinheart/brats2022",
+      "version": "1",
+      "modalities": {
+        "t1": "data/external/datasets/reinheart/brats2022/versions/1/BraTS2021/BraTS2021_00003/BraTS2021_00003_t1.nii/00000017_brain_t1.nii",
+        "t1c": "data/external/datasets/reinheart/brats2022/versions/1/BraTS2021/BraTS2021_00003/BraTS2021_00003_t1ce.nii/00000017_brain_t1ce.nii",
+        "t2": "data/external/datasets/reinheart/brats2022/versions/1/BraTS2021/BraTS2021_00003/BraTS2021_00003_t2.nii/00000017_brain_t2.nii",
+        "flair": "data/external/datasets/reinheart/brats2022/versions/1/BraTS2021/BraTS2021_00003/BraTS2021_00003_flair.nii/00000017_brain_flair.nii"
+      },
+      "expert_mask": "data/external/datasets/reinheart/brats2022/versions/1/BraTS2021/BraTS2021_00003/BraTS2021_00003_seg.nii/BraTS2021_00003_seg_new.nii",
+      "label_mapping": {
+        "background": 0,
+        "nonenhancing_core": 1,
+        "edema": 2,
+        "enhancing_tumor": 4,
+        "evidence": "BraTS 2021 Task 1 challenge documentation (ET=4, ED=2, NCR/NET=1, BG=0)"
+      },
+      "overlap_status": "unknown",
+      "geometry_verified": true,
+      "sha256": {
+        "t1": "3966450550bcb32711d221df2c4c3203de82112e754072161a967bfa38cf648b",
+        "t1c": "096b72773701b4b6759429eada4b3023c04bb40d7dbabec2493f229b2d47254b",
+        "t2": "bdb9382ed41b92cd3b886bae99b926e016b8e089b77dff6a54df5ec12daff8ac",
+        "flair": "17dae1ff91ae135e00ba056382f7bddbc0f4498934e4e24953b854c98ba49406",
+        "expert_mask": "058583519748f1af79c47bfaa84a2061355824ac909788ba12cceba9194956c5"
+      }
+    },
+    {
+      "patient_id": "BraTS2021_00025",
+      "source": "reinheart/brats2022",
+      "version": "1",
+      "modalities": {
+        "t1": "data/external/datasets/reinheart/brats2022/versions/1/BraTS2021/BraTS2021_00025/BraTS2021_00025_t1.nii/00000036_brain_t1.nii",
+        "t1c": "data/external/datasets/reinheart/brats2022/versions/1/BraTS2021/BraTS2021_00025/BraTS2021_00025_t1ce.nii/00000036_brain_t1ce.nii",
+        "t2": "data/external/datasets/reinheart/brats2022/versions/1/BraTS2021/BraTS2021_00025/BraTS2021_00025_t2.nii/00000036_brain_t2.nii",
+        "flair": "data/external/datasets/reinheart/brats2022/versions/1/BraTS2021/BraTS2021_00025/BraTS2021_00025_flair.nii/00000036_brain_flair.nii"
+      },
+      "expert_mask": "data/external/datasets/reinheart/brats2022/versions/1/BraTS2021/BraTS2021_00025/BraTS2021_00025_seg.nii/00000036_final_seg.nii",
+      "label_mapping": {
+        "background": 0,
+        "nonenhancing_core": 1,
+        "edema": 2,
+        "enhancing_tumor": 4,
+        "evidence": "BraTS 2021 Task 1 challenge documentation (ET=4, ED=2, NCR/NET=1, BG=0)"
+      },
+      "overlap_status": "unknown",
+      "geometry_verified": true,
+      "sha256": {
+        "t1": "b30e75ec322f8a7fbfa75503c56ffc9083e66c476eac5cb4bd0acd87f6ed5101",
+        "t1c": "509a6dfde8a9e472315f3d9a1c2c96810a69ac2e293ea9f5e698938a4c171e40",
+        "t2": "0b8388d40b4219e47cab22fa515a0ed089785363e0a13cce021784acfcefbf09",
+        "flair": "017c456c4ba2ff2362b7e72064b7c50f7376766d9c6ec85fb649b5446a9208c9",
+        "expert_mask": "f600a44b12ec410e8168465696ef1a9c57359746dee7f8bd60ab07105a2247fa"
+      }
+    },
+    {
+      "patient_id": "BraTS2021_00658",
+      "source": "reinheart/brats2022",
+      "version": "1",
+      "modalities": {
+        "t1": "data/external/datasets/reinheart/brats2022/versions/1/BraTS2021/BraTS2021_00658/BraTS2021_00658_t1.nii/00000425_brain_t1.nii",
+        "t1c": "data/external/datasets/reinheart/brats2022/versions/1/BraTS2021/BraTS2021_00658/BraTS2021_00658_t1ce.nii/00000425_brain_t1ce.nii",
+        "t2": "data/external/datasets/reinheart/brats2022/versions/1/BraTS2021/BraTS2021_00658/BraTS2021_00658_t2.nii/00000425_brain_t2.nii",
+        "flair": "data/external/datasets/reinheart/brats2022/versions/1/BraTS2021/BraTS2021_00658/BraTS2021_00658_flair.nii/00000425_brain_flair.nii"
+      },
+      "expert_mask": "data/external/datasets/reinheart/brats2022/versions/1/BraTS2021/BraTS2021_00658/BraTS2021_00658_seg.nii/00000425_final_seg.nii",
+      "label_mapping": {
+        "background": 0,
+        "nonenhancing_core": 1,
+        "edema": 2,
+        "enhancing_tumor": 4,
+        "evidence": "BraTS 2021 Task 1 challenge documentation (ET=4, ED=2, NCR/NET=1, BG=0)"
+      },
+      "overlap_status": "unknown",
+      "geometry_verified": true,
+      "sha256": {
+        "t1": "2b7f7fadff5e7a94c0bd15f0b10eff508f7b0984b73d3de2522fdb3fef16535e",
+        "t1c": "1eb947d001fe474b375bdb3eabf6eec8ed25f708b19d2a16daca25c33543091e",
+        "t2": "23f017d318f15a87162b620a44f6e5c780754484b3bc93784c45bccdce1e9d92",
+        "flair": "3389ae0fad439a4e4eecdda809e2dfecddd5d86920508685978ea686a8596e00",
+        "expert_mask": "a5251437570214d9fe2a8aa00d214556d070c790cdc9304fab820347937a9120"
+      }
+    }
+  ]
+}

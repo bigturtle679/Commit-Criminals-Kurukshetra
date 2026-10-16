@@ -1,0 +1,8 @@
+{
+  "patient": "BraTS-GLI-00000-000",
+  "model": "swinunetr",
+  "runs": 2,
+  "identical_voxel_labels": true,
+  "matching_affine": true,
+  "note": "Two independent cold runs; not a general determinism guarantee."
+}
