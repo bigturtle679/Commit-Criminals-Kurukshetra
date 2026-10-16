@@ -82,6 +82,10 @@ function restoreOverlay() {
 // Initialize NiiVue WebGL2 Engine
 const nv = new Niivue({
   backColor: [0.027, 0.039, 0.063, 1], // Deep obsidian match
+  // 2D slices show only the voxel segmentation at the crosshair plane. NiiVue's default
+  // (Infinity) projects the whole 3D tumour mesh onto every slice, so slices showed tumour
+  // that is not in that plane and the crosshair lines looked misaligned.
+  meshThicknessOn2D: 0,
   show3Dcrosshair: true,
   isColorbar: false,
   multiplanarShowRender: SHOW_RENDER.ALWAYS,
