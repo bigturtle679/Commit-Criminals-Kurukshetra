@@ -1,18 +1,12 @@
-# Local ML environment, datasets, and downloaded weights
-.venv/
-/models/
-/data/
-work/
-outputs/
-__pycache__/
-project-context.txt
+# Large binary assets — store via Git LFS or CDN
+frontend/assets/*.mp4
+frontend/assets/*.mov
+frontend/assets/*.webm
+
+# OS
 .DS_Store
-*.nii
-*.nii.gz
-*.pt
-*.pth
-*.zip
-*.tar
-*.h5
-*.hdf5
-.env
+Thumbs.db
+
+# Editor
+.vscode/
+*.swp
