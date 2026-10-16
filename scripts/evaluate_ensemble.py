@@ -80,10 +80,15 @@ def load_manifest(manifest_path: str | Path) -> list[dict]:
     return validated_cases
 
 
-def evaluate_single_case(case: dict, ensemble_fn, out_dir: Path, expert_et: int = 4) -> dict:
-    """Run inference and compute metrics on a single patient case.
+def validate_case_files(case: dict, expert_et: int = 4) -> dict:
+    """Validate that all referenced case files exist and have compatible geometry.
 
-    Validates spatial alignment before calculating metrics.
+    Checks:
+    - Existence of all 4 modalities and expert mask
+    - Valid 3D NIfTI structure
+    - Shape and affine compatibility between all 4 modalities
+    - Shape and affine compatibility with expert mask
+    - Expert mask labels match accepted BraTS conventions ({0, 1, 2, expert_et})
     """
     pid = case['patient_id']
     mri_paths = {
@@ -100,20 +105,79 @@ def evaluate_single_case(case: dict, ensemble_fn, out_dir: Path, expert_et: int 
     if not expert_path.exists():
         raise FileNotFoundError(f"Missing expert mask for patient {pid}: {expert_path}")
 
-    # Spatial alignment verification
-    t1c_img = nib.load(str(mri_paths['t1c']))
-    gt_img = nib.load(str(expert_path))
+    imgs = {}
+    for k, p in mri_paths.items():
+        try:
+            img = nib.load(str(p))
+        except Exception as e:
+            raise ValueError(f"Cannot read {k} as NIfTI for patient {pid}: {e}") from e
+        if len(img.shape) != 3 or min(img.shape) < 8:
+            raise ValueError(f"Modality {k} for patient {pid} must be a 3D MRI, got shape {img.shape}")
+        if not np.isfinite(img.affine).all() or abs(np.linalg.det(img.affine[:3, :3])) < 1e-8:
+            raise ValueError(f"Invalid affine matrix in {k} header for patient {pid}")
+        imgs[k] = img
 
-    if gt_img.shape != t1c_img.shape:
+    ref = imgs['t1c']
+    for k in ('t1', 't2', 'flair'):
+        img = imgs[k]
+        if img.shape != ref.shape:
+            raise ValueError(
+                f"Modality {k} shape {img.shape} does not match reference T1c shape {ref.shape} for patient {pid}"
+            )
+        if not np.allclose(img.affine, ref.affine, atol=1e-3):
+            raise ValueError(
+                f"Modality {k} affine does not match reference T1c affine for patient {pid}"
+            )
+
+    try:
+        gt_img = nib.load(str(expert_path))
+    except Exception as e:
+        raise ValueError(f"Cannot read expert mask as NIfTI for patient {pid}: {e}") from e
+
+    if gt_img.shape != ref.shape:
         raise ValueError(
             f"Spatial mismatch for patient {pid}: expert mask shape {gt_img.shape} "
-            f"does not match T1c shape {t1c_img.shape}."
+            f"does not match T1c shape {ref.shape}."
         )
-    if not np.allclose(gt_img.affine, t1c_img.affine, atol=1e-3):
+    if not np.allclose(gt_img.affine, ref.affine, atol=1e-3):
         raise ValueError(
             f"Coordinate system mismatch for patient {pid}: expert mask affine "
             f"does not match T1c affine."
         )
+
+    gt = gt_img.get_fdata()
+    allowed = {0, 1, 2, expert_et}
+    gt_labels = set(np.unique(gt).astype(int))
+    if not gt_labels.issubset(allowed):
+        raise ValueError(
+            f"Patient {pid} expert mask contains unexpected labels: {gt_labels}. "
+            f"Expected subset of {allowed}."
+        )
+
+    return {
+        'patient_id': pid,
+        'shape': list(ref.shape),
+        'spacing_mm': nib.affines.voxel_sizes(ref.affine).round(4).tolist(),
+        'labels_present': sorted(list(gt_labels))
+    }
+
+
+def evaluate_single_case(case: dict, ensemble_fn, out_dir: Path, expert_et: int = 4) -> dict:
+    """Run inference and compute metrics on a single patient case.
+
+    Validates spatial alignment before calculating metrics.
+    """
+    validate_case_files(case, expert_et=expert_et)
+    pid = case['patient_id']
+    mri_paths = {
+        't1c': Path(case['t1c']),
+        't1': Path(case['t1']),
+        't2': Path(case['t2']),
+        'flair': Path(case['flair'])
+    }
+    expert_path = Path(case['expert_mask'])
+    t1c_img = nib.load(str(mri_paths['t1c']))
+    gt_img = nib.load(str(expert_path))
 
     # Run inference
     case_out = out_dir / pid
@@ -122,14 +186,6 @@ def evaluate_single_case(case: dict, ensemble_fn, out_dir: Path, expert_et: int 
 
     pred_labels = res['_seg_data'] if '_seg_data' in res else nib.load(str(case_out / 'segmentation.nii.gz')).get_fdata()
     gt = gt_img.get_fdata()
-
-    allowed = {0, 1, 2, expert_et}
-    gt_labels = set(np.unique(gt).astype(int))
-    if not gt_labels.issubset(allowed):
-        raise ValueError(
-            f"Patient {pid} expert mask contains unexpected labels: {gt_labels}. "
-            f"Expected subset of {allowed}."
-        )
 
     pred_regions = {
         'WT': np.isin(pred_labels, [1, 2, 4]),
@@ -211,8 +267,26 @@ def run_evaluation(manifest_path: str | Path, output_dir: str | Path,
     cases = load_manifest(manifest_path)
 
     if dry_run:
-        logger.info("Dry-run mode: validated manifest syntax and %d patient cases.", len(cases))
-        return {'status': 'DRY_RUN_PASSED', 'cases_validated': len(cases)}
+        validated_patient_details = []
+        for c in cases:
+            det = validate_case_files(c, expert_et=expert_et)
+            validated_patient_details.append(det)
+
+        cohort_size = len(cases)
+        meets_minimum = cohort_size >= 10
+        logger.info(
+            "Dry-run mode: successfully validated %d patient cases (files, shapes, affines, and label conventions).",
+            cohort_size
+        )
+        return {
+            'status': 'DRY_RUN_PASSED',
+            'cases_validated': cohort_size,
+            'cohort_size': cohort_size,
+            'meets_10_case_requirement': meets_minimum,
+            'minimum_cohort_required': 10,
+            'manifest_path': str(manifest_path),
+            'cases': validated_patient_details
+        }
 
     # Model and inference setup
     if custom_inference_fn is None:
@@ -233,12 +307,27 @@ def run_evaluation(manifest_path: str | Path, output_dir: str | Path,
         inference_fn = custom_inference_fn
 
     results = []
+    failed_cases = []
     for c in cases:
-        logger.info("Evaluating patient %s...", c['patient_id'])
-        res = evaluate_single_case(c, inference_fn, out_dir, expert_et=expert_et)
-        results.append(res)
+        pid = c['patient_id']
+        logger.info("Evaluating patient %s...", pid)
+        try:
+            res = evaluate_single_case(c, inference_fn, out_dir, expert_et=expert_et)
+            results.append(res)
+        except Exception as e:
+            logger.error("Evaluation failed for patient %s: %s", pid, e)
+            failed_cases.append({'patient_id': pid, 'error': str(e)})
 
     summary = aggregate_metrics(results)
+    cohort_size = len(results)
+    meets_minimum = cohort_size >= 10 and len(failed_cases) == 0
+
+    if failed_cases:
+        eval_status = 'PARTIAL_FAILURE_CASES_FAILED'
+    elif cohort_size < 10:
+        eval_status = 'COMPLETED_UNDERSIZED_COHORT'
+    else:
+        eval_status = 'COMPLETED'
 
     # Export CSV results
     csv_path = out_dir / 'evaluation_results.csv'
@@ -262,7 +351,18 @@ def run_evaluation(manifest_path: str | Path, output_dir: str | Path,
     # Export JSON summary report
     full_report = {
         'evaluation_type': 'patient_level_held_out',
-        'status': 'COMPLETED',
+        'status': eval_status,
+        'cohort_size': cohort_size,
+        'total_cases_submitted': len(cases),
+        'meets_minimum_cohort_requirement': meets_minimum,
+        'minimum_cohort_required': 10,
+        'failed_cases': failed_cases,
+        'cohort_note': (
+            'Satisfies project requirement of >= 10 independent held-out labelled cases.'
+            if meets_minimum else
+            f'Cohort size of {cohort_size} cases (with {len(failed_cases)} failures) does not satisfy the '
+            f'project requirement of at least 10 independent held-out labelled cases.'
+        ),
         'ensemble_name': vcfg['ensemble_name'],
         'weights': {'model_a': vcfg['weight_a'], 'model_b': vcfg['weight_b']},
         'timestamp': time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -278,7 +378,7 @@ def run_evaluation(manifest_path: str | Path, output_dir: str | Path,
 
     json_path = out_dir / 'evaluation_summary.json'
     json_path.write_text(json.dumps(full_report, indent=2), encoding='utf-8')
-    logger.info("Evaluation complete for %d cases. Results saved to %s", len(results), out_dir)
+    logger.info("Evaluation complete for %d cases. Status: %s. Results saved to %s", len(results), eval_status, out_dir)
     return full_report
 
 

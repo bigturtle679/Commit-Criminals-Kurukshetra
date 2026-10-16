@@ -162,17 +162,30 @@ class TestMetricAggregation:
 
 class TestEndToEndEvaluationHarness:
     def test_run_evaluation_dry_run(self, tmp_path):
+        """Dry run must validate actual referenced NIfTI files without running model inference."""
+        p1 = _create_synthetic_patient(tmp_path / 'P1', 'P1')
         m_path = tmp_path / 'manifest.json'
-        cases = [
-            {'patient_id': 'P001', 't1c': 'a', 't1': 'b', 't2': 'c', 'flair': 'd', 'expert_mask': 'e'},
-        ]
-        m_path.write_text(json.dumps(cases))
+        m_path.write_text(json.dumps([p1]))
 
         rep = run_evaluation(manifest_path=m_path, output_dir=tmp_path / 'out', dry_run=True)
         assert rep['status'] == 'DRY_RUN_PASSED'
         assert rep['cases_validated'] == 1
+        assert rep['meets_10_case_requirement'] is False
+        assert rep['minimum_cohort_required'] == 10
 
-    def test_full_evaluation_pipeline_with_mock(self, tmp_path):
+    def test_run_evaluation_dry_run_missing_file_fails(self, tmp_path):
+        """Dry run must fail if any referenced NIfTI file does not exist."""
+        m_path = tmp_path / 'bad_manifest.json'
+        cases = [
+            {'patient_id': 'P001', 't1c': 'missing_t1c.nii.gz', 't1': 'b', 't2': 'c', 'flair': 'd', 'expert_mask': 'e'},
+        ]
+        m_path.write_text(json.dumps(cases))
+
+        with pytest.raises(FileNotFoundError, match='Missing t1c scan'):
+            run_evaluation(manifest_path=m_path, output_dir=tmp_path / 'out', dry_run=True)
+
+    def test_full_evaluation_pipeline_undersized_cohort_labeled_honestly(self, tmp_path):
+        """A cohort of < 10 cases must NOT be marked as satisfying the evaluation requirement."""
         p1 = _create_synthetic_patient(tmp_path / 'P1', 'P1')
         p2 = _create_synthetic_patient(tmp_path / 'P2', 'P2')
 
@@ -192,7 +205,9 @@ class TestEndToEndEvaluationHarness:
             custom_inference_fn=mock_infer
         )
 
-        assert report['status'] == 'COMPLETED'
+        assert report['status'] == 'COMPLETED_UNDERSIZED_COHORT'
+        assert report['meets_minimum_cohort_requirement'] is False
+        assert report['cohort_size'] == 2
         assert report['summary']['sample_count'] == 2
         assert (out_dir / 'evaluation_summary.json').exists()
         assert (out_dir / 'evaluation_results.csv').exists()
@@ -203,3 +218,28 @@ class TestEndToEndEvaluationHarness:
             assert len(rows) == 2
             assert rows[0]['patient_id'] == 'P1'
             assert float(rows[0]['WT_dice']) == 1.0
+
+    def test_full_evaluation_pipeline_meets_10_cases(self, tmp_path):
+        """A cohort of >= 10 cases satisfies the project evaluation requirement."""
+        patients = [_create_synthetic_patient(tmp_path / f'P{i:02d}', f'P{i:02d}') for i in range(10)]
+
+        m_path = tmp_path / 'manifest_10.json'
+        m_path.write_text(json.dumps(patients))
+
+        out_dir = tmp_path / 'eval_outputs_10'
+
+        def mock_infer(mri_paths, out_dir, expert_path, expert_et):
+            gt = nib.load(str(expert_path)).get_fdata()
+            return {'_seg_data': gt, 'runtime_seconds': 0.02}
+
+        report = run_evaluation(
+            manifest_path=m_path,
+            output_dir=out_dir,
+            dry_run=False,
+            custom_inference_fn=mock_infer
+        )
+
+        assert report['status'] == 'COMPLETED'
+        assert report['meets_minimum_cohort_requirement'] is True
+        assert report['cohort_size'] == 10
+        assert report['summary']['sample_count'] == 10
