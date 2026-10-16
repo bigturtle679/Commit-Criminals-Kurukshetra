@@ -124,6 +124,7 @@ def main():
     ap.add_argument('--batch', type=int, default=2)
     ap.add_argument('--workers', type=int, default=12)
     ap.add_argument('--val-cases', type=int, default=40)
+    ap.add_argument('--test-cases', type=int, default=50, help='random patients held out for final testing')
     ap.add_argument('--val-every', type=int, default=5000)
     ap.add_argument('--save-every', type=int, default=1000)
     ap.add_argument('--lr', type=float, default=1e-2)
@@ -143,17 +144,19 @@ def main():
     held_out = {p['patient_id'] for p in json.loads(PILOT_MANIFEST.read_text())['patients']}
     pool = [d for d in all_cases if d.name not in held_out]
     random.Random(args.seed).shuffle(pool)
-    val, train = pool[:args.val_cases], pool[args.val_cases:]
+    test = pool[:args.test_cases]
+    val, train = pool[args.test_cases:args.test_cases + args.val_cases], pool[args.test_cases + args.val_cases:]
     split_file = args.out / 'split.json'
     if split_file.exists():
         split = json.loads(split_file.read_text())
         by_name = {d.name: d for d in all_cases}
         train, val = [by_name[n] for n in split['train']], [by_name[n] for n in split['val']]
+        test = [by_name[n] for n in split.get('test', [])]
     else:
         split_file.write_text(json.dumps({'seed': args.seed, 'held_out_pilot': sorted(held_out),
-                                          'train': [d.name for d in train], 'val': [d.name for d in val]}, indent=1))
-    say(f'cases: {len(all_cases)} complete, train {len(train)}, val {len(val)}, held-out pilot {len(held_out)}')
-    assert not ({d.name for d in train + val} & held_out), 'pilot case leaked into training'
+                                          'test': [d.name for d in test], 'train': [d.name for d in train], 'val': [d.name for d in val]}, indent=1))
+    say(f'cases: {len(all_cases)} complete, train {len(train)}, val {len(val)}, test {len(test)}, held-out pilot {len(held_out)}')
+    assert not ({d.name for d in train + val} & (held_out | {d.name for d in test})), 'held-out case leaked into training'
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.manual_seed(args.seed)
