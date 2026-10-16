@@ -30,19 +30,45 @@ class ConfigValidationError(ValueError):
     pass
 
 
-def _check_field(cfg: dict, field: str, expected_type: type, context: str = ''):
-    """Check that a required field exists and has the expected type."""
+import math
+
+def _check_field(cfg: dict, field: str, expected_type: type | tuple[type, ...], context: str = ''):
+    """Check that a required field exists and has the expected type.
+    
+    Correctly formats tuple types in error messages, rejects booleans masquerading
+    as numeric types (int/float), and checks that numeric values are finite.
+    """
     prefix = f"{context}." if context else ""
     if field not in cfg:
         raise ConfigValidationError(
             f"Missing required field '{prefix}{field}' in ensemble configuration."
         )
     value = cfg[field]
+
+    if isinstance(expected_type, tuple):
+        type_name = " or ".join(t.__name__ for t in expected_type)
+        is_bool_allowed = bool in expected_type
+    else:
+        type_name = expected_type.__name__
+        is_bool_allowed = (expected_type is bool)
+
+    if isinstance(value, bool) and not is_bool_allowed:
+        raise ConfigValidationError(
+            f"Field '{prefix}{field}' must be {type_name}, got bool: {value!r}"
+        )
+
     if not isinstance(value, expected_type):
         raise ConfigValidationError(
-            f"Field '{prefix}{field}' must be {expected_type.__name__}, "
+            f"Field '{prefix}{field}' must be {type_name}, "
             f"got {type(value).__name__}: {value!r}"
         )
+
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        if not math.isfinite(value):
+            raise ConfigValidationError(
+                f"Field '{prefix}{field}' must be a finite number, got {value!r}"
+            )
+
     return value
 
 
@@ -72,9 +98,9 @@ def _validate_model_config(model_cfg: dict, model_key: str) -> dict:
             f"{ctx}.roi_size must have exactly 3 elements, got {len(roi)}"
         )
     for i, dim in enumerate(roi):
-        if not isinstance(dim, int) or dim < 8 or dim > 512:
+        if isinstance(dim, bool) or not isinstance(dim, int) or dim < 8 or dim > 512:
             raise ConfigValidationError(
-                f"{ctx}.roi_size[{i}] must be an integer between 8 and 512, got {dim}"
+                f"{ctx}.roi_size[{i}] must be an integer between 8 and 512, got {dim!r}"
             )
 
     # Channel order validation
@@ -102,6 +128,12 @@ def _validate_model_config(model_cfg: dict, model_key: str) -> dict:
             f"{ctx}.sliding_window_overlap must be in [0.0, 1.0), got {overlap}"
         )
 
+    mode = model_cfg.get('mode', 'gaussian')
+    if mode not in ('gaussian', 'constant'):
+        raise ConfigValidationError(
+            f"{ctx}.mode must be 'gaussian' or 'constant', got '{mode}'"
+        )
+
     return {
         'name': name,
         'architecture': arch,
@@ -112,7 +144,7 @@ def _validate_model_config(model_cfg: dict, model_key: str) -> dict:
         'roi_size': tuple(roi),
         'channel_order': channel_order,
         'sliding_window_overlap': float(overlap),
-        'mode': model_cfg.get('mode', 'gaussian'),
+        'mode': mode,
         'feature_size': model_cfg.get('feature_size'),
         'preset': model_cfg.get('preset'),
         'channels': model_cfg.get('channels'),
@@ -131,10 +163,17 @@ def _validate_weights(cfg: dict) -> tuple[float, float]:
             "weights must contain 'model_a' and 'model_b' entries."
         )
 
-    w_a = float(w_a)
-    w_b = float(w_b)
+    if isinstance(w_a, bool) or isinstance(w_b, bool):
+        raise ConfigValidationError(
+            f"Ensemble weights cannot be boolean values, got model_a={w_a!r}, model_b={w_b!r}"
+        )
 
-    import math
+    try:
+        w_a = float(w_a)
+        w_b = float(w_b)
+    except (TypeError, ValueError) as e:
+        raise ConfigValidationError(f"Ensemble weights must be valid floats: {e}") from e
+
     if not (math.isfinite(w_a) and math.isfinite(w_b)):
         raise ConfigValidationError(
             f"Ensemble weights must be finite numbers, got model_a={w_a}, model_b={w_b}"
@@ -161,6 +200,26 @@ def _validate_weights(cfg: dict) -> tuple[float, float]:
     return w_a, w_b
 
 
+def _validate_temperature(cfg: dict) -> dict[str, float]:
+    """Validate temperature scaling parameters for probability fusion."""
+    temp = cfg.get('temperature', {'model_a': 1.0, 'model_b': 1.0})
+    if not isinstance(temp, dict):
+        raise ConfigValidationError("temperature must be a dict.")
+    t_a = temp.get('model_a', 1.0)
+    t_b = temp.get('model_b', 1.0)
+    for k, val in [('model_a', t_a), ('model_b', t_b)]:
+        if isinstance(val, bool) or not isinstance(val, (int, float)):
+            raise ConfigValidationError(
+                f"temperature.{k} must be numeric, got {type(val).__name__}"
+            )
+        val_f = float(val)
+        if not math.isfinite(val_f) or val_f <= 0.0 or val_f > 100.0:
+            raise ConfigValidationError(
+                f"temperature.{k} must be a positive finite number in (0, 100], got {val}"
+            )
+    return {'model_a': float(t_a), 'model_b': float(t_b)}
+
+
 def _validate_postprocessing(cfg: dict) -> dict:
     """Validate postprocessing configuration."""
     pp = cfg.get('postprocessing', {})
@@ -168,14 +227,14 @@ def _validate_postprocessing(cfg: dict) -> dict:
         raise ConfigValidationError("postprocessing must be a dict.")
 
     threshold = pp.get('threshold', 0.5)
-    if not isinstance(threshold, (int, float)):
+    if isinstance(threshold, bool) or not isinstance(threshold, (int, float)):
         raise ConfigValidationError(
             f"postprocessing.threshold must be numeric, got {type(threshold).__name__}"
         )
     threshold = float(threshold)
-    if not (0.0 < threshold < 1.0):
+    if not math.isfinite(threshold) or not (0.0 < threshold < 1.0):
         raise ConfigValidationError(
-            f"postprocessing.threshold must be in (0.0, 1.0), got {threshold}"
+            f"postprocessing.threshold must be a finite number in (0.0, 1.0), got {threshold}"
         )
 
     enforce_hierarchy = pp.get('enforce_hierarchy', True)
@@ -183,9 +242,9 @@ def _validate_postprocessing(cfg: dict) -> dict:
         raise ConfigValidationError("postprocessing.enforce_hierarchy must be boolean.")
 
     min_et = pp.get('min_et_volume_voxels', 0)
-    if not isinstance(min_et, int) or min_et < 0:
+    if isinstance(min_et, bool) or not isinstance(min_et, int) or min_et < 0:
         raise ConfigValidationError(
-            f"postprocessing.min_et_volume_voxels must be a non-negative integer, got {min_et}"
+            f"postprocessing.min_et_volume_voxels must be a non-negative integer, got {min_et!r}"
         )
 
     export_uncertainty = pp.get('export_uncertainty_map', True)
@@ -247,12 +306,16 @@ def load_ensemble_config(config_path: str | Path | None = None) -> dict:
     # Validate weights
     w_a, w_b = _validate_weights(raw)
 
+    # Validate temperature
+    temperature = _validate_temperature(raw)
+
     # Validate postprocessing
     postprocessing = _validate_postprocessing(raw)
 
     validated = {
         'ensemble_name': ensemble_name,
         'fusion_mode': fusion_mode,
+        'temperature': temperature,
         'weight_a': w_a,
         'weight_b': w_b,
         'model_a': model_a,
