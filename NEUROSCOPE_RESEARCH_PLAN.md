@@ -60,16 +60,130 @@ Separate these claims:
 
 ## 3. Application and inference design
 
+### Planned MRI inputs, file formats and tumor outputs
+
+We will support four complementary MRI contrasts: T1, T1Gd/T1ce, T2 and FLAIR. The upload form, dataset adapters and model inputs will use these names consistently.
+
+| Correct name | Common aliases | What it contributes | Project use |
+|---|---|---|---|
+| T1-weighted, before contrast | T1, T1w, t1n, precontrast T1 | Anatomical structure and a baseline for comparison with postcontrast imaging | Structural viewing and one input channel |
+| T1-weighted, after gadolinium contrast | T1Gd, T1ce, T1c, T1-CE, postcontrast T1 | Highlights enhancing regions associated with contrast leakage/blood-brain barrier disruption | Important evidence for enhancing tumor, combined with the other channels |
+| T2-weighted | T2, T2w | Fluid/water-rich tissue commonly appears bright; helps reveal abnormalities | One input channel; useful for inspecting lesion extent |
+| T2-FLAIR | FLAIR, t2f | Fluid-attenuated inversion recovery: suppresses cerebrospinal-fluid signal while retaining many T2-related tissue abnormalities | Useful for inspecting surrounding abnormal signal; default viewer background |
+
+Our BraTS workflow will combine all four contrasts, using **T1Gd/T1ce** for post-gadolinium T1 imaging. Reports will describe enhancement and FLAIR abnormalities as imaging findings, with histological interpretation outside the prototype's scope. [Official BraTS modality description](https://www.med.upenn.edu/cbica/brats2020/data.html), [MRI protocol reference](https://pmc.ncbi.nlm.nih.gov/articles/PMC10466217/pdf/nihms-1919839.pdf)
+
+We will calculate physical volumes from segmentation masks using their spatial metadata, and support viewing across all four modalities. The case manifest will retain acquisition spacing so the viewer and report reflect the source resolution, including when a volume was reconstructed from 2D slices. Resampled views will retain that provenance.
+
+We will accept **NIfTI** files (`.nii` and gzip-compressed `.nii.gz`) and store modality assignments separately from file format. Each image's affine will map zero-based voxel coordinates `(i,j,k)` into reference coordinates `(x,y,z)`. We will check spatial units and convert to mm for measurements:
+
+```text
+[x,y,z,1]ᵀ = A[4×4] × [i,j,k,1]ᵀ
+voxel_volume_mm3 = abs(det(A[:3,:3]))  # affine converted to mm
+region_volume_ml = region_voxel_count × voxel_volume_mm3 / 1000
+```
+
+We will validate header geometry and inspect alignment before inference. Crosshairs will use the image's world coordinate system; standardized atlas coordinates will require a future atlas-registration step. [NiBabel coordinate systems](https://nipy.org/nibabel/coordinate_systems.html)
+
+| Region | Definition in our older BraTS label scheme | Derived mask |
+|---|---|---|
+| Enhancing tumor (ET) | Enhancing tumor region | `L == 4` |
+| Tumor core (TC) | Enhancing plus necrotic/non-enhancing core | `(L == 1) OR (L == 4)` |
+| Whole tumor (WT) | Core plus the surrounding edema/infiltrative-abnormality region represented by the benchmark | `L in {1,2,4}` |
+
+We will report these nested regions separately using `ET ⊆ TC ⊆ WT`, with WT providing the overall benchmark-region volume. The multimodal model will predict all three from the four inputs together, and the interface will support cases with an empty enhancing region. A future postoperative workflow will introduce a separate label mapping for resection cavities. [MONAI region definitions](https://huggingface.co/MONAI/brats_mri_segmentation/blob/main/docs/README.md)
+
+### How incoming scans are categorized
+
+We will categorize **each series by modality**, then assess **the case's model eligibility** using the declared clinical context and input requirements.
+
+1. For bundled datasets, read their manifest and documented suffixes. Map `t1→t1`, `t1ce/t1gd/t1c→t1ce`, `t2/t2w→t2`, and `flair/t2f→flair`; map `t1n→t1` for a dataset that defines it that way. Match full suffix tokens, testing T1ce before T1 so it is not misclassified.
+2. For user uploads, provide four named slots plus an `unknown` viewer slot. Filename matching will suggest assignments for user confirmation. Ambiguous filenames will remain in the unknown slot until the modality and contrast status are confirmed.
+3. Use dataset manifests or sidecar metadata when present. NIfTI headers alone often cannot reliably distinguish these contrasts. DICOM metadata-based classification/conversion is a future adapter, not part of this NIfTI MVP.
+4. Require one selected series per modality, all from the same subject and examination. Never combine different patients or pre/post-treatment dates to fill missing channels. Verify manifest/session identity or obtain an explicit user declaration; geometry alone cannot establish identity.
+5. Record declared `population=adult|pediatric|unknown`, `treatment_state=preoperative|postoperative|unknown`, and `target_condition=glioma|other|unknown`. Official sample manifests populate these values. Unknown or unsupported clinical context permits viewing but blocks automated segmentation in this prototype.
+6. Check geometric compatibility, finite intensities, prepared 1 mm spacing, skull-stripping/co-registration provenance and supported file dimensions. Identical shape/affine is necessary for our profile but does not prove anatomical alignment.
+
+No automatic MRI-sequence classifier is required for v1. Raidionics lists a sequence-classification model but explicitly describes it as unvalidated; do not use it to silently route inference. [Raidionics model inventory](https://github.com/raidionics/Raidionics-models)
+
+### Model routing and requirements by incoming scan combination
+
+**We will use one multimodal segmentation model with four MRI input channels to produce the three tumor-region outputs.**
+
+| Incoming case | Selected behavior/model | Requirements or reason |
+|---|---|---|
+| Complete T1 + T1ce + T2 + FLAIR, prepared preoperative adult glioma case | Run MONAI `brats_mri_segmentation` SegResNet | Same examination, supported geometry, four confirmed modalities; model order `[T1ce,T1,T2,FLAIR]` |
+| Same complete input, research comparison requested | Swin UNETR BraTS21, future option | Separate pinned checkpoint and its own preprocessing/channel-order adapter; not an automatic fallback |
+| Only T1, T1ce, T2 or FLAIR | View the available volume; segmentation disabled | Selected SegResNet requires all four channels |
+| Any two or three of the required modalities | View available volumes; display exact missing modalities | Do not copy channels, substitute FLAIR for T2, or fill missing channels with zeros |
+| Four files but unknown/duplicate modality assignment | View each file separately until resolved | Four files do not necessarily equal four required contrasts |
+| Complete raw/unregistered or non-skull-stripped scans | View; block model execution | Needs a validated preprocessing pipeline; spacing changes alone do not register anatomy |
+| Postoperative glioma, even with all four sequences | View; no automatic inference with the v1 model | Resection cavities and treatment effects are outside this prototype's supported task |
+| Pediatric tumor, metastasis, meningioma or unknown condition | View; no automatic inference with the v1 model | Requires an appropriate task-specific checkpoint and validation |
+| CT, DWI/ADC, perfusion, PET, 2D JPEG/PNG, ambiguous 4D data | Outside v1 segmentation support | These are not substitutes for the four-channel BraTS inputs |
+
+For a **future postoperative branch**, Raidionics documents `MRI_GBM_Postop_FV_1p` for postoperative T1ce, `FV_2p` for postoperative T1ce+T1, and `FV_3p` for postoperative T1ce+T1+FLAIR. These are candidates for that specific task, not general missing-modality substitutes for our preoperative SegResNet. Their outputs must not be assumed to reproduce WT/TC/ET; inspect checkpoint configuration and validate separately before enabling them. [Released model descriptions](https://github.com/raidionics/Raidionics-models)
+
+HD-GLIO also requires all four modalities, so it does not solve missing input scans. Its output definitions differ from the baseline. A model trained for missing modalities would be a separate future research track; withholding a channel from our existing model is not validation of that capability. [HD-GLIO requirements](https://github.com/CCI-Bonn/HD-GLIO)
+
+Runtime requirement for the selected path: a CUDA GPU worker running PyTorch/MONAI, CPU RAM for the decoded four-channel case and output buffers, disk space for case artifacts, and a browser supported by the pinned NiiVue release. Target a 16 GB VRAM cloud GPU for development; this is a practical starting allocation, not a verified minimum or speed guarantee. Measure actual usage in the first inference milestone. The browser only renders; it does not execute this model.
+
+### Dataset availability for each modality and task
+
+We will source cases from **paired multimodal collections**, obtaining all four sequences from the same subject and examination. This keeps modality inputs and reference masks aligned throughout development and evaluation.
+
+| Dataset | T1 | T1ce/T1Gd | T2 | FLAIR | Masks and intended use |
+|---|---|---|---|---|---|
+| [BraTS 2018](https://www.med.upenn.edu/sbia/brats2018.html) | Yes | Yes | Yes | Yes | Labelled training portion; reproduction/compatibility, with known risk of overlap with selected model training |
+| [BraTS 2020](https://www.med.upenn.edu/cbica/brats2020/data.html) | Yes | Yes | Yes | Yes | Labelled training portion; development and disclosed evaluation; user's Kaggle mirror remains an access option |
+| [BraTS 2021](https://www.med.upenn.edu/cbica/brats2021/) | Yes | Yes | Yes | Yes | Preferred demo source; public training masks, challenge validation/test labels may be hidden |
+| [MSD Task01](https://medicaldecathlon.com/) / [AWS](https://registry.opendata.aws/msd/) | Yes | Yes | Yes | Yes | Labelled training portion; modalities packed in 4D NIfTI; use dataset.json for ordering and label conversion |
+| [UCSF-PDGM](https://www.cancerimagingarchive.net/collection/ucsf-pdgm/) | Yes | Yes | Yes | Yes | Preoperative diffuse-glioma collection with segmentations and additional modalities; select the prepared structural data and inspect release manifest |
+| [UPENN-GBM](https://www.cancerimagingarchive.net/collection/upenn-gbm/) | Available | Available | Available | Available | Prepared MRI and corrected masks; check per-subject availability and overlap before selecting cases |
+| [BraTS Lighthouse 2025](https://www.synapse.org/Synapse%3Asyn64153130/) | Yes | Yes | Yes | Yes | Pre/post-treatment task; different labels including cavity; future model route, access conditions apply |
+
+“Yes” describes the collection's intended sequence set, not a guarantee that every mirror/file has been downloaded and checked. Save the exact release and per-case inventory. UCSF-PDGM's original paper describes 500 subjects, while the current TCIA description lists 501; do not mix release counts. [Current collection record](https://www.cancerimagingarchive.net/collection/ucsf-pdgm/)
+
+All four sequences can be used independently for viewer testing. Full segmentation testing needs a complete compatible case; Dice additionally needs a reference mask. Curated incomplete cases can test the missing-modality UI but cannot establish segmentation accuracy. Do not call a cohort independent until patient overlap has been checked.
+
+### Eligibility fields and API/UI changes
+
+Extend `POST /api/cases` to accept one or more named modality files for viewing, plus an optional `unknown` file. Require at least one readable 3D NIfTI. Inference still requires exactly one selected input for each of the four known modalities. For incomplete/mismatched cases, do not overlay unaligned volumes as if registered; allow individual viewing.
+
+Add multipart fields `population`, `treatment_state`, `target_condition` (enums above, default `unknown`), `same_exam_confirmed` and `prepared_inputs` (Boolean, default false). A trusted curated sample manifest supplies them automatically; user uploads require confirmation. These are provenance assertions, not automated medical classifications.
+
+Return a structured eligibility object alongside the case ID:
+
+```json
+{
+  "available_modalities": ["t1", "t2", "flair"],
+  "missing_modalities": ["t1ce"],
+  "modality_assignment_status": "confirmed",
+  "eligibility": {
+    "status": "view_only",
+    "model_id": null,
+    "reason_codes": ["MISSING_MODALITY"],
+    "message": "Add T1 post-contrast from the same examination to enable segmentation."
+  }
+}
+```
+
+Allowed assignment states: `suggested|confirmed|ambiguous`. Eligibility states: `ready|view_only`; invalid files receive a validation error rather than a saved eligible case. Reason codes include `MISSING_MODALITY`, `AMBIGUOUS_MODALITY`, `DUPLICATE_MODALITY`, `GEOMETRY_MISMATCH`, `PREPROCESSING_REQUIRED`, `EXAM_IDENTITY_UNCONFIRMED`, `UNSUPPORTED_POPULATION`, `UNSUPPORTED_TREATMENT_STATE`, and `UNSUPPORTED_CONDITION`.
+
+Recheck eligibility on `POST /api/cases/{id}/jobs`; return HTTP 422 with reasons if not ready. For v1, the server selects the sole validated model; a client cannot bypass routing by providing a model name. To correct a partial case in the MVP, submit a new complete case rather than mutating an existing case's input files.
+
+Add acceptance cases: complete eligible case runs; T1-only and three-modality cases remain viewable but cannot run; `_t1ce` never becomes T1; unknown suffixes require confirmation; duplicate T1 does not satisfy T1ce; different-session files are not combined; postoperative/pediatric/unknown-context cases cannot run the baseline; empty ET is a valid prediction, not a routing failure.
+
 ### User flow
 
-Choose sample or upload T1/T1ce/T2/FLAIR → confirm modality assignments → validate inputs → queue inference → review axial/coronal/sagittal/3D views → inspect regional volumes → optionally correct mask → export.
+Choose sample or upload available scans → confirm modality assignments and case context → validate inputs and show eligibility → view available scans → if eligible, queue inference → review axial/coronal/sagittal/3D views → inspect regional volumes → optionally correct mask → export.
 
 Use one NiiVue multiplanar canvas with its render panel, modality switching, crosshairs, orientation labels, window/level, region visibility and overlay opacity. Use named API constants from the pinned package instead of hard-coded slice-type numbers. [Layouts](https://niivue.com/docs/layouts/) and [drawing tools](https://niivue.com/docs/drawing/) support this approach.
 
 ### Backend behavior
 
 - FastAPI owns cases, an in-memory job queue and per-job files; one persistent GPU worker loads the model once and processes jobs serially. Return a job ID immediately; poll every two seconds. Restarted in-progress jobs become failed/retryable.
-- Validate readable NIfTI data, finite intensities, non-singular affine, spatial units, four modalities, and compatible shape/affine. Geometry compatibility does not prove anatomical co-registration; require prepared inputs and visually inspect samples.
+- Validate readable NIfTI data, finite intensities, non-singular affine and spatial units for viewing; additionally require four confirmed modalities, supported case context and compatible shape/affine before inference. Geometry compatibility does not prove anatomical co-registration; require prepared inputs and visually inspect samples.
 - Use the documented channel order and nonzero per-channel intensity normalization. Preserve the model's prepared coordinate convention. Do not blindly add RAS reorientation simply because another tutorial uses it. For v1, reject inputs outside the tested prepared geometry with a clear message; arbitrary raw-scan registration/skull stripping is deferred.
 - Start with the bundle's inference settings: 240×240×160 sliding window, overlap 0.5, batch 1, GPU mixed precision. Measure memory and latency. If it runs out of memory, test a 128×128×128 window with the same overlap, record the change and recheck outputs before freezing configuration.
 - Threshold sigmoid outputs at 0.5, use the bundle's ET→4, otherwise TC→1, otherwise WT→2 conversion, and derive displayed nested regions from the final label mask. Preserve original prediction separately from edits. [Inference config](https://huggingface.co/MONAI/brats_mri_segmentation/raw/main/configs/inference.json)
@@ -80,7 +194,7 @@ Use one NiiVue multiplanar canvas with its render panel, modality switching, cro
 
 | Endpoint | Purpose |
 |---|---|
-| POST /api/cases | Four named modality files; return case ID and validation result |
+| POST /api/cases | Available modality files plus case-context fields; return case ID, validation and inference eligibility |
 | POST /api/cases/{id}/jobs | Queue single-pass inference; optional TTA only when implemented |
 | GET /api/jobs/{id} | queued/running/succeeded/failed, stage, error and result URLs |
 | GET /api/cases/{id}/results | Label map, region volumes, timings, provenance and optional evaluation metrics |
