@@ -30,11 +30,11 @@
     <div class="header-badges">
       <div class="status-pill gpu-pill">
         <span class="pulse-dot"></span>
-        <span id="gpu-text">NVIDIA RTX 4060</span>
+        <span id="gpu-text">Detecting hardware…</span>
       </div>
       <div class="status-pill model-pill">
         <span class="model-indicator-tag">ACTIVE AI</span>
-        <span id="header-model-name">SwinUNETR (Transformer)</span>
+        <span id="header-model-name">8:2 Hybrid Ensemble</span>
       </div>
       <div class="status-pill offline-pill">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -320,6 +320,7 @@
                 <span>Overlay:</span>
                 <select id="select-overlay">
                   <option value="segmentation">AI Prediction Mask</option>
+                  <option value="uncertainty" id="opt-uncertainty">Uncertainty Entropy Map</option>
                   <option value="expert">Expert Reference Mask</option>
                   <option value="none">Scan Only (No Mask)</option>
                 </select>
@@ -517,6 +518,11 @@
               <span>Download NIfTI Mask (.nii.gz)</span>
             </a>
 
+            <a id="link-download-uncertainty" class="btn-export disabled" download="uncertainty.nii.gz">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>Download Uncertainty (.nii.gz)</span>
+            </a>
+
             <a id="link-download-mesh" class="btn-export disabled" download="tumor.obj">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
               <span>Download 3D Tumor Mesh (.obj)</span>
@@ -537,9 +543,9 @@
     <footer class="app-footer">
       <div>NeuroScope 3D · Autonomous 3D Segmentation Platform</div>
       <div class="footer-links">
-        <span>Dual Inference: <strong>SwinUNETR</strong> & <strong>SegResNet</strong></span>
+        <span>8:2 Ensemble: <strong>SwinUNETR (80%)</strong> & <strong>nnU-Net ResEnc M (20%)</strong></span>
         <span>•</span>
-        <span>Local RTX 4060 GPU Accelerated</span>
+        <span>Hardware-Accelerated / CPU-Safe Inference</span>
         <span>•</span>
         <span>MICCAI BraTS Standard Subregions</span>
       </div>

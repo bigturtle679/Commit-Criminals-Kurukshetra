@@ -5,7 +5,7 @@ const $ = id => document.getElementById(id);
 let currentJob = null;
 let currentView = 3; // 3: Multiplanar Grid, 0: Axial, 1: Coronal, 2: Sagittal, 4: 3D Render
 let isBusy = false;
-let selectedModel = 'swinunetr';
+let selectedModel = 'ensemble';
 let selectedCase = '00002';
 let viewerReady = true;
 
@@ -108,7 +108,17 @@ async function refreshViewer() {
 
   if (overlayMode !== 'none') {
     const isExpert = overlayMode === 'expert';
-    if (!isExpert || currentJob.result.metrics) {
+    const isUncertainty = overlayMode === 'uncertainty';
+    const hasUncertainty = Boolean(currentJob.result?.uncertainty?.available);
+    if (isUncertainty && hasUncertainty) {
+      volumes.push({
+        url: getFileUrl('uncertainty.nii.gz'),
+        opacity: opacity,
+        colormap: 'warm',
+        cal_min: 0.0,
+        cal_max: 1.0
+      });
+    } else if (!isExpert || currentJob.result.metrics) {
       volumes.push({
         url: getFileUrl(`${overlayMode}.nii.gz`),
         opacity: opacity,
@@ -120,7 +130,7 @@ async function refreshViewer() {
 
   await nv.loadVolumes(volumes);
 
-  if (nv.volumes.length > 1) {
+  if (nv.volumes.length > 1 && overlayMode !== 'uncertainty') {
     // Custom clinical BraTS subregion palette
     // 0: Background, 1: Necrotic/Non-enhancing Core (Amber), 2: Edema (Teal), 3: Unused, 4: Enhancing Tumor (Rose)
     nv.volumes[1].setColormapLabel({
@@ -216,30 +226,58 @@ async function showResult(job) {
   // Telemetry Run Info
   $('run-telemetry').textContent = `Runtime: ${res.runtime_seconds.toFixed(2)}s · GPU Peak: ${(res.peak_gpu_mib / 1024).toFixed(2)} GB · Dimensions: ${res.shape.join('×')}`;
 
-  // Ground Truth Benchmark Scores Table
+  // Ground Truth Benchmark Scores Table - safe DOM construction
   const tbody = $('scores-body');
   tbody.replaceChildren();
   if (res.metrics) {
     for (const [key, score] of Object.entries(res.metrics)) {
       const tr = document.createElement('tr');
+      const tdKey = document.createElement('td');
+      const strong = document.createElement('strong');
+      strong.textContent = key;
+      tdKey.appendChild(strong);
+
       const dsc = score.dice === null ? 'N/A' : `${(score.dice * 100).toFixed(1)}%`;
       const sens = score.sensitivity === null ? 'N/A' : `${(score.sensitivity * 100).toFixed(1)}%`;
 
-      tr.innerHTML = `
-        <td><strong>${key}</strong></td>
-        <td><span class="score-badge">${dsc}</span></td>
-        <td><span class="score-badge">${sens}</span></td>
-      `;
+      const tdDsc = document.createElement('td');
+      const badgeDsc = document.createElement('span');
+      badgeDsc.className = 'score-badge';
+      badgeDsc.textContent = dsc;
+      tdDsc.appendChild(badgeDsc);
+
+      const tdSens = document.createElement('td');
+      const badgeSens = document.createElement('span');
+      badgeSens.className = 'score-badge';
+      badgeSens.textContent = sens;
+      tdSens.appendChild(badgeSens);
+
+      tr.append(tdKey, tdDsc, tdSens);
       tbody.appendChild(tr);
     }
   } else {
-    tbody.innerHTML = '<tr><td colspan="3" class="muted-td">No expert reference provided. Run against BraTS demo to measure Dice/Sensitivity.</td></tr>';
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = 3;
+    td.className = 'muted-td';
+    td.textContent = 'No expert reference provided. Run against BraTS demo to measure Dice/Sensitivity.';
+    tr.appendChild(td);
+    tbody.appendChild(tr);
   }
 
   // Overlay dropdown options availability
   const expertOption = $('select-overlay').querySelector('[value=expert]');
   if (expertOption) expertOption.disabled = !res.metrics;
   if (!res.metrics && $('select-overlay').value === 'expert') {
+    $('select-overlay').value = 'segmentation';
+  }
+
+  const uncOption = $('opt-uncertainty');
+  const hasUncertainty = Boolean(res.uncertainty?.available);
+  if (uncOption) {
+    uncOption.disabled = !hasUncertainty;
+  }
+  if (!hasUncertainty && $('select-overlay').value === 'uncertainty') {
     $('select-overlay').value = 'segmentation';
   }
 
@@ -251,6 +289,12 @@ async function showResult(job) {
   const reportLink = $('link-download-report');
   reportLink.href = getFileUrl('report.json');
   reportLink.classList.remove('disabled');
+
+  const uncLink = $('link-download-uncertainty');
+  if (uncLink) {
+    uncLink.href = getFileUrl('uncertainty.nii.gz');
+    uncLink.classList.toggle('disabled', !hasUncertainty);
+  }
 
   const meshLink = $('link-download-mesh');
   meshLink.href = getFileUrl('tumor.obj');
@@ -310,7 +354,8 @@ async function pollJob(jobId) {
 async function launchAnalysis(endpoint, options = {}) {
   if (isBusy) return;
   setBusy(true);
-  setStatus('Running 3D segmentation on RTX 4060…');
+  const gpuLabel = $('gpu-text')?.textContent || 'GPU';
+  setStatus(`Running 3D segmentation on ${gpuLabel}…`);
 
   try {
     const res = await fetchApi(endpoint, options);

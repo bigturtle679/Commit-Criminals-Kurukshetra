@@ -1,0 +1,82 @@
+[
+  {
+    "patient_id": "BraTS-GLI-00100-000",
+    "t1c": "data/evaluation_set/BraTS-GLI-00100-000/t1c.nii.gz",
+    "t1": "data/evaluation_set/BraTS-GLI-00100-000/t1n.nii.gz",
+    "t2": "data/evaluation_set/BraTS-GLI-00100-000/t2w.nii.gz",
+    "flair": "data/evaluation_set/BraTS-GLI-00100-000/t2f.nii.gz",
+    "expert_mask": "data/evaluation_set/BraTS-GLI-00100-000/seg.nii.gz"
+  },
+  {
+    "patient_id": "BraTS-GLI-00101-000",
+    "t1c": "data/evaluation_set/BraTS-GLI-00101-000/t1c.nii.gz",
+    "t1": "data/evaluation_set/BraTS-GLI-00101-000/t1n.nii.gz",
+    "t2": "data/evaluation_set/BraTS-GLI-00101-000/t2w.nii.gz",
+    "flair": "data/evaluation_set/BraTS-GLI-00101-000/t2f.nii.gz",
+    "expert_mask": "data/evaluation_set/BraTS-GLI-00101-000/seg.nii.gz"
+  },
+  {
+    "patient_id": "BraTS-GLI-00102-000",
+    "t1c": "data/evaluation_set/BraTS-GLI-00102-000/t1c.nii.gz",
+    "t1": "data/evaluation_set/BraTS-GLI-00102-000/t1n.nii.gz",
+    "t2": "data/evaluation_set/BraTS-GLI-00102-000/t2w.nii.gz",
+    "flair": "data/evaluation_set/BraTS-GLI-00102-000/t2f.nii.gz",
+    "expert_mask": "data/evaluation_set/BraTS-GLI-00102-000/seg.nii.gz"
+  },
+  {
+    "patient_id": "BraTS-GLI-00103-000",
+    "t1c": "data/evaluation_set/BraTS-GLI-00103-000/t1c.nii.gz",
+    "t1": "data/evaluation_set/BraTS-GLI-00103-000/t1n.nii.gz",
+    "t2": "data/evaluation_set/BraTS-GLI-00103-000/t2w.nii.gz",
+    "flair": "data/evaluation_set/BraTS-GLI-00103-000/t2f.nii.gz",
+    "expert_mask": "data/evaluation_set/BraTS-GLI-00103-000/seg.nii.gz"
+  },
+  {
+    "patient_id": "BraTS-GLI-00104-000",
+    "t1c": "data/evaluation_set/BraTS-GLI-00104-000/t1c.nii.gz",
+    "t1": "data/evaluation_set/BraTS-GLI-00104-000/t1n.nii.gz",
+    "t2": "data/evaluation_set/BraTS-GLI-00104-000/t2w.nii.gz",
+    "flair": "data/evaluation_set/BraTS-GLI-00104-000/t2f.nii.gz",
+    "expert_mask": "data/evaluation_set/BraTS-GLI-00104-000/seg.nii.gz"
+  },
+  {
+    "patient_id": "BraTS-GLI-00105-000",
+    "t1c": "data/evaluation_set/BraTS-GLI-00105-000/t1c.nii.gz",
+    "t1": "data/evaluation_set/BraTS-GLI-00105-000/t1n.nii.gz",
+    "t2": "data/evaluation_set/BraTS-GLI-00105-000/t2w.nii.gz",
+    "flair": "data/evaluation_set/BraTS-GLI-00105-000/t2f.nii.gz",
+    "expert_mask": "data/evaluation_set/BraTS-GLI-00105-000/seg.nii.gz"
+  },
+  {
+    "patient_id": "BraTS-GLI-00106-000",
+    "t1c": "data/evaluation_set/BraTS-GLI-00106-000/t1c.nii.gz",
+    "t1": "data/evaluation_set/BraTS-GLI-00106-000/t1n.nii.gz",
+    "t2": "data/evaluation_set/BraTS-GLI-00106-000/t2w.nii.gz",
+    "flair": "data/evaluation_set/BraTS-GLI-00106-000/t2f.nii.gz",
+    "expert_mask": "data/evaluation_set/BraTS-GLI-00106-000/seg.nii.gz"
+  },
+  {
+    "patient_id": "BraTS-GLI-00107-000",
+    "t1c": "data/evaluation_set/BraTS-GLI-00107-000/t1c.nii.gz",
+    "t1": "data/evaluation_set/BraTS-GLI-00107-000/t1n.nii.gz",
+    "t2": "data/evaluation_set/BraTS-GLI-00107-000/t2w.nii.gz",
+    "flair": "data/evaluation_set/BraTS-GLI-00107-000/t2f.nii.gz",
+    "expert_mask": "data/evaluation_set/BraTS-GLI-00107-000/seg.nii.gz"
+  },
+  {
+    "patient_id": "BraTS-GLI-00108-000",
+    "t1c": "data/evaluation_set/BraTS-GLI-00108-000/t1c.nii.gz",
+    "t1": "data/evaluation_set/BraTS-GLI-00108-000/t1n.nii.gz",
+    "t2": "data/evaluation_set/BraTS-GLI-00108-000/t2w.nii.gz",
+    "flair": "data/evaluation_set/BraTS-GLI-00108-000/t2f.nii.gz",
+    "expert_mask": "data/evaluation_set/BraTS-GLI-00108-000/seg.nii.gz"
+  },
+  {
+    "patient_id": "BraTS-GLI-00109-000",
+    "t1c": "data/evaluation_set/BraTS-GLI-00109-000/t1c.nii.gz",
+    "t1": "data/evaluation_set/BraTS-GLI-00109-000/t1n.nii.gz",
+    "t2": "data/evaluation_set/BraTS-GLI-00109-000/t2w.nii.gz",
+    "flair": "data/evaluation_set/BraTS-GLI-00109-000/t2f.nii.gz",
+    "expert_mask": "data/evaluation_set/BraTS-GLI-00109-000/seg.nii.gz"
+  }
+]

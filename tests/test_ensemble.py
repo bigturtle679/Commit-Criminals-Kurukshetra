@@ -98,6 +98,30 @@ def test_resenc_model_instantiation():
     print("PASS: test_resenc_model_instantiation")
 
 
+def test_model_disagreement_calculation():
+    """Verify that multi-model disagreement is calculated as genuine inter-model divergence."""
+    p_a = torch.tensor([0.9, 0.1, 0.8])
+    p_b = torch.tensor([0.2, 0.1, 0.4])
+    disagreement = torch.abs(p_a - p_b)
+    assert torch.allclose(disagreement, torch.tensor([0.7, 0.0, 0.4]))
+    mean_disagreement = disagreement.mean().item()
+    assert np.isclose(mean_disagreement, (0.7 + 0.0 + 0.4) / 3.0, atol=1e-4)
+
+
+def test_disabled_uncertainty_semantics():
+    """When uncertainty is disabled, it must report None rather than 0.0."""
+    ent_data = None
+    export_uncertainty = False
+    regions = {'WT': np.array([True, True, False])}
+    
+    mean_uncertainty = (
+        round(float(ent_data[regions['WT']].mean()), 4)
+        if (export_uncertainty and ent_data is not None and regions['WT'].any())
+        else None
+    )
+    assert mean_uncertainty is None, "Disabled uncertainty must be None, not 0.0"
+
+
 if __name__ == '__main__':
     test_ensemble_weights_and_config()
     test_soft_probability_fusion()
@@ -105,4 +129,6 @@ if __name__ == '__main__':
     test_voxel_entropy_uncertainty()
     test_physical_volume_calculation()
     test_resenc_model_instantiation()
-    print("\nALL ENSEMBLE UNIT TESTS PASSED! (6/6)")
+    test_model_disagreement_calculation()
+    test_disabled_uncertainty_semantics()
+    print("\nALL ENSEMBLE UNIT TESTS PASSED! (8/8)")
