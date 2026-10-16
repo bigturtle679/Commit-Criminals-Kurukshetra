@@ -1427,3 +1427,15 @@ body {
   .card { animation: card-in .45s ease both; }
   @keyframes card-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 }
+
+/* Zip upload drop zone */
+.zip-drop { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding: 18px 14px; border: 2px dashed rgba(6, 182, 212, 0.35); border-radius: var(--radius-md); background: rgba(6, 182, 212, 0.04); cursor: pointer; transition: border-color .2s, background .2s, transform .2s; }
+.zip-drop:hover, .zip-drop.dragging { border-color: var(--primary); background: rgba(6, 182, 212, 0.1); }
+.zip-drop.dragging { transform: scale(1.01); }
+.zip-drop:focus-within { outline: 2px solid var(--primary); outline-offset: 3px; }
+.zip-drop-icon { font-size: 26px; }
+.zip-drop-title { font-size: 13px; color: var(--text-main); }
+.zip-drop-hint { font-size: 11px; line-height: 1.5; color: var(--text-muted); }
+.zip-detected { font-size: 11px; color: var(--accent-emerald); overflow-wrap: anywhere; }
+.zip-detected:empty { display: none; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

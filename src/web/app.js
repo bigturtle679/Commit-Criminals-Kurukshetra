@@ -512,7 +512,7 @@ async function pollJob(jobId) {
 }
 
 // Start Analysis Job
-async function launchAnalysis(endpoint, options = {}) {
+async function launchAnalysis(endpoint, options = {}, onStart = null) {
   if (isBusy) return;
   if (review?.saving || review?.pending) { setStatus('Save or reload the pending review change before switching cases.', true); return; }
   setBusy(true);
@@ -522,6 +522,7 @@ async function launchAnalysis(endpoint, options = {}) {
   try {
     const blind = $('blind-next').checked;
     const res = await fetchApi(endpoint, options);
+    if (onStart) onStart(res);
     if (blind) {
       pendingBlindJob = res.id;
       try { sessionStorage.setItem('neuroscope-blind-job', res.id); } catch {}
@@ -581,6 +582,32 @@ loadSamples();
     };
   }
 });
+
+// Zip upload: one file in, scan types auto-detected server-side
+const ROLE_LABELS = { t1c: 'T1c', t1: 'T1', t2: 'T2', flair: 'FLAIR', expert: 'Expert mask' };
+function uploadZip(file) {
+  if (!file) return;
+  const shown = $('zip-detected');
+  if (!file.name.toLowerCase().endsWith('.zip')) {
+    shown.textContent = 'Please choose a .zip file.';
+    return;
+  }
+  shown.textContent = `Uploading ${file.name}…`;
+  const formData = new FormData();
+  formData.set('archive', file);
+  formData.set('model', selectedModel);
+  launchAnalysis('/api/analyze-zip', { method: 'POST', body: formData }, res => {
+    const parts = Object.entries(res.detected || {}).map(([role, name]) => `${ROLE_LABELS[role] || role} ← ${name}`);
+    if (res.expert_et) parts.push(`ET label = ${res.expert_et}`);
+    shown.textContent = `✓ Detected: ${parts.join(' · ')}`;
+  }).finally(() => { if (!shown.textContent.startsWith('✓')) shown.textContent = ''; });
+  $('zip-input').value = '';
+}
+$('zip-input').onchange = e => uploadZip(e.target.files[0]);
+const zipDrop = $('zip-drop');
+['dragenter', 'dragover'].forEach(type => zipDrop.addEventListener(type, e => { e.preventDefault(); zipDrop.classList.add('dragging'); }));
+['dragleave', 'drop'].forEach(type => zipDrop.addEventListener(type, () => zipDrop.classList.remove('dragging')));
+zipDrop.addEventListener('drop', e => { e.preventDefault(); uploadZip(e.dataTransfer.files[0]); });
 
 $('upload-form').onsubmit = e => {
   e.preventDefault();

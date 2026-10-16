@@ -187,6 +187,17 @@
 
           </div>
 
+          <div class="or-separator"><span>OR DROP A ZIP</span></div>
+
+          <!-- One-file upload: scan types are detected from file names -->
+          <label id="zip-drop" class="zip-drop" for="zip-input">
+            <input id="zip-input" class="visually-hidden" type="file" accept=".zip,application/zip" aria-label="Patient zip file">
+            <span class="zip-drop-icon" aria-hidden="true">🗂️</span>
+            <span class="zip-drop-title">Drop a patient <strong>.zip</strong> here or click to browse</span>
+            <span class="zip-drop-hint">Auto-detects T1, T1c/T1ce, T2, FLAIR and the expert mask (seg) from file names · BraTS 2021 &amp; 2023 naming · ET label detected automatically</span>
+            <span id="zip-detected" class="zip-detected" aria-live="polite"></span>
+          </label>
+
           <div class="or-separator"><span>OR CUSTOM NIFTI UPLOAD</span></div>
 
           <!-- File Upload Form -->

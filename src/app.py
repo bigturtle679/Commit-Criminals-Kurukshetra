@@ -9,6 +9,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent))
 from pipeline import ROOT, run_case, _gpu_name
 from review_store import load_review, save_review, ReviewConflict
+import zip_intake
 
 logger = logging.getLogger(__name__)
 
@@ -344,6 +345,60 @@ async def analyze(
         raise HTTPException(400, msg)
     POOL.submit(execute, uid, paths, paths.get('expert'), expert_et, f'Patient MRI ({model_name.upper()})', model_name=model_name)
     return {'id': uid}
+
+
+def detect_et_label(mask_path):
+    """BraTS 2018-2021 masks use 4 for enhancing tumour, BraTS 2023+ use 3."""
+    import nibabel as nib, numpy as np
+    labels = set(np.unique(np.asarray(nib.load(str(mask_path)).dataobj)).astype(int).tolist())
+    if 4 in labels and 3 in labels:
+        raise ValueError(f'Expert mask contains both labels 3 and 4 ({sorted(labels)}); cannot tell the BraTS version.')
+    return 3 if 3 in labels else 4
+
+
+@app.post('/api/analyze-zip')
+async def analyze_zip(archive: UploadFile = File(...), model: str = Form('ensemble')):
+    """One-file upload: a .zip with T1, T1c, T2, FLAIR and optionally the expert mask."""
+    import zipfile
+    model_name = validate_model(model)
+    if not (archive.filename or '').lower().endswith('.zip'):
+        raise HTTPException(400, 'Upload a .zip containing the four NIfTI MRI scans.')
+    uid = new_job()
+    job_dir = RUNS / uid
+    try:
+        zip_path = job_dir / 'upload.zip'
+        size = 0
+        with zip_path.open('wb') as dest:
+            while chunk := await archive.read(1024 * 1024):
+                size += len(chunk)
+                if size > 1024 * 1024 * 1024:
+                    raise ValueError('Zip must be under 1 GB.')
+                dest.write(chunk)
+        try:
+            bundle = zipfile.ZipFile(zip_path)
+        except zipfile.BadZipFile:
+            raise ValueError('That file is not a valid zip archive.')
+        with bundle:
+            members = zip_intake.detect(bundle)
+            paths, detected = {}, {}
+            for role, member in members.items():
+                suffix = '.nii.gz' if member.filename.lower().endswith('.nii.gz') else '.nii'
+                target = job_dir / (role + suffix)  # fixed name: never the archive's own path
+                with bundle.open(member) as src, target.open('wb') as dest:
+                    shutil.copyfileobj(src, dest, 1024 * 1024)
+                paths[role] = target
+                detected[role] = Path(member.filename).name
+        zip_path.unlink(missing_ok=True)
+        expert = paths.pop('expert', None)
+        expert_et = detect_et_label(expert) if expert else 4
+    except Exception as e:
+        with GUARD:
+            JOBS.pop(uid, None)
+        shutil.rmtree(job_dir, ignore_errors=True)
+        raise HTTPException(400, str(e).replace(str(ROOT), '.'))
+    stem = Path(archive.filename).stem.replace('NeuroScope_TestCase_', '')[:40]
+    POOL.submit(execute, uid, paths, expert, expert_et, f'{stem} · zip upload ({model_name.upper()})', model_name=model_name)
+    return {'id': uid, 'detected': detected, 'expert_et': expert_et if expert else None}
 
 
 @app.get('/api/jobs/{uid}')
