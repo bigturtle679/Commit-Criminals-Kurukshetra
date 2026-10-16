@@ -1,5 +1,5 @@
 from pathlib import Path
-import json, uuid, threading, shutil, time, traceback
+import json, uuid, threading, shutil, time, traceback, logging
 from concurrent.futures import ThreadPoolExecutor
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
 from fastapi.responses import FileResponse
@@ -8,6 +8,8 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent))
 from pipeline import ROOT, run_case, _gpu_name
 
+logger = logging.getLogger(__name__)
+
 app = FastAPI(title='NeuroScope Local · 3D Brain Tumor Segmentation')
 RUNS = ROOT / 'work/runs'
 RUNS.mkdir(parents=True, exist_ok=True)
@@ -15,6 +17,53 @@ JOBS = {}
 POOL = ThreadPoolExecutor(max_workers=1)
 GUARD = threading.Lock()
 app.mount('/static', StaticFiles(directory=ROOT / 'src/web'), name='static')
+
+# Upload retention: delete run directories older than this many hours
+RETENTION_HOURS = 24
+
+
+def _cleanup_old_runs():
+    """Delete run directories older than RETENTION_HOURS.
+
+    Skips directories for jobs currently queued or running.
+    Runs in a background thread to avoid blocking the main event loop.
+    """
+    while True:
+        try:
+            cutoff = time.time() - RETENTION_HOURS * 3600
+            active_ids = set()
+            with GUARD:
+                active_ids = {
+                    uid for uid, job in JOBS.items()
+                    if job.get('status') in ('queued', 'running')
+                }
+
+            for run_dir in RUNS.iterdir():
+                if not run_dir.is_dir():
+                    continue
+                uid = run_dir.name
+                if uid in active_ids:
+                    continue
+                try:
+                    mtime = run_dir.stat().st_mtime
+                    if mtime < cutoff:
+                        shutil.rmtree(run_dir, ignore_errors=True)
+                        # Remove from JOBS cache
+                        with GUARD:
+                            JOBS.pop(uid, None)
+                        logger.info("Cleaned up old run: %s", uid)
+                except Exception as e:
+                    logger.warning("Cleanup error for %s: %s", uid, e)
+        except Exception as e:
+            logger.warning("Cleanup sweep error: %s", e)
+
+        # Sleep for 1 hour between cleanup sweeps
+        time.sleep(3600)
+
+
+# Start cleanup thread as daemon
+_cleanup_thread = threading.Thread(target=_cleanup_old_runs, daemon=True, name='run-cleanup')
+_cleanup_thread.start()
 
 PATIENT_CASES = {
     '00000': {
