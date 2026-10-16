@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Per-patient benchmark result",
+  "type": "object",
+  "required": [
+    "run_id",
+    "patient_id",
+    "model",
+    "status",
+    "code_commit",
+    "manifest_sha256",
+    "checkpoint_sha256",
+    "settings",
+    "metrics",
+    "runtime_seconds",
+    "peak_gpu_memory_bytes"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string"
+    },
+    "patient_id": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "complete",
+        "failed",
+        "blocked"
+      ]
+    },
+    "code_commit": {
+      "type": "string"
+    },
+    "manifest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "checkpoint_sha256": {
+      "type": "object"
+    },
+    "settings": {
+      "type": "object"
+    },
+    "metrics": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "runtime_seconds": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "peak_gpu_memory_bytes": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "failure_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "description": "Record WT/TC/ET metric details following protocols/metrics.md; schema alone does not prove scientific validity."
+}
