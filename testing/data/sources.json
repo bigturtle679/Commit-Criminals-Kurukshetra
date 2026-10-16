@@ -1,0 +1,24 @@
+{
+  "status": "inventory_not_yet_verified",
+  "sources": [
+    {
+      "handle": "awsaf49/brats2020-training-data",
+      "url": "https://www.kaggle.com/datasets/awsaf49/brats2020-training-data",
+      "version": null,
+      "file_inventory_verified": false
+    },
+    {
+      "handle": "dschettler8845/brats-2021-task1",
+      "url": "https://www.kaggle.com/datasets/dschettler8845/brats-2021-task1",
+      "version": null,
+      "file_inventory_verified": false
+    },
+    {
+      "handle": "reinheart/brats2022",
+      "url": "https://www.kaggle.com/datasets/reinheart/brats2022",
+      "version": null,
+      "file_inventory_verified": false
+    }
+  ],
+  "official_directory": "https://www.med.upenn.edu/cbica/brats/"
+}
