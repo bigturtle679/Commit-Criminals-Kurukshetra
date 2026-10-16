@@ -7,11 +7,31 @@ Supports:
 """
 from pathlib import Path
 import json
+import hashlib
+import math
 import torch
 from monai.networks.nets import SwinUNETR, SegResNet
 from scripts.models.resenc_unet import ResEncUNet
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def resolve_weights(explicit, defaults):
+    candidates = [explicit] if explicit else defaults
+    for candidate in candidates:
+        p = Path(candidate)
+        p = p if p.is_absolute() else ROOT / p
+        if p.is_file():
+            return p
+    raise FileNotFoundError(f"Trained checkpoint missing: {candidates}. Random inference is disabled.")
+
+
+def checkpoint_hash(path):
+    h = hashlib.sha256()
+    with open(path, 'rb') as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b''):
+            h.update(chunk)
+    return h.hexdigest()
 
 
 def get_device(requested='auto'):
@@ -26,17 +46,7 @@ def get_device(requested='auto'):
 
 def load_swinunetr(weights_path=None, fallback_path=None, device=None):
     device = device or get_device()
-    candidates = [
-        Path(weights_path) if weights_path else None,
-        ROOT / 'models/swinunetr_brats/model_weights_BRATS-finetune.pt',
-        Path(fallback_path) if fallback_path else None,
-        ROOT / 'work/models/swinunetr_fold1.pt'
-    ]
-    resolved_path = None
-    for p in candidates:
-        if p and p.exists():
-            resolved_path = p
-            break
+    resolved_path = resolve_weights(weights_path, [fallback_path] if fallback_path else ['models/swinunetr_brats/model_weights_BRATS-finetune.pt', 'work/models/swinunetr_fold1.pt'])
 
     model = SwinUNETR(
         spatial_dims=3,
@@ -48,13 +58,10 @@ def load_swinunetr(weights_path=None, fallback_path=None, device=None):
         num_heads=[3, 6, 12, 24]
     )
 
-    if resolved_path:
-        state = torch.load(resolved_path, map_location='cpu', weights_only=False)
-        sd = state.get('state_dict', state.get('model', state))
-        model.load_state_dict(sd, strict=False)
-        desc = f'SwinUNETR BraTS21 ({resolved_path.name})'
-    else:
-        desc = 'SwinUNETR BraTS21 (uninitialized weights)'
+    state = torch.load(resolved_path, map_location='cpu', weights_only=False)
+    sd = state.get('state_dict', state.get('model', state))
+    model.load_state_dict(sd, strict=True)
+    desc = f'SwinUNETR BraTS21 ({resolved_path.name})'
 
     model.to(device)
     model.eval()
@@ -63,25 +70,13 @@ def load_swinunetr(weights_path=None, fallback_path=None, device=None):
 
 def load_resenc(preset='M', weights_path=None, device=None):
     device = device or get_device()
-    candidates = [
-        Path(weights_path) if weights_path else None,
-        ROOT / 'models/resenc_brats/resenc_m_brats.pt',
-        ROOT / 'work/models/resenc_brats.pt'
-    ]
-    resolved_path = None
-    for p in candidates:
-        if p and p.exists():
-            resolved_path = p
-            break
+    resolved_path = resolve_weights(weights_path, ['models/resenc_brats/resenc_m_brats.pt', 'work/models/resenc_brats.pt'])
 
     model = ResEncUNet(in_channels=4, out_channels=3, preset=preset)
-    if resolved_path:
-        state = torch.load(resolved_path, map_location='cpu', weights_only=False)
-        sd = state.get('state_dict', state.get('model', state))
-        model.load_state_dict(sd, strict=False)
-        desc = f'nnU-Net ResEnc {preset} ({resolved_path.name})'
-    else:
-        desc = f'nnU-Net ResEnc {preset} (initialized)'
+    state = torch.load(resolved_path, map_location='cpu', weights_only=False)
+    sd = state.get('state_dict', state.get('model', state))
+    model.load_state_dict(sd, strict=True)
+    desc = f'Custom ResEnc {preset} ({resolved_path.name})'
 
     model.to(device)
     model.eval()
@@ -96,6 +91,14 @@ def load_ensemble_models(config_path=None, device=None):
 
     model_a_cfg = cfg.get('model_a', {})
     model_b_cfg = cfg.get('model_b', {})
+
+    weights = cfg.get('weights', {'model_a': 0.8, 'model_b': 0.2})
+    values = [float(weights[k]) for k in ('model_a', 'model_b')]
+    if not all(math.isfinite(v) and v >= 0 for v in values) or not math.isclose(sum(values), 1.0):
+        raise ValueError('Ensemble weights must be finite, nonnegative and sum to one')
+    # Resolve both before allocating either model on the GPU.
+    resolve_weights(model_a_cfg.get('weights_path'), ['models/swinunetr_brats/model_weights_BRATS-finetune.pt'])
+    resolve_weights(model_b_cfg.get('weights_path'), ['models/resenc_brats/resenc_m_brats.pt', 'work/models/resenc_brats.pt'])
 
     model_a, desc_a, path_a = load_swinunetr(
         weights_path=model_a_cfg.get('weights_path'),
@@ -120,5 +123,6 @@ def load_ensemble_models(config_path=None, device=None):
         'weight_a': float(weights['model_a']),
         'weight_b': float(weights['model_b']),
         'config': cfg,
+        'checkpoint_sha256': {'model_a': checkpoint_hash(path_a), 'model_b': checkpoint_hash(path_b)},
         'device': device
     }

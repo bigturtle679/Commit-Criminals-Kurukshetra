@@ -1,0 +1,90 @@
+{
+  "selection_seed": 42,
+  "selection_method": "all three existing local real demo cases; convenience smoke sample, not random pilot",
+  "patients": [
+    {
+      "patient_id": "BraTS-GLI-00000-000",
+      "source": "existing-local-GLI-demo",
+      "version": "local-snapshot-2026-10-16",
+      "modalities": {
+        "t1": "data/demo/BraTS-GLI-00000-000-t1n.nii.gz",
+        "t1c": "data/demo/BraTS-GLI-00000-000-t1c.nii.gz",
+        "t2": "data/demo/BraTS-GLI-00000-000-t2w.nii.gz",
+        "flair": "data/demo/BraTS-GLI-00000-000-t2f.nii.gz"
+      },
+      "expert_mask": "data/demo/BraTS-GLI-00000-000-seg.nii.gz",
+      "label_mapping": {
+        "background": 0,
+        "nonenhancing_core": 1,
+        "edema": 2,
+        "enhancing_tumor": 3,
+        "evidence": "Existing application PATIENT_CASES et_label=3; observed mask values 0,1,2,3. Original source provenance not re-established."
+      },
+      "overlap_status": "unknown",
+      "geometry_verified": true,
+      "sha256": {
+        "t1": "e92b72ee221624c36cf89ac826deceeee7097f46dd66a5d218d18b7916ebd67d",
+        "t1c": "735c27fd7a17b1702875837bcc843eedc88ced6ac2cb0e73cdf995e3e64ba82f",
+        "t2": "955ff59d053e87153bb7c809235743ec904817727ec02c630f3141e191d6f452",
+        "flair": "bb899a83627591e55cada00b2c6d5402199832b717c8b9f90bb550fe35d971ff",
+        "expert_mask": "5f74bef54e7c4eda1a8c329c1f73ef863460294525b82e99ac587fe72f10f6c6"
+      }
+    },
+    {
+      "patient_id": "BraTS-GLI-00002-000",
+      "source": "existing-local-GLI-demo",
+      "version": "local-snapshot-2026-10-16",
+      "modalities": {
+        "t1": "data/BraTS-GLI-00002-000/BraTS-GLI-00002-000-t1n.nii.gz",
+        "t1c": "data/BraTS-GLI-00002-000/BraTS-GLI-00002-000-t1c.nii.gz",
+        "t2": "data/BraTS-GLI-00002-000/BraTS-GLI-00002-000-t2w.nii.gz",
+        "flair": "data/BraTS-GLI-00002-000/BraTS-GLI-00002-000-t2f.nii.gz"
+      },
+      "expert_mask": "data/BraTS-GLI-00002-000/BraTS-GLI-00002-000-seg.nii.gz",
+      "label_mapping": {
+        "background": 0,
+        "nonenhancing_core": 1,
+        "edema": 2,
+        "enhancing_tumor": 3,
+        "evidence": "Existing application PATIENT_CASES et_label=3; observed mask values 0,1,2,3. Original source provenance not re-established."
+      },
+      "overlap_status": "unknown",
+      "geometry_verified": true,
+      "sha256": {
+        "t1": "4b76c5e6326f0f89e2f6ee243473060390982fc83e9bceb27a4b94899b2b0df1",
+        "t1c": "4f49aa266cd907ce890bcc9c96f82534810f85bb98a76f8a092a5b529d3b6b6e",
+        "t2": "b5c9da53d4a573fe37fa8a8075b8220d4dfe3bbc377c3e1943fbd3ef86d3b118",
+        "flair": "208e4e8fadbdf2b1c1a87f8bad8854bc7d4becd604bc01eefad725d19b43c6ef",
+        "expert_mask": "8de53bb074f62fa3cf5c7e3a327e6fb1496a41f9f5898b4b10f1228fde706a40"
+      }
+    },
+    {
+      "patient_id": "BraTS-GLI-00003-000",
+      "source": "existing-local-GLI-demo",
+      "version": "local-snapshot-2026-10-16",
+      "modalities": {
+        "t1": "data/BraTS-GLI-00003-000/BraTS-GLI-00003-000-t1n.nii.gz",
+        "t1c": "data/BraTS-GLI-00003-000/BraTS-GLI-00003-000-t1c.nii.gz",
+        "t2": "data/BraTS-GLI-00003-000/BraTS-GLI-00003-000-t2w.nii.gz",
+        "flair": "data/BraTS-GLI-00003-000/BraTS-GLI-00003-000-t2f.nii.gz"
+      },
+      "expert_mask": "data/BraTS-GLI-00003-000/BraTS-GLI-00003-000-seg.nii.gz",
+      "label_mapping": {
+        "background": 0,
+        "nonenhancing_core": 1,
+        "edema": 2,
+        "enhancing_tumor": 3,
+        "evidence": "Existing application PATIENT_CASES et_label=3; observed mask values 0,1,2,3. Original source provenance not re-established."
+      },
+      "overlap_status": "unknown",
+      "geometry_verified": true,
+      "sha256": {
+        "t1": "90997c21753a6d49bdb8629f5b2c6ddb61ef7c2f86f977b18001ce6c5e3161ed",
+        "t1c": "a211cd8c26dd8d396341399d0a13fb888d5df6252bd9c5aa01156680e97c5577",
+        "t2": "5c440a9ef1ef3b494d74e647fab9e41eb48f1fc40c8eabffd55863f46779ed5d",
+        "flair": "8f68b6d8026f2c6ac097ea26a4dd727571025e26b69b485f9a1a84e244222721",
+        "expert_mask": "de321e64c389e4f5088cabc0246dc2750546834580ce5236daa3c54c6036d33a"
+      }
+    }
+  ]
+}

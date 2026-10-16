@@ -1,6 +1,6 @@
 """Comprehensive evaluation metrics for 3D multi-modal brain tumor segmentation.
 
-Follows official BraTS evaluation protocol:
+Region-based research metrics (not an official challenge evaluator):
 - Subregions: Whole Tumor (WT), Tumor Core (TC), Enhancing Tumor (ET)
 - Overlap metrics: Dice Similarity Coefficient (DSC), Sensitivity (Recall)
 - Volumetric metrics: Absolute Volume Error (|Delta-V| mL), Relative Volume Error (%)
@@ -37,7 +37,7 @@ def compute_sensitivity(pred_mask: np.ndarray, gt_mask: np.ndarray) -> float | N
     
     g_sum = int(np.count_nonzero(g))
     if g_sum == 0:
-        return 1.0 if not np.any(p) else 0.0
+        return None
         
     intersection = int(np.count_nonzero(p & g))
     return round(float(intersection) / float(g_sum), 4)
@@ -71,6 +71,14 @@ def calculate_volume_ml(mask: np.ndarray, affine: np.ndarray) -> float:
 
 def evaluate_case(pred_labels: np.ndarray, gt_labels: np.ndarray, affine: np.ndarray, enhancing_label: int = 3) -> dict:
     """Evaluate predicted labels against expert reference ground truth for all 3 BraTS subregions."""
+    if pred_labels.shape != gt_labels.shape:
+        raise ValueError('Prediction and reference shapes must match')
+    if enhancing_label not in (3, 4) or not np.isin(gt_labels, [0, 1, 2, enhancing_label]).all():
+        raise ValueError('Invalid expert label convention')
+    if not np.isin(pred_labels, [0, 1, 2, 4]).all():
+        raise ValueError('Invalid predicted labels')
+    if not np.isfinite(affine).all() or abs(np.linalg.det(affine[:3, :3])) < 1e-8:
+        raise ValueError('Invalid affine')
     # Label definitions
     # Pred: 1 (Necrotic core), 2 (Edema), 4 (Enhancing)
     pred_regions = {
@@ -94,9 +102,13 @@ def evaluate_case(pred_labels: np.ndarray, gt_labels: np.ndarray, affine: np.nda
         pred_vol = calculate_volume_ml(p, affine)
         gt_vol = calculate_volume_ml(g, affine)
         abs_err = round(abs(pred_vol - gt_vol), 3)
-        rel_err = round((abs_err / gt_vol * 100.0), 1) if gt_vol > 0 else (0.0 if pred_vol == 0 else 100.0)
+        rel_err = round((abs_err / gt_vol * 100.0), 1) if gt_vol > 0 else None
         
         scores[region] = {
+            'tp': int(np.count_nonzero(p & g)),
+            'fp': int(np.count_nonzero(p & ~g)),
+            'fn': int(np.count_nonzero(~p & g)),
+            'precision': round(float(np.count_nonzero(p & g)) / int(p.sum()), 4) if p.any() else None,
             'dice': compute_dice(p, g),
             'sensitivity': compute_sensitivity(p, g),
             'pred_volume_ml': pred_vol,

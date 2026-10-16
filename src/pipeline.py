@@ -1,5 +1,7 @@
 """Local BraTS-style research inference with SwinUNETR and SegResNet support."""
 import json, time, threading
+from src.validation import read_expert
+from src.metrics import evaluate_case
 from pathlib import Path
 import nibabel as nib
 import numpy as np
@@ -49,11 +51,17 @@ def load_model(model_name='swinunetr'):
         )
         state = torch.load(weights_path, map_location='cpu', weights_only=False)
         sd = state.get('state_dict', state.get('model', state))
-        model.load_state_dict(sd, strict=False)
+        model.load_state_dict(sd, strict=True)
         model = model.eval().to(device)
         title = 'MONAI SwinUNETR (Vision Transformer) · BraTS21 checkpoint'
         MODELS['swinunetr'] = (model, title)
         return MODELS['swinunetr']
+
+    elif model_name == 'resenc':
+        from scripts.models.model_loader import load_resenc
+        model, title, _ = load_resenc(device=device)
+        MODELS['resenc'] = (model, title)
+        return MODELS['resenc']
 
     elif model_name in ('segresnet', 'resnet'):
         config_path = ROOT / 'models/brats_mri_segmentation/configs/inference.json'
@@ -138,6 +146,7 @@ def compute_volume_summary(volumes):
 
 
 def run_case(paths, out, update=lambda message: None, expert=None, expert_et=4, case_name='Uploaded MRI', model_name='swinunetr'):
+    model_name = {'swin': 'swinunetr', 'swin_unetr': 'swinunetr', 'resnet': 'segresnet', '8_2': 'ensemble', 'swin_resenc': 'ensemble'}.get(model_name, model_name)
     started = time.perf_counter()
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
@@ -151,7 +160,7 @@ def run_case(paths, out, update=lambda message: None, expert=None, expert_et=4, 
         if img.shape != original.shape or not np.allclose(img.affine, original.affine, atol=1e-3):
             raise ValueError('The four MRI volumes are not aligned. Use co-registered scans from the same patient. This app does not perform registration or skull stripping.')
             
-    expert_img = read_image(expert) if expert else None
+    expert_img = read_expert(expert, original, expert_et) if expert else None
     if expert_img is not None and (expert_img.shape != original.shape or not np.allclose(expert_img.affine, original.affine, atol=1e-3)):
         raise ValueError('Expert mask must share the original MRI grid and affine.')
 
@@ -187,35 +196,20 @@ def run_case(paths, out, update=lambda message: None, expert=None, expert_et=4, 
 
         if model_name in ('ensemble', '8_2', 'swin_resenc'):
             update(f'Segmenting with 8:2 Hybrid Ensemble ({bundle["desc_a"]} + {bundle["desc_b"]})')
-            x_a = norm_arr[[3, 0, 1, 2]][(slice(None),) + slices].unsqueeze(0).contiguous().to(device)
-            x_b = norm_arr[[3, 1, 0, 2]][(slice(None),) + slices].unsqueeze(0).contiguous().to(device)
-            
-            with torch.inference_mode():
-                logits_a = sliding_window_inference(x_a, roi_size, 1, bundle['model_a'], overlap=0.5, mode='gaussian', sw_device=device, device='cpu')
-                logits_b = sliding_window_inference(x_b, roi_size, 1, bundle['model_b'], overlap=0.5, mode='gaussian', sw_device=device, device='cpu')
-                prob_a = torch.sigmoid(logits_a[0].float())
-                prob_b = torch.sigmoid(logits_b[0].float())
-                prob = bundle['weight_a'] * prob_a + bundle['weight_b'] * prob_b
-
-                # Enforce BraTS hierarchy: ET <= TC <= WT
-                p_tc = torch.maximum(prob[0], prob[2])
-                p_wt = torch.maximum(prob[1], p_tc)
-                p_et = prob[2]
-                pred = torch.stack([p_tc >= 0.5, p_wt >= 0.5, p_et >= 0.5]).numpy()
-
-                # Voxel entropy uncertainty map
-                from scripts.ensemble_inference import compute_voxel_entropy
-                ent_crop = compute_voxel_entropy(torch.stack([p_tc, p_wt, p_et])).mean(dim=0).numpy()
-                full_ent = np.zeros(canonical.shape, dtype=np.float32)
-                full_ent[slices] = ent_crop
-                ent_native = resample_from_to(nib.Nifti1Image(full_ent, canonical.affine), (original.shape, original.affine), order=1)
-                nib.save(nib.Nifti1Image(np.asarray(ent_native.dataobj, dtype=np.float32), original.affine, original.header), out / 'uncertainty.nii.gz')
+            from scripts.ensemble_inference import predict_ensemble
+            pred, ent_crop = predict_ensemble(norm_arr[(slice(None),) + slices], bundle, device)
+            full_ent = np.zeros(canonical.shape, dtype=np.float32)
+            full_ent[slices] = ent_crop
+            ent_native = resample_from_to(nib.Nifti1Image(full_ent, canonical.affine), (original.shape, original.affine), order=1)
+            ent_header = original.header.copy()
+            ent_header.set_data_dtype(np.float32)
+            nib.save(nib.Nifti1Image(np.asarray(ent_native.dataobj, dtype=np.float32), original.affine, ent_header), out / 'uncertainty.nii.gz')
 
         else:
             model = bundle
-            model_display = "SwinUNETR Transformer" if "Swin" in model_title else "SegResNet CNN"
+            model_display = model_title
             update(f'Segmenting with {model_display} ({roi_size[0]}³ sliding patches)')
-            mod_indices = [3, 0, 1, 2] if model_name == 'swinunetr' else [0, 1, 2, 3]
+            mod_indices = {'swinunetr': [3, 0, 1, 2], 'resenc': [3, 1, 0, 2]}.get(model_name, [0, 1, 2, 3])
             x = norm_arr[mod_indices][(slice(None),) + slices].unsqueeze(0).contiguous().to(device)
             
             with torch.inference_mode():
@@ -251,16 +245,7 @@ def run_case(paths, out, update=lambda message: None, expert=None, expert_et=4, 
         gt = expert_img.get_fdata()
         if not np.isin(gt, [0, 1, 2, expert_et]).all():
             raise ValueError('Expert mask labels do not match the selected convention (0,1,2,3 or 0,1,2,4).')
-        masks = region_masks(gt, expert_et)
-        metrics = {}
-        for k, p in regions.items():
-            g = masks[k]
-            inter = int(np.count_nonzero(p & g))
-            denom = int(p.sum() + g.sum())
-            metrics[k] = {
-                'dice': round(2 * inter / denom, 4) if denom else None,
-                'sensitivity': round(inter / int(g.sum()), 4) if g.any() else None
-            }
+        metrics = evaluate_case(seg_data, gt, original.affine, expert_et)
         normalized = np.where(gt == expert_et, 4, gt).astype(np.uint8)
         nib.save(nib.Nifti1Image(normalized, original.affine, header), out / 'expert.nii.gz')
 
@@ -282,14 +267,15 @@ def run_case(paths, out, update=lambda message: None, expert=None, expert_et=4, 
         'case_name': case_name,
         'model_name': model_name,
         'model': model_title,
-        'input_channel_order': ['FLAIR', 'T1c', 'T1', 'T2'] if model_name == 'swinunetr' else ['T1c', 'T1', 'T2', 'FLAIR'],
+        'input_channel_order': {k: bundle['config'][k]['channel_order'] for k in ('model_a', 'model_b')} if model_name == 'ensemble' else ({'swinunetr': ['FLAIR', 'T1c', 'T1', 'T2'], 'resenc': ['FLAIR', 'T1', 'T1c', 'T2']}.get(model_name, ['T1c', 'T1', 'T2', 'FLAIR'])),
+        'ensemble_settings': bundle['config'] if model_name == 'ensemble' else None,
         'sliding_window_roi': list(roi_size),
         'volumes_ml': volumes,
         'volume_summary': volume_summary,
         'metrics': metrics,
         'runtime_seconds': round(time.perf_counter() - started, 2),
         'peak_gpu_mib': peak,
-        'gpu': torch.cuda.get_device_name(0),
+        'gpu': torch.cuda.get_device_name(0) if torch.cuda.is_available() else device,
         'shape': list(original.shape),
         'spacing_mm': nib.affines.voxel_sizes(original.affine).round(4).tolist(),
         'meshes': meshes,

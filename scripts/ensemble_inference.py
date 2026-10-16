@@ -19,11 +19,13 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.models.model_loader import load_ensemble_models, get_device
+from src.validation import read_expert
+from src.metrics import evaluate_case
 
 
 def validate_mri(path):
     img = nib.load(str(path))
-    if len(img.shape) != 3 or min(img.shape) < 8:
+    if len(img.shape) != 3 or min(img.shape) < 8 or np.prod(img.shape) > 35_000_000:
         raise ValueError(f"Each input must be a 3D MRI volume, got shape {img.shape} from {path}")
     units = img.header.get_xyzt_units()[0]
     if units not in ('mm', 'unknown'):
@@ -45,9 +47,49 @@ def enforce_hierarchy(prob_tc, prob_wt, prob_et):
 
 def compute_voxel_entropy(probs, eps=1e-7):
     """Compute Shannon entropy H(v) = -p*log2(p) - (1-p)*log2(1-p)."""
-    p = torch.clamp(probs, eps, 1.0 - eps)
+    if not torch.isfinite(probs).all():
+        raise ValueError('Entropy input contains nonfinite probabilities')
+    eps = max(float(eps), torch.finfo(torch.float32).eps)
+    if not 0 < eps < 0.5:
+        raise ValueError('Entropy epsilon must be between zero and 0.5')
+    p = torch.clamp(probs.float(), eps, 1.0 - eps)
     entropy = - (p * torch.log2(p) + (1.0 - p) * torch.log2(1.0 - p))
     return entropy
+
+
+def predict_ensemble(normed_crop, bundle, device):
+    """Shared CLI/web inference, using each model's declared settings."""
+    cfg = bundle['config']
+    probabilities = []
+    raw_order = ['t1c', 't1', 't2', 'flair']
+    for key in ('model_a', 'model_b'):
+        spec = cfg[key]
+        order = spec['channel_order']
+        if sorted(order) != sorted(raw_order):
+            raise ValueError('Invalid model channel order')
+        x = normed_crop[[raw_order.index(k) for k in order]].unsqueeze(0).contiguous()
+        with torch.inference_mode():
+            logits = sliding_window_inference(x.to(device), tuple(spec['roi_size']), 1,
+                bundle[key], overlap=spec.get('sliding_window_overlap', 0.5),
+                mode=spec.get('mode', 'gaussian'), sw_device=device, device='cpu')
+        if not torch.isfinite(logits).all():
+            raise ValueError('Nonfinite model output')
+        temperature = float(cfg.get('temperature', {}).get(key, 1.0))
+        if not np.isfinite(temperature) or temperature <= 0:
+            raise ValueError('Temperature must be finite and positive')
+        probabilities.append(torch.sigmoid(logits[0].float() / temperature))
+    if cfg.get('fusion_mode', 'probability') != 'probability':
+        raise ValueError('Only probability fusion is supported')
+    if cfg.get('postprocessing', {}).get('min_et_volume_voxels', 0):
+        raise ValueError('min_et_volume_voxels is unsupported; set it to 0')
+    prob = bundle['weight_a'] * probabilities[0] + bundle['weight_b'] * probabilities[1]
+    post = cfg.get('postprocessing', {})
+    if post.get('enforce_hierarchy', True):
+        prob = torch.stack(enforce_hierarchy(*prob))
+    threshold = float(post.get('threshold', 0.5))
+    if not np.isfinite(threshold) or not 0 < threshold < 1:
+        raise ValueError('Threshold must lie strictly between zero and one')
+    return (prob >= threshold).numpy(), compute_voxel_entropy(prob).mean(dim=0).numpy()
 
 
 def run_ensemble(mri_paths, out_dir, config_path=None, expert_path=None, expert_et=4, device='auto', update=lambda msg: None):
@@ -70,10 +112,14 @@ def run_ensemble(mri_paths, out_dir, config_path=None, expert_path=None, expert_
         if img.shape != ref.shape or not np.allclose(img.affine, ref.affine, atol=1e-3):
             raise ValueError(f"Modality {m} geometry does not match reference T1c geometry")
 
+    expert_img = read_expert(expert_path, ref, expert_et) if expert_path is not None else None
+
     update("Standardizing to 1 mm isotropic canonical RAS space")
     canonical = nib.as_closest_canonical(ref)
     if not np.allclose(nib.affines.voxel_sizes(canonical.affine), [1, 1, 1], atol=1e-3):
         canonical = resample_to_output(canonical, voxel_sizes=(1, 1, 1), order=1)
+    if np.prod(canonical.shape) > 35_000_000:
+        raise ValueError('Resampled MRI exceeds 35 million voxels')
     target_geom = (canonical.shape, canonical.affine)
 
     channels = []
@@ -97,39 +143,8 @@ def run_ensemble(mri_paths, out_dir, config_path=None, expert_path=None, expert_
     norm_tf = NormalizeIntensity(nonzero=True, channel_wise=True)
     normed = norm_tf(arr_raw).as_tensor()
 
-    x_a = normed[[3, 0, 1, 2]][(slice(None),) + slices].unsqueeze(0).contiguous()
-    x_b = normed[[3, 1, 0, 2]][(slice(None),) + slices].unsqueeze(0).contiguous()
-
-    roi_a = tuple(cfg.get('model_a', {}).get('roi_size', [96, 96, 96]))
-    roi_b = tuple(cfg.get('model_b', {}).get('roi_size', [96, 96, 96]))
-    overlap = cfg.get('model_a', {}).get('sliding_window_overlap', 0.5)
-
-    update(f"Executing Model A ({w_a * 100:.0f}%): {models_bundle['desc_a']}")
-    with torch.inference_mode():
-        logits_a = sliding_window_inference(
-            x_a.to(dev), roi_a, 1, models_bundle['model_a'], overlap=overlap, mode='gaussian', sw_device=dev, device='cpu'
-        )
-        prob_a = torch.sigmoid(logits_a[0].float())
-
-    update(f"Executing Model B ({w_b * 100:.0f}%): {models_bundle['desc_b']}")
-    with torch.inference_mode():
-        logits_b = sliding_window_inference(
-            x_b.to(dev), roi_b, 1, models_bundle['model_b'], overlap=overlap, mode='gaussian', sw_device=dev, device='cpu'
-        )
-        prob_b = torch.sigmoid(logits_b[0].float())
-
-    update(f"Fusing probabilities with {w_a:.1f} : {w_b:.1f} ratio")
-    prob_ens = w_a * prob_a + w_b * prob_b
-
-    # Post-processing: Channel 0: TC, Channel 1: WT, Channel 2: ET
-    p_tc, p_wt, p_et = prob_ens[0], prob_ens[1], prob_ens[2]
-    if cfg.get('postprocessing', {}).get('enforce_hierarchy', True):
-        p_tc, p_wt, p_et = enforce_hierarchy(p_tc, p_wt, p_et)
-
-    tau = cfg.get('postprocessing', {}).get('threshold', 0.5)
-    pred_tc = (p_tc >= tau).numpy()
-    pred_wt = (p_wt >= tau).numpy()
-    pred_et = (p_et >= tau).numpy()
+    pred, entropy_crop = predict_ensemble(normed[(slice(None),) + slices], models_bundle, dev)
+    pred_tc, pred_wt, pred_et = pred
 
     # Discrete BraTS labels: 4: ET, 1: NET/Core, 2: Edema, 0: BG
     labels_crop = np.where(pred_et, 4, np.where(pred_tc, 1, np.where(pred_wt, 2, 0))).astype(np.uint8)
@@ -137,7 +152,6 @@ def run_ensemble(mri_paths, out_dir, config_path=None, expert_path=None, expert_
     full_labels[slices] = labels_crop
 
     # Compute Shannon entropy uncertainty map
-    entropy_crop = compute_voxel_entropy(torch.stack([p_tc, p_wt, p_et])).mean(dim=0).numpy()
     full_entropy = np.zeros(canonical.shape, dtype=np.float32)
     full_entropy[slices] = entropy_crop
 
@@ -170,24 +184,7 @@ def run_ensemble(mri_paths, out_dir, config_path=None, expert_path=None, expert_
     volumes_ml = {k: round(float(m.sum()) * voxel_ml, 3) for k, m in regions.items()}
 
     # Compute validation metrics if ground truth expert mask provided
-    metrics = None
-    if expert_path is not None and Path(expert_path).exists():
-        gt_img = nib.load(str(expert_path))
-        gt = gt_img.get_fdata()
-        gt_regions = {
-            'WT': np.isin(gt, [1, 2, expert_et]),
-            'TC': np.isin(gt, [1, expert_et]),
-            'ET': gt == expert_et
-        }
-        metrics = {}
-        for k in ['WT', 'TC', 'ET']:
-            pred_m = regions[k]
-            gt_m = gt_regions[k]
-            inter = int(np.count_nonzero(pred_m & gt_m))
-            denom = int(pred_m.sum() + gt_m.sum())
-            dice = round(2.0 * inter / denom, 4) if denom > 0 else 1.0 if (pred_m.sum() == 0 and gt_m.sum() == 0) else 0.0
-            sens = round(inter / int(gt_m.sum()), 4) if gt_m.sum() > 0 else None
-            metrics[k] = {'dice': dice, 'sensitivity': sens}
+    metrics = evaluate_case(seg_data, expert_img.get_fdata(), ref.affine, expert_et) if expert_img is not None else None
 
     elapsed = round(time.perf_counter() - started, 2)
     report = {
@@ -198,6 +195,8 @@ def run_ensemble(mri_paths, out_dir, config_path=None, expert_path=None, expert_
             'model_b': models_bundle['desc_b']
         },
         'device': str(dev),
+        'checkpoint_sha256': models_bundle['checkpoint_sha256'],
+        'settings': cfg,
         'runtime_seconds': elapsed,
         'volumes_ml': volumes_ml,
         'metrics': metrics,

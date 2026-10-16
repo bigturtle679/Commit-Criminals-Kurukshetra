@@ -40,7 +40,7 @@
   "postprocessing": {
     "threshold": 0.5,
     "enforce_hierarchy": true,
-    "min_et_volume_voxels": 16,
+    "min_et_volume_voxels": 0,
     "export_uncertainty_map": true
   }
 }
