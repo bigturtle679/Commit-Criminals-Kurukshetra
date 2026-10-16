@@ -35,13 +35,28 @@ def _build_channel_indices(channel_order: list[str]) -> list[int]:
     return [MODALITY_INDEX[m] for m in channel_order]
 
 
+_HASH_CACHE = {}
+
+
 def _sha256_file(path) -> str:
-    """Compute SHA-256 hash of a file for provenance."""
+    """Compute SHA-256 hash of a file for provenance with mtime/size caching."""
+    if path is None:
+        return 'missing'
+    p = Path(path)
+    if not p.exists():
+        return 'not_found'
+    stat = p.stat()
+    cache_key = (str(p.resolve()), stat.st_mtime, stat.st_size)
+    if cache_key in _HASH_CACHE:
+        return _HASH_CACHE[cache_key]
+
     h = hashlib.sha256()
-    with open(path, 'rb') as f:
+    with open(p, 'rb') as f:
         for chunk in iter(lambda: f.read(1024 * 1024), b''):
             h.update(chunk)
-    return h.hexdigest()
+    digest = h.hexdigest()
+    _HASH_CACHE[cache_key] = digest
+    return digest
 
 
 def validate_mri(path):
@@ -164,41 +179,63 @@ def run_ensemble(mri_paths, out_dir, config_path=None, validated_config=None,
     roi_b = vcfg['model_b']['roi_size']
     overlap_a = vcfg['model_a']['sliding_window_overlap']
     overlap_b = vcfg['model_b']['sliding_window_overlap']
+    mode_a = vcfg['model_a'].get('mode', 'gaussian')
+    mode_b = vcfg['model_b'].get('mode', 'gaussian')
     threshold = vcfg['postprocessing']['threshold']
+    fusion_mode = vcfg.get('fusion_mode', 'probability')
+    temp_cfg = vcfg.get('temperature', {})
+    temp_a = float(temp_cfg.get('model_a', 1.0))
+    temp_b = float(temp_cfg.get('model_b', 1.0))
+    min_et_voxels = vcfg['postprocessing'].get('min_et_volume_voxels', 0)
+    export_uncertainty = vcfg['postprocessing'].get('export_uncertainty_map', True)
 
     update(f"Executing Model A ({w_a * 100:.0f}%): {models_bundle['desc_a']}")
     with torch.inference_mode():
         logits_a = sliding_window_inference(
             x_a.to(dev), roi_a, 1, models_bundle['model_a'],
-            overlap=overlap_a, mode='gaussian', sw_device=dev, device='cpu'
+            overlap=overlap_a, mode=mode_a, sw_device=dev, device='cpu'
         )
-        prob_a = torch.sigmoid(logits_a[0].float())
 
     # Validate model A output
-    if not torch.isfinite(prob_a).all():
-        raise RuntimeError("Model A produced non-finite probabilities. Checkpoint may be corrupt.")
+    if not torch.isfinite(logits_a).all():
+        raise RuntimeError("Model A produced non-finite logits. Checkpoint or input may be corrupt.")
 
     update(f"Executing Model B ({w_b * 100:.0f}%): {models_bundle['desc_b']}")
     with torch.inference_mode():
         logits_b = sliding_window_inference(
             x_b.to(dev), roi_b, 1, models_bundle['model_b'],
-            overlap=overlap_b, mode='gaussian', sw_device=dev, device='cpu'
+            overlap=overlap_b, mode=mode_b, sw_device=dev, device='cpu'
         )
-        prob_b = torch.sigmoid(logits_b[0].float())
 
     # Validate model B output
-    if not torch.isfinite(prob_b).all():
-        raise RuntimeError("Model B produced non-finite probabilities. Checkpoint may be corrupt.")
+    if not torch.isfinite(logits_b).all():
+        raise RuntimeError("Model B produced non-finite logits. Checkpoint or input may be corrupt.")
 
     # Verify output shapes match
-    if prob_a.shape != prob_b.shape:
+    if logits_a.shape != logits_b.shape:
         raise RuntimeError(
-            f"Model output shape mismatch: A={list(prob_a.shape)}, B={list(prob_b.shape)}. "
-            f"Cannot fuse incompatible probability tensors."
+            f"Model output shape mismatch: A={list(logits_a.shape)}, B={list(logits_b.shape)}. "
+            f"Cannot fuse incompatible tensors."
         )
 
-    update(f"Fusing probabilities with {w_a:.1f} : {w_b:.1f} ratio")
-    prob_ens = w_a * prob_a + w_b * prob_b
+    # Apply temperature scaling and fuse according to configured fusion_mode
+    la = logits_a[0].float() / max(temp_a, 1e-4)
+    lb = logits_b[0].float() / max(temp_b, 1e-4)
+
+    if fusion_mode == 'logit':
+        update(f"Fusing logits with {w_a:.1f} : {w_b:.1f} ratio")
+        logits_ens = w_a * la + w_b * lb
+        prob_ens = torch.sigmoid(logits_ens)
+    else:  # 'probability' (default)
+        update(f"Fusing probabilities with {w_a:.1f} : {w_b:.1f} ratio")
+        prob_a = torch.sigmoid(la)
+        prob_b = torch.sigmoid(lb)
+        if not (torch.isfinite(prob_a).all() and torch.isfinite(prob_b).all()):
+            raise RuntimeError("Non-finite probabilities computed after sigmoid.")
+        prob_ens = w_a * prob_a + w_b * prob_b
+
+    if not torch.isfinite(prob_ens).all():
+        raise RuntimeError("Ensemble produced non-finite probability values.")
 
     # Post-processing: Channel 0: TC, Channel 1: WT, Channel 2: ET
     p_tc, p_wt, p_et = prob_ens[0], prob_ens[1], prob_ens[2]
@@ -209,33 +246,44 @@ def run_ensemble(mri_paths, out_dir, config_path=None, validated_config=None,
     pred_wt = (p_wt >= threshold).numpy()
     pred_et = (p_et >= threshold).numpy()
 
+    # Apply minimum enhancing tumor volume postprocessing
+    if min_et_voxels > 0 and int(np.count_nonzero(pred_et)) < min_et_voxels:
+        pred_et = np.zeros_like(pred_et)
+
     # Discrete BraTS labels: 4: ET, 1: NET/Core, 2: Edema, 0: BG
     labels_crop = np.where(pred_et, 4, np.where(pred_tc, 1, np.where(pred_wt, 2, 0))).astype(np.uint8)
     full_labels = np.zeros(canonical.shape, dtype=np.uint8)
     full_labels[slices] = labels_crop
 
-    # Compute Shannon entropy uncertainty map
-    entropy_crop = compute_voxel_entropy(torch.stack([p_tc, p_wt, p_et])).mean(dim=0).numpy()
-    full_entropy = np.zeros(canonical.shape, dtype=np.float32)
-    full_entropy[slices] = entropy_crop
+    # Compute Shannon entropy uncertainty map if enabled
+    if export_uncertainty:
+        entropy_crop = compute_voxel_entropy(torch.stack([p_tc, p_wt, p_et])).mean(dim=0).numpy()
+        full_entropy = np.zeros(canonical.shape, dtype=np.float32)
+        full_entropy[slices] = entropy_crop
+    else:
+        full_entropy = np.zeros(canonical.shape, dtype=np.float32)
 
     update("Projecting segmentation & uncertainty to native patient space")
     seg_canonical_img = nib.Nifti1Image(full_labels, canonical.affine)
     seg_native = resample_from_to(seg_canonical_img, (ref.shape, ref.affine), order=0)
     seg_data = np.asarray(seg_native.dataobj, dtype=np.uint8)
 
-    ent_canonical_img = nib.Nifti1Image(full_entropy, canonical.affine)
-    ent_native = resample_from_to(ent_canonical_img, (ref.shape, ref.affine), order=1)
-    ent_data = np.asarray(ent_native.dataobj, dtype=np.float32)
+    if export_uncertainty:
+        ent_canonical_img = nib.Nifti1Image(full_entropy, canonical.affine)
+        ent_native = resample_from_to(ent_canonical_img, (ref.shape, ref.affine), order=1)
+        ent_data = np.asarray(ent_native.dataobj, dtype=np.float32)
+    else:
+        ent_data = np.zeros(ref.shape, dtype=np.float32)
 
     # Save NIfTI outputs
     header = ref.header.copy()
     header.set_data_dtype(np.uint8)
     nib.save(nib.Nifti1Image(seg_data, ref.affine, header), out_dir / 'segmentation.nii.gz')
 
-    ent_header = ref.header.copy()
-    ent_header.set_data_dtype(np.float32)
-    nib.save(nib.Nifti1Image(ent_data, ref.affine, ent_header), out_dir / 'uncertainty.nii.gz')
+    if export_uncertainty:
+        ent_header = ref.header.copy()
+        ent_header.set_data_dtype(np.float32)
+        nib.save(nib.Nifti1Image(ent_data, ref.affine, ent_header), out_dir / 'uncertainty.nii.gz')
 
     # Compute physical volumes using metrics.py (single source of truth)
     sys.path.insert(0, str(ROOT / 'src'))
@@ -259,6 +307,12 @@ def run_ensemble(mri_paths, out_dir, config_path=None, validated_config=None,
         if not np.allclose(gt_img.affine, ref.affine, atol=1e-3):
             raise ValueError('Expert mask affine does not match the MRI affine.')
         gt = gt_img.get_fdata()
+        allowed = {0, 1, 2, expert_et}
+        gt_unique = set(np.unique(gt).astype(int))
+        if not gt_unique.issubset(allowed):
+            raise ValueError(
+                f'Expert mask labels do not match convention. Expected subset of {allowed}, got {gt_unique}'
+            )
         gt_regions = {
             'WT': np.isin(gt, [1, 2, expert_et]),
             'TC': np.isin(gt, [1, expert_et]),
@@ -300,21 +354,31 @@ def run_ensemble(mri_paths, out_dir, config_path=None, validated_config=None,
         'timestamp': time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         'effective_config': {
             'threshold': threshold,
+            'fusion_mode': fusion_mode,
+            'temperature': {'model_a': temp_a, 'model_b': temp_b},
             'roi_a': list(roi_a),
             'roi_b': list(roi_b),
             'overlap_a': overlap_a,
             'overlap_b': overlap_b,
+            'mode_a': mode_a,
+            'mode_b': mode_b,
             'channel_order_a': vcfg['model_a']['channel_order'],
             'channel_order_b': vcfg['model_b']['channel_order'],
             'enforce_hierarchy': vcfg['postprocessing']['enforce_hierarchy'],
+            'min_et_volume_voxels': min_et_voxels,
+            'export_uncertainty_map': export_uncertainty,
         },
+        'provenance_note': (
+            'Checkpoint SHA-256 hashes certify file integrity and reproducibility. '
+            'They do not constitute clinical authorization, peer review, or diagnostic validation.'
+        ),
         'disclaimer': (
             'Research demonstration only. Not intended for clinical diagnosis. '
             'Predicted regions are model estimates, not expert-verified findings.'
         ),
         'artifacts': {
             'segmentation': str(out_dir / 'segmentation.nii.gz'),
-            'uncertainty': str(out_dir / 'uncertainty.nii.gz')
+            'uncertainty': str(out_dir / 'uncertainty.nii.gz') if export_uncertainty else None
         },
         # Pass through raw data for pipeline integration
         '_seg_data': seg_data,
