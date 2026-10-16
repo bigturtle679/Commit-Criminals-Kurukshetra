@@ -242,10 +242,70 @@ def _validate_tensor_shapes(sd: dict, model_sd: dict, model_name: str, checkpoin
         )
 
 
-def load_swinunetr(weights_path=None, fallback_path=None, device=None):
+SWINUNETR_HF_URL = "https://huggingface.co/smilelab/BrainSegFounder/resolve/main/model_weights_BRATS-finetune.pt"
+SWINUNETR_DEFAULT_PATH = ROOT / "models/swinunetr_brats/model_weights_BRATS-finetune.pt"
+
+
+def ensure_swinunetr_checkpoint(target_path=None, progress_callback=None) -> Path:
+    """Ensure SwinUNETR checkpoint exists locally; downloads from Hugging Face if missing."""
+    target = Path(target_path) if target_path else SWINUNETR_DEFAULT_PATH
+    if target.is_file() and target.stat().st_size > 100_000_000:
+        return target
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temp_target = target.with_suffix('.pt.download')
+    logger.info("SwinUNETR checkpoint missing locally. Auto-downloading from Hugging Face (%s)...", SWINUNETR_HF_URL)
+    if progress_callback:
+        progress_callback("Connecting to Hugging Face to download SwinUNETR weights (256 MB)...")
+
+    import urllib.request
+    req = urllib.request.Request(
+        SWINUNETR_HF_URL,
+        headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) NeuroScope/1.0"}
+    )
+    try:
+        with urllib.request.urlopen(req) as resp, open(temp_target, "wb") as f:
+            total = int(resp.headers.get("Content-Length", 256365127))
+            downloaded = 0
+            last_pct = -1
+            while True:
+                chunk = resp.read(1024 * 1024)
+                if not chunk:
+                    break
+                f.write(chunk)
+                downloaded += len(chunk)
+                if total > 0 and progress_callback:
+                    pct = int(downloaded / total * 100)
+                    if pct != last_pct and pct % 5 == 0:
+                        last_pct = pct
+                        mb_cur = downloaded // (1024 * 1024)
+                        mb_tot = total // (1024 * 1024)
+                        progress_callback(f"Downloading SwinUNETR weights: {pct}% ({mb_cur}/{mb_tot} MB)...")
+
+        temp_target.rename(target)
+        logger.info("Successfully downloaded SwinUNETR checkpoint to %s", target)
+        return target
+    except Exception as e:
+        if temp_target.exists():
+            try:
+                temp_target.unlink()
+            except OSError:
+                pass
+        logger.error("Failed to auto-download SwinUNETR checkpoint: %s", e)
+        err_msg = (
+            f'SwinUNETR checkpoint not found and auto-download failed: {e}\n\n'
+            f'Please run python scripts/download_weights.py or download_weights.bat on Windows\n'
+            f'or download manually from {SWINUNETR_HF_URL}\n'
+            f'and place it at {target}'
+        )
+        raise CheckpointNotFoundError(err_msg) from e
+
+
+def load_swinunetr(weights_path=None, fallback_path=None, device=None, progress_callback=None):
     """Load SwinUNETR model with validated checkpoint.
 
-    Raises CheckpointNotFoundError if no checkpoint is found.
+    Automatically retrieves official weights from Hugging Face if default weights are missing.
+    Raises CheckpointNotFoundError if no checkpoint is found and auto-download fails.
     Raises CheckpointLoadError if the checkpoint is incompatible.
     """
     device = device or get_device()
@@ -256,7 +316,15 @@ def load_swinunetr(weights_path=None, fallback_path=None, device=None):
         'work/models/swinunetr_fold1.pt'
     ]
 
-    resolved_path = _resolve_checkpoint(candidates, 'SwinUNETR')
+    try:
+        resolved_path = _resolve_checkpoint(candidates, 'SwinUNETR')
+    except CheckpointNotFoundError:
+        # If user did not provide a custom explicit path, auto-download default weights
+        norm_explicit = str(weights_path).replace(chr(92), '/') if weights_path else ''
+        if weights_path is None or norm_explicit.endswith('model_weights_BRATS-finetune.pt'):
+            resolved_path = ensure_swinunetr_checkpoint(progress_callback=progress_callback)
+        else:
+            raise
 
     model = SwinUNETR(
         spatial_dims=3,
@@ -338,7 +406,7 @@ def load_resenc(preset='M', weights_path=None, device=None):
     return model, desc, resolved_path
 
 
-def load_ensemble_models(config_path=None, validated_config=None, device=None):
+def load_ensemble_models(config_path=None, validated_config=None, device=None, progress_callback=None):
     """Load both ensemble models with validated checkpoints.
 
     Uses configs/config_loader.py to guarantee authoritative validation.
@@ -358,7 +426,8 @@ def load_ensemble_models(config_path=None, validated_config=None, device=None):
     model_a, desc_a, path_a = load_swinunetr(
         weights_path=model_a_cfg.get('weights_path'),
         fallback_path=model_a_cfg.get('fallback_weights_path'),
-        device=device
+        device=device,
+        progress_callback=progress_callback
     )
 
     model_b, desc_b, path_b = load_resenc(

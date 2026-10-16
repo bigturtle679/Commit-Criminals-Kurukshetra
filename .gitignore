@@ -1,6 +1,5 @@
 # Local ML environment, datasets, and downloaded weights
 .venv/
-/models/
 /data/
 work/
 outputs/
@@ -9,7 +8,8 @@ project-context.txt
 .DS_Store
 *.nii
 *.nii.gz
-*.pt
+models/swinunetr_brats/*.pt
+*.tmp
 *.pth
 *.zip
 *.tar
