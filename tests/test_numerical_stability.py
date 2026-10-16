@@ -47,12 +47,9 @@ def test_sigmoid_overflow_extreme_logits():
 
 def test_dice_division_by_zero_underflow():
     """Verify Dice metric calculation handles empty foregrounds (0/0) gracefully."""
-    def safe_dice(pred, target, eps=1e-7):
-        intersection = (pred * target).sum()
-        denominator = pred.sum() + target.sum()
-        if denominator == 0:
-            return 1.0 if intersection == 0 else 0.0
-        return float((2.0 * intersection + eps) / (denominator + eps))
+    from src.metrics import compute_dice
+    def safe_dice(pred, target):
+        return compute_dice(pred.numpy(), target.numpy())
 
     # Case 1: Both pred and target are all-zeros (healthy brain, no tumor)
     pred_empty = torch.zeros((10, 10, 10))

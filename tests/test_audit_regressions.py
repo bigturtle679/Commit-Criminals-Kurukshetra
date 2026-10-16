@@ -100,4 +100,17 @@ class PathParityTests(unittest.TestCase):
                 np.testing.assert_allclose(nib.load(root/'cli'/name).get_fdata(),nib.load(root/'web'/name).get_fdata())
             self.assertEqual(a['metrics'],b['metrics'])
 
+class ManifestTests(unittest.TestCase):
+    def test_tampered_input_rejected_before_inference(self):
+        import json
+        from scripts.benchmark_manifest import validate_manifest
+        root=Path(__file__).resolve().parents[1]
+        m=json.loads((root/'testing/data/local_smoke_manifest.json').read_text())
+        m['patients'][0]['sha256']['t1']='0'*64
+        with self.assertRaisesRegex(ValueError,'Hash mismatch'):validate_manifest(m)
+
+    def test_empty_manifest_rejected(self):
+        from scripts.benchmark_manifest import validate_manifest
+        with self.assertRaises(ValueError):validate_manifest({'patients':[]})
+
 if __name__=='__main__': unittest.main(verbosity=2)
