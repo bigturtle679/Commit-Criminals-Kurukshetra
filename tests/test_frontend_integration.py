@@ -55,7 +55,9 @@ def test_homepage_launches_real_workspace(client):
     response = client.get('/')
     assert response.status_code == 200
     document = Elements(response.text)
-    assert document.links.count('/workspace') == 3
+    assert document.links.count('/workspace') == 2
+    assert response.text == (ROOT / 'frontend/index.html').read_text()
+    assert '/landing-static/assets/brain-cropped.mp4' in response.text
     assert '<dialog' not in response.text
     assert 'Demo only' not in response.text
 

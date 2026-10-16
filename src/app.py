@@ -141,7 +141,7 @@ PATIENT_CASES = {
 def index(request: Request):
     if 'analysis' in request.query_params:
         return RedirectResponse('/workspace?' + request.url.query, status_code=307)
-    return FileResponse(ROOT / 'frontend/home.html')
+    return FileResponse(ROOT / 'frontend/index.html')
 
 
 @app.get('/workspace')
