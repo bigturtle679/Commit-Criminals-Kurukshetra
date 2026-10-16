@@ -310,7 +310,8 @@ async function pollJob(jobId) {
 async function launchAnalysis(endpoint, options = {}) {
   if (isBusy) return;
   setBusy(true);
-  setStatus('Running 3D segmentation on RTX 4060…');
+  const gpuLabel = $('gpu-text')?.textContent || 'GPU';
+  setStatus(`Running 3D segmentation on ${gpuLabel}…`);
 
   try {
     const res = await fetchApi(endpoint, options);
