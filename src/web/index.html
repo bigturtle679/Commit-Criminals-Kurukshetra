@@ -284,8 +284,8 @@
         <section class="card review-panel" aria-labelledby="review-heading">
           <h3 id="review-heading">Spatial bookmarks &amp; blind practice</h3>
           <p>Self-guided practice. Submitted observations are saved before answers are revealed.</p>
-          <label><input type="checkbox" id="blind-next"> Open the next case in blind mode</label>
-          <button type="button" id="start-blind">Start blind attempt</button>
+          <input type="checkbox" id="blind-next" hidden>
+          <button type="button" id="start-blind" hidden>Start blind attempt</button>
           <p id="review-stage" role="status">Open an analysis to review</p>
           <p id="review-exposure"></p>
           <label>Saved attempts <select id="attempt-history"><option value="">Ordinary case notes</option></select></label>
@@ -317,11 +317,6 @@
 
       <!-- Right Main: Interactive Viewport & Results Dashboard -->
       <section class="viewport-panel">
-        <!-- Shown only while blind practice hides the AI answer -->
-        <div id="blind-banner" class="blind-banner" role="status" hidden>
-          <span>🙈 <strong>Blind practice mode</strong> — the AI's tumour colours are hidden until you submit your own guess.</span>
-          <button type="button" id="blind-banner-exit" class="blind-banner-btn">Show AI result</button>
-        </div>
         
         <!-- Viewport Header Toolbar -->
         <div class="viewer-card">

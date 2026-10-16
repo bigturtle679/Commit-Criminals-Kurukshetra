@@ -15,7 +15,7 @@ let requestedReviewJob = null;
 let viewerGeneration = 0;
 let viewerQueue = Promise.resolve();
 let loadedJobId = null;
-let pendingBlindJob = (() => { try { return sessionStorage.getItem('neuroscope-blind-job'); } catch { return null; } })();
+let pendingBlindJob = null; // blind practice removed: results always open with the AI colours
 let opening = false;
 let gateSignature = '';
 const denyAccess = {prediction:false, expert:false, report:false};
@@ -522,8 +522,9 @@ async function showResult(job) {
   $('gl-canvas').hidden = true;
   applyReviewGate();
   try {
-    const blind = $('blind-next').checked || pendingBlindJob === job.id;
-    await review.load(job.id, blind);
+    await review.load(job.id, false);
+    // Leave any old blind attempt so colours always show.
+    if (review.attempt) await review.mutate(doc => { doc.active_attempt_id = null; }, false);
     if (generation !== openingGeneration) return;
     if (review.pending) throw Error('Blind attempt could not be saved. Retry the review save before continuing.');
     currentJob = job;
@@ -601,7 +602,7 @@ async function launchAnalysis(endpoint, options = {}, onStart = null) {
   setStatus(`Running ${MODEL_INFO[selectedModel].name} segmentation on ${gpuLabel}…`);
 
   try {
-    const blind = $('blind-next').checked;
+    const blind = false;
     const res = await fetchApi(endpoint, options);
     if (onStart) onStart(res);
     if (blind) {
