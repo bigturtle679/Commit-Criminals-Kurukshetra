@@ -1439,3 +1439,12 @@ body {
 .zip-detected { font-size: 11px; color: var(--accent-emerald); overflow-wrap: anywhere; }
 .zip-detected:empty { display: none; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Collapsible secondary content keeps the main flow short */
+.nifti-details, .model-about { margin-top: 12px; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 10px; }
+.nifti-details > summary, .model-about > summary { cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.nifti-details > summary:hover, .model-about > summary:hover { color: var(--primary); }
+.nifti-details[open] > summary, .model-about[open] > summary { margin-bottom: 10px; }
+.upload-card { border-color: rgba(6, 182, 212, 0.35); }
+.upload-card .zip-drop { padding: 26px 14px; }
+body.page-dragging .zip-drop { border-color: var(--primary); background: rgba(6, 182, 212, 0.12); }

@@ -72,123 +72,15 @@
       <!-- Left Sidebar: Controls & Pipeline -->
       <aside class="sidebar-panel">
         
-        <section class="card review-panel" aria-labelledby="review-heading">
-          <h3 id="review-heading">Spatial bookmarks &amp; blind practice</h3>
-          <p>Self-guided practice. Submitted observations are saved before answers are revealed.</p>
-          <label><input type="checkbox" id="blind-next"> Open the next case in blind mode</label>
-          <button type="button" id="start-blind">Start blind attempt</button>
-          <p id="review-stage" role="status">Open an analysis to review</p>
-          <p id="review-exposure"></p>
-          <label>Saved attempts <select id="attempt-history"><option value="">Ordinary case notes</option></select></label>
-          <button type="button" id="exit-blind" hidden>Return to normal viewing (shows answers)</button>
-          <p id="bookmark-kind">Ordinary case notes</p>
-          <form id="bookmark-form">
-            <label>Bookmark title <input id="bookmark-title" maxlength="100" required autocomplete="off"></label>
-            <label>Observation <textarea id="bookmark-note" maxlength="2000" rows="3"></textarea></label>
-            <button type="submit" id="bookmark-save" disabled>Save current location</button>
-            <button type="button" id="bookmark-cancel">Cancel edit</button>
-          </form>
-          <ol id="bookmark-list" aria-label="Spatial bookmarks"></ol>
-          <button type="button" id="submit-attempt" hidden>Submit observations</button>
-          <button type="button" id="submit-empty" hidden>Submit: no areas bookmarked</button>
-          <button type="button" id="reveal-prediction" hidden>Reveal model prediction</button>
-          <button type="button" id="reveal-expert" hidden>Reveal expert reference</button>
-          <p id="no-expert" hidden>No expert reference available.</p>
-          <div id="reflection-wrap" hidden>
-            <label>Reflection after submission <textarea id="reflection" maxlength="2000" rows="3"></textarea></label>
-            <button type="button" id="save-reflection">Save reflection</button>
-          </div>
-          <p id="review-message" role="status" aria-live="polite"></p>
-          <button type="button" id="retry-review" hidden>Retry save / load</button>
-          <button type="button" id="reload-review" hidden>Reload saved review (discard unsaved change)</button>
-          <button type="button" id="export-review" disabled>Export review JSON</button>
-        </section>
-
-        <!-- Model Selection Card -->
-        <section class="card model-card">
+        <!-- Upload: zip first, individual files optional -->
+        <section class="card upload-card">
           <div class="card-header">
             <span class="step-num">01</span>
             <div>
-              <h3>AI Model Engine</h3>
-              <p class="card-caption">Select segmentation architecture</p>
+              <h3>Upload Patient MRI</h3>
+              <p class="card-caption">One .zip with T1, T1c, T2, FLAIR (+ optional expert mask)</p>
             </div>
           </div>
-          
-          <div class="model-toggle-group" role="group" aria-label="Model for next analysis">
-            <button type="button" class="model-btn active" data-model="ensemble" id="btn-ensemble" aria-pressed="true" aria-controls="model-details">
-              <span class="model-title">8:2 Ensemble</span>
-              <span class="model-desc">SwinUNETR + ResEnc · weighted probability fusion</span>
-            </button>
-            <button type="button" class="model-btn" data-model="swinunetr" id="btn-swinunetr" aria-pressed="false" aria-controls="model-details">
-              <span class="model-title">SwinUNETR</span>
-              <span class="model-desc">3D shifted-window transformer · BraTS21 checkpoint</span>
-            </button>
-            <button type="button" class="model-btn" data-model="segresnet" id="btn-segresnet" aria-pressed="false" aria-controls="model-details">
-              <span class="model-title">SegResNet</span>
-              <span class="model-desc">3D residual convolutional network · MONAI bundle</span>
-            </button>
-
-          </div>
-          <div id="model-details" class="model-details" aria-live="polite" aria-atomic="true"></div>
-          <p class="model-selection-note">Applies to your next analysis. Run a patient case or upload scans to generate a new result. The displayed result keeps its original model.</p>
-        </section>
-
-        <!-- Real Patient Cases Selection Card -->
-        <section class="card input-card">
-          <div class="card-header">
-            <span class="step-num">02</span>
-            <div>
-              <h3>Real Patient MRI Cases</h3>
-              <p class="card-caption">Click to run real 3D multimodal patient data</p>
-            </div>
-          </div>
-
-          <!-- Patient Case Cards Gallery -->
-          <div class="patient-cases-list">
-            
-            <button type="button" class="patient-case-btn active-case" data-case="00002" id="case-btn-00002">
-              <div class="patient-case-header">
-                <span class="case-code">CASE 02 · GLI-00002</span>
-                <span class="case-tag tag-contrast">PUBLIC RESEARCH CASE</span>
-              </div>
-              <div class="patient-case-name">BraTS GLI-00002</div>
-              <div class="patient-case-summary">Four MRI sequences and an expert mask for comparing model predictions.</div>
-              <div class="patient-case-action">
-                <span>⚡ Run Case 02 on GPU</span>
-                <span class="arrow-glyph">→</span>
-              </div>
-            </button>
-
-            <button type="button" class="patient-case-btn" data-case="00000" id="case-btn-00000">
-              <div class="patient-case-header">
-                <span class="case-code">CASE 01 · GLI-00000</span>
-                <span class="case-tag tag-edema">PUBLIC RESEARCH CASE</span>
-              </div>
-              <div class="patient-case-name">BraTS GLI-00000</div>
-              <div class="patient-case-summary">Four MRI sequences and an expert mask for comparing model predictions.</div>
-              <div class="patient-case-action">
-                <span>⚡ Run Case 01 on GPU</span>
-                <span class="arrow-glyph">→</span>
-              </div>
-            </button>
-
-            <button type="button" class="patient-case-btn" data-case="00003" id="case-btn-00003">
-              <div class="patient-case-header">
-                <span class="case-code">CASE 03 · GLI-00003</span>
-                <span class="case-tag tag-mixed">PUBLIC RESEARCH CASE</span>
-              </div>
-              <div class="patient-case-name">BraTS GLI-00003</div>
-              <div class="patient-case-summary">Four MRI sequences and an expert mask for comparing model predictions.</div>
-              <div class="patient-case-action">
-                <span>⚡ Run Case 03 on GPU</span>
-                <span class="arrow-glyph">→</span>
-              </div>
-            </button>
-
-          </div>
-
-          <div class="or-separator"><span>OR DROP A ZIP</span></div>
-
           <!-- One-file upload: scan types are detected from file names -->
           <label id="zip-drop" class="zip-drop" for="zip-input">
             <input id="zip-input" class="visually-hidden" type="file" accept=".zip,application/zip" aria-label="Patient zip file">
@@ -197,10 +89,8 @@
             <span class="zip-drop-hint">Auto-detects T1, T1c/T1ce, T2, FLAIR and the expert mask (seg) from file names · BraTS 2021 &amp; 2023 naming · ET label detected automatically</span>
             <span id="zip-detected" class="zip-detected" aria-live="polite"></span>
           </label>
-
-          <div class="or-separator"><span>OR CUSTOM NIFTI UPLOAD</span></div>
-
-          <!-- File Upload Form -->
+          <details class="nifti-details">
+            <summary>Or upload the four NIfTI files one by one</summary>
           <form id="upload-form" class="upload-form">
             <div class="file-inputs-grid">
               <label class="file-drop-box">
@@ -251,27 +141,13 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
           </form>
-        </section>
-
-        <!-- Held-out test cases: download as named zip or run in one click -->
-        <section class="card samples-card">
-          <div class="card-header">
-            <span class="step-num">02b</span>
-            <div>
-              <h3>Unseen Test Patients</h3>
-              <p class="card-caption">BraTS 2021 cases never used to train ResEnc · download or run</p>
-            </div>
-          </div>
-          <ul id="sample-list" class="sample-list" aria-live="polite">
-            <li class="muted-td">Loading test cases…</li>
-          </ul>
-          <p class="model-selection-note">Download saves <code>NeuroScope_TestCase_&lt;ID&gt;.zip</code> to your Downloads folder: four MRI scans, the expert mask and upload instructions. Unzip and use the upload form above to verify the model yourself.</p>
+          </details>
         </section>
 
         <!-- Progress / Status Card -->
         <section class="card status-card">
           <div class="card-header">
-            <span class="step-num">03</span>
+            <span class="step-num">02</span>
             <div>
               <h3>Inference Pipeline Status</h3>
               <p class="card-caption">Live GPU pipeline execution</p>
@@ -301,6 +177,140 @@
               <option value="">Load previous run…</option>
             </select>
           </div>
+        </section>
+
+        <!-- Model Selection Card -->
+        <section class="card model-card">
+          <div class="card-header">
+            <span class="step-num">03</span>
+            <div>
+              <h3>AI Model Engine</h3>
+              <p class="card-caption">Select segmentation architecture</p>
+            </div>
+          </div>
+          
+          <div class="model-toggle-group" role="group" aria-label="Model for next analysis">
+            <button type="button" class="model-btn active" data-model="ensemble" id="btn-ensemble" aria-pressed="true" aria-controls="model-details">
+              <span class="model-title">8:2 Ensemble</span>
+              <span class="model-desc">SwinUNETR + ResEnc · weighted probability fusion</span>
+            </button>
+            <button type="button" class="model-btn" data-model="swinunetr" id="btn-swinunetr" aria-pressed="false" aria-controls="model-details">
+              <span class="model-title">SwinUNETR</span>
+              <span class="model-desc">3D shifted-window transformer · BraTS21 checkpoint</span>
+            </button>
+            <button type="button" class="model-btn" data-model="segresnet" id="btn-segresnet" aria-pressed="false" aria-controls="model-details">
+              <span class="model-title">SegResNet</span>
+              <span class="model-desc">3D residual convolutional network · MONAI bundle</span>
+            </button>
+
+          </div>
+          <details class="model-about">
+            <summary>About this model</summary>
+            <div id="model-details" class="model-details" aria-live="polite" aria-atomic="true"></div>
+          </details>
+          <p class="model-selection-note">Applies to your next analysis. Run a patient case or upload scans to generate a new result. The displayed result keeps its original model.</p>
+        </section>
+
+        <!-- Held-out test cases: download as named zip or run in one click -->
+        <section class="card samples-card">
+          <div class="card-header">
+            <span class="step-num">04</span>
+            <div>
+              <h3>Unseen Test Patients</h3>
+              <p class="card-caption">BraTS 2021 cases never used to train ResEnc · download or run</p>
+            </div>
+          </div>
+          <ul id="sample-list" class="sample-list" aria-live="polite">
+            <li class="muted-td">Loading test cases…</li>
+          </ul>
+          <p class="model-selection-note">Download saves <code>NeuroScope_TestCase_&lt;ID&gt;.zip</code> to your Downloads folder: four MRI scans, the expert mask and upload instructions. Drag the zip straight onto the upload box at the top — no need to unzip.</p>
+        </section>
+
+        <!-- Real Patient Cases Selection Card -->
+        <section class="card input-card">
+          <div class="card-header">
+            <span class="step-num">05</span>
+            <div>
+              <h3>Demo Patients (BraTS 2023)</h3>
+              <p class="card-caption">Click to run real 3D multimodal patient data</p>
+            </div>
+          </div>
+
+          <!-- Patient Case Cards Gallery -->
+          <div class="patient-cases-list">
+            
+            <button type="button" class="patient-case-btn active-case" data-case="00002" id="case-btn-00002">
+              <div class="patient-case-header">
+                <span class="case-code">CASE 02 · GLI-00002</span>
+                <span class="case-tag tag-contrast">PUBLIC RESEARCH CASE</span>
+              </div>
+              <div class="patient-case-name">BraTS GLI-00002</div>
+              <div class="patient-case-summary">Four MRI sequences and an expert mask for comparing model predictions.</div>
+              <div class="patient-case-action">
+                <span>⚡ Run Case 02 on GPU</span>
+                <span class="arrow-glyph">→</span>
+              </div>
+            </button>
+
+            <button type="button" class="patient-case-btn" data-case="00000" id="case-btn-00000">
+              <div class="patient-case-header">
+                <span class="case-code">CASE 01 · GLI-00000</span>
+                <span class="case-tag tag-edema">PUBLIC RESEARCH CASE</span>
+              </div>
+              <div class="patient-case-name">BraTS GLI-00000</div>
+              <div class="patient-case-summary">Four MRI sequences and an expert mask for comparing model predictions.</div>
+              <div class="patient-case-action">
+                <span>⚡ Run Case 01 on GPU</span>
+                <span class="arrow-glyph">→</span>
+              </div>
+            </button>
+
+            <button type="button" class="patient-case-btn" data-case="00003" id="case-btn-00003">
+              <div class="patient-case-header">
+                <span class="case-code">CASE 03 · GLI-00003</span>
+                <span class="case-tag tag-mixed">PUBLIC RESEARCH CASE</span>
+              </div>
+              <div class="patient-case-name">BraTS GLI-00003</div>
+              <div class="patient-case-summary">Four MRI sequences and an expert mask for comparing model predictions.</div>
+              <div class="patient-case-action">
+                <span>⚡ Run Case 03 on GPU</span>
+                <span class="arrow-glyph">→</span>
+              </div>
+            </button>
+
+          </div>
+        </section>
+
+        <section class="card review-panel" aria-labelledby="review-heading">
+          <h3 id="review-heading">Spatial bookmarks &amp; blind practice</h3>
+          <p>Self-guided practice. Submitted observations are saved before answers are revealed.</p>
+          <label><input type="checkbox" id="blind-next"> Open the next case in blind mode</label>
+          <button type="button" id="start-blind">Start blind attempt</button>
+          <p id="review-stage" role="status">Open an analysis to review</p>
+          <p id="review-exposure"></p>
+          <label>Saved attempts <select id="attempt-history"><option value="">Ordinary case notes</option></select></label>
+          <button type="button" id="exit-blind" hidden>Return to normal viewing (shows answers)</button>
+          <p id="bookmark-kind">Ordinary case notes</p>
+          <form id="bookmark-form">
+            <label>Bookmark title <input id="bookmark-title" maxlength="100" required autocomplete="off"></label>
+            <label>Observation <textarea id="bookmark-note" maxlength="2000" rows="3"></textarea></label>
+            <button type="submit" id="bookmark-save" disabled>Save current location</button>
+            <button type="button" id="bookmark-cancel">Cancel edit</button>
+          </form>
+          <ol id="bookmark-list" aria-label="Spatial bookmarks"></ol>
+          <button type="button" id="submit-attempt" hidden>Submit observations</button>
+          <button type="button" id="submit-empty" hidden>Submit: no areas bookmarked</button>
+          <button type="button" id="reveal-prediction" hidden>Reveal model prediction</button>
+          <button type="button" id="reveal-expert" hidden>Reveal expert reference</button>
+          <p id="no-expert" hidden>No expert reference available.</p>
+          <div id="reflection-wrap" hidden>
+            <label>Reflection after submission <textarea id="reflection" maxlength="2000" rows="3"></textarea></label>
+            <button type="button" id="save-reflection">Save reflection</button>
+          </div>
+          <p id="review-message" role="status" aria-live="polite"></p>
+          <button type="button" id="retry-review" hidden>Retry save / load</button>
+          <button type="button" id="reload-review" hidden>Reload saved review (discard unsaved change)</button>
+          <button type="button" id="export-review" disabled>Export review JSON</button>
         </section>
 
       </aside>

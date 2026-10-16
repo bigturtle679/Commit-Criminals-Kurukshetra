@@ -592,6 +592,10 @@ function uploadZip(file) {
     shown.textContent = 'Please choose a .zip file.';
     return;
   }
+  if (isBusy) {
+    shown.textContent = 'An analysis is still running — wait for it to finish, then drop the zip again.';
+    return;
+  }
   shown.textContent = `Uploading ${file.name}…`;
   const formData = new FormData();
   formData.set('archive', file);
@@ -600,14 +604,26 @@ function uploadZip(file) {
     const parts = Object.entries(res.detected || {}).map(([role, name]) => `${ROLE_LABELS[role] || role} ← ${name}`);
     if (res.expert_et) parts.push(`ET label = ${res.expert_et}`);
     shown.textContent = `✓ Detected: ${parts.join(' · ')}`;
-  }).finally(() => { if (!shown.textContent.startsWith('✓')) shown.textContent = ''; });
+  }).finally(() => { if (shown.textContent.startsWith('Uploading')) shown.textContent = 'Upload failed — see the status card for the reason.'; });
   $('zip-input').value = '';
 }
-$('zip-input').onchange = e => uploadZip(e.target.files[0]);
+$('zip-input').addEventListener('change', e => uploadZip(e.target.files[0]));
 const zipDrop = $('zip-drop');
 ['dragenter', 'dragover'].forEach(type => zipDrop.addEventListener(type, e => { e.preventDefault(); zipDrop.classList.add('dragging'); }));
 ['dragleave', 'drop'].forEach(type => zipDrop.addEventListener(type, () => zipDrop.classList.remove('dragging')));
 zipDrop.addEventListener('drop', e => { e.preventDefault(); uploadZip(e.dataTransfer.files[0]); });
+// Dropping a zip anywhere on the page also works (the browser would otherwise open the file).
+let dragDepth = 0;
+window.addEventListener('dragenter', e => { if (e.dataTransfer?.types?.includes('Files')) { dragDepth++; document.body.classList.add('page-dragging'); } });
+window.addEventListener('dragleave', () => { if (--dragDepth <= 0) { dragDepth = 0; document.body.classList.remove('page-dragging'); } });
+window.addEventListener('dragover', e => { if (e.dataTransfer?.types?.includes('Files')) e.preventDefault(); });
+window.addEventListener('drop', e => {
+  dragDepth = 0; document.body.classList.remove('page-dragging');
+  if (e.defaultPrevented || !e.dataTransfer?.files?.length) return;
+  e.preventDefault();
+  const zip = [...e.dataTransfer.files].find(f => f.name.toLowerCase().endsWith('.zip'));
+  if (zip) uploadZip(zip); else setStatus('Drop a .zip of the patient scans, or use the individual file upload.', true);
+});
 
 $('upload-form').onsubmit = e => {
   e.preventDefault();
@@ -718,7 +734,7 @@ review = new ReviewController({
 applyReviewGate();
 
 // File inputs change state update
-document.querySelectorAll('input[type="file"]').forEach(input => {
+document.querySelectorAll('#upload-form input[type="file"]').forEach(input => {
   input.onchange = () => {
     const label = input.parentElement.querySelector('.file-status');
     if (label) {
