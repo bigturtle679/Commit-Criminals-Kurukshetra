@@ -59,7 +59,7 @@ def status():
         'demo_ready': len(list((ROOT / 'data/demo').glob('*.nii.gz'))) >= 5 or len(list((ROOT / 'data/synthetic_demo').glob('*.nii.gz'))) >= 4,
         'models_available': [
             {'id': 'ensemble', 'name': '8:2 Ensemble (SwinUNETR + nnU-Net ResEnc)', 'badge': 'Requires both trained checkpoints', 'speed': 'Not benchmarked', 'available': (ROOT / 'models/resenc_brats/resenc_m_brats.pt').is_file() and (ROOT / 'models/swinunetr_brats/model_weights_BRATS-finetune.pt').is_file()},
-            {'id': 'swinunetr', 'name': 'SwinUNETR (Vision Transformer)', 'badge': 'Tested on three cases', 'speed': '~5s'},
+            {'id': 'swinunetr', 'name': 'SwinUNETR (Vision Transformer)', 'badge': '20-case BraTS21 pilot (cases seen in training)', 'speed': '~8s (RTX 4060, measured)'},
             {'id': 'segresnet', 'name': 'SegResNet (3D CNN Autoencoder)', 'badge': 'BraTS baseline', 'speed': '~3s'}
         ],
         'default_model': 'swinunetr',

@@ -1369,3 +1369,8 @@ body {
   font-weight: 600;
   color: var(--primary);
 }
+
+.model-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

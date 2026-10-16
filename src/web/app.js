@@ -413,6 +413,15 @@ try {
     $('gpu-text').textContent = status.gpu;
   }
 
+  // Never offer the ensemble when its trained checkpoints are missing.
+  const ensembleInfo = (status.models_available || []).find(m => m.id === 'ensemble');
+  if ($('btn-ensemble') && ensembleInfo && !ensembleInfo.available) {
+    $('btn-ensemble').disabled = true;
+    $('btn-ensemble').title = 'Blocked: trained ResEnc checkpoint (models/resenc_brats/resenc_m_brats.pt) is missing.';
+    $('btn-ensemble').querySelector('.model-desc').textContent = 'Blocked — trained ResEnc checkpoint missing. Not benchmarked.';
+    if (selectedModel === 'ensemble') setModel('swinunetr');
+  }
+
   const jobs = await refreshHistory();
   const running = jobs.find(j => ['queued', 'running'].includes(j.status));
 
