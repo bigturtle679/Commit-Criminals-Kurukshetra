@@ -448,7 +448,7 @@ def main():
         device=args.device,
         update=print
     )
-    print(json.dumps(rep, indent=2))
+    print(json.dumps({k: v for k, v in rep.items() if not k.startswith('_')}, indent=2))
 
 
 if __name__ == '__main__':

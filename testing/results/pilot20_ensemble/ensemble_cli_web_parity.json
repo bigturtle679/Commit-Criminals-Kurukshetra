@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-17",
+  "patient_id": "BraTS2021_00003",
+  "model": "ensemble_80_20",
+  "web_job_id": "ba3c46ed58884ef089d392c0b47f52fe",
+  "shape_equal": true,
+  "affine_equal": true,
+  "total_voxels": 8928000,
+  "mismatched_label_voxels": 1,
+  "uncertainty_max_abs_diff": 0.0001964569091796875,
+  "dice_cli": {
+    "WT": 0.9837,
+    "TC": 0.9793,
+    "ET": 0.9443
+  },
+  "dice_web": {
+    "WT": 0.9837,
+    "TC": 0.9793,
+    "ET": 0.9443
+  },
+  "volumes_cli": {
+    "WT": 98.818,
+    "TC": 42.106,
+    "ET": 25.604,
+    "ED": 56.712
+  },
+  "volumes_web": {
+    "WT": 98.817,
+    "TC": 42.106,
+    "ET": 25.604,
+    "ED": 56.711
+  },
+  "identical": false
+}
