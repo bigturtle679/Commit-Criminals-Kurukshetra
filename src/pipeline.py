@@ -87,7 +87,7 @@ def _sha256(path):
     return h.hexdigest()
 
 
-def load_model(model_name='ensemble'):
+def load_model(model_name='ensemble', progress_callback=None):
     """Load and cache the requested model(s).
 
     Raises FileNotFoundError (or CheckpointNotFoundError) if checkpoints are missing.
@@ -104,14 +104,14 @@ def load_model(model_name='ensemble'):
         from scripts.models.model_loader import load_ensemble_models, get_device
         from configs.config_loader import load_ensemble_config
         vcfg = load_ensemble_config()
-        ens = load_ensemble_models(device=get_device(device))
+        ens = load_ensemble_models(device=get_device(device), progress_callback=progress_callback)
         title = f"8:2 Hybrid Ensemble ({ens['desc_a']} + {ens['desc_b']})"
         MODELS['ensemble'] = (ens, title, vcfg)
         return MODELS['ensemble']
 
     elif model_name in ('swinunetr', 'swin_unetr', 'swin'):
         from scripts.models.model_loader import load_swinunetr, get_device
-        model, desc, path = load_swinunetr(device=get_device(device))
+        model, desc, path = load_swinunetr(device=get_device(device), progress_callback=progress_callback)
         title = f'MONAI {desc}'
         MODELS['swinunetr'] = (model, title, None)
         return MODELS['swinunetr']
@@ -299,7 +299,7 @@ def run_case(paths, out, update=lambda message: None, expert=None,
     peak = 0.0
 
     with LOCK:
-        bundle_tuple = load_model(model_name)
+        bundle_tuple = load_model(model_name, progress_callback=update)
         if torch.cuda.is_available():
             torch.cuda.reset_peak_memory_stats()
 

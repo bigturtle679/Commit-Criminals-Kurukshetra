@@ -170,6 +170,16 @@ def status():
     }
 
 
+@app.post('/api/download-weights')
+def download_weights_endpoint():
+    from scripts.models.model_loader import ensure_swinunetr_checkpoint
+    try:
+        path = ensure_swinunetr_checkpoint()
+        return {'status': 'ok', 'message': f'SwinUNETR checkpoint verified at {path.name}'}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get('/api/jobs')
 def jobs():
     return list(JOBS.values())
