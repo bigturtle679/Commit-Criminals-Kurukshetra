@@ -68,67 +68,133 @@ def _resolve_checkpoint(candidates, model_name):
 
 
 def _load_state_dict(model, checkpoint_path, model_name):
-    """Load checkpoint into model with key coverage validation.
+    """Load checkpoint into model with strict validation.
 
-    Uses strict=True to catch architecture mismatches.
-    Raises CheckpointLoadError if loading fails.
+    Strategy:
+    1. Try strict=True with the raw state dict.
+    2. If that fails, try known prefix normalization (e.g. 'module.' from
+       DataParallel) and retry strict=True.
+    3. If both fail, reject the checkpoint entirely.
+
+    Never falls back to partial/non-strict loading.
+    Raises CheckpointLoadError if loading fails for any reason.
     """
     try:
-        state = torch.load(checkpoint_path, map_location='cpu', weights_only=False)
+        # Prefer weights_only=True for security; fall back if checkpoint
+        # contains non-tensor objects (e.g. optimizer state wrappers).
+        try:
+            state = torch.load(checkpoint_path, map_location='cpu', weights_only=True)
+        except Exception:
+            logger.warning(
+                "%s: weights_only=True failed, falling back to weights_only=False. "
+                "Only use trusted checkpoint files.",
+                model_name
+            )
+            state = torch.load(checkpoint_path, map_location='cpu', weights_only=False)
     except Exception as e:
         raise CheckpointLoadError(
-            f"Failed to read checkpoint file for {model_name} at "
-            f"{checkpoint_path}: {e}"
+            f"Failed to read checkpoint file for {model_name}: {e}"
         ) from e
 
     # Extract state dict from common wrapper formats
-    sd = state.get('state_dict', state.get('model', state))
+    sd = state.get('state_dict', state.get('model', state)) if isinstance(state, dict) else state
     if not isinstance(sd, dict):
         raise CheckpointLoadError(
-            f"Checkpoint for {model_name} at {checkpoint_path} does not contain "
+            f"Checkpoint for {model_name} does not contain "
             f"a valid state dict. Found type: {type(sd).__name__}"
         )
 
-    # Attempt strict loading first for safety
+    # Validate tensor shapes against model parameters
+    model_sd = model.state_dict()
+    _validate_tensor_shapes(sd, model_sd, model_name, checkpoint_path)
+
+    # Attempt 1: strict loading with raw keys
     try:
         model.load_state_dict(sd, strict=True)
         logger.info(
-            "%s: loaded %d parameters from %s (strict=True, full match)",
+            "%s: loaded %d parameters from %s (strict match)",
             model_name, len(sd), checkpoint_path.name
         )
+        return
     except RuntimeError as e:
-        # Fall back to non-strict with detailed diagnostics
-        error_msg = str(e)
-        logger.warning(
-            "%s: strict loading failed, attempting non-strict. Details: %s",
-            model_name, error_msg
+        first_error = str(e)
+
+    # Attempt 2: strip known wrapper prefixes and retry strict
+    stripped_sd = _strip_known_prefixes(sd)
+    if stripped_sd is not sd:
+        try:
+            _validate_tensor_shapes(stripped_sd, model_sd, model_name, checkpoint_path)
+            model.load_state_dict(stripped_sd, strict=True)
+            logger.info(
+                "%s: loaded %d parameters from %s (after prefix normalization, strict match)",
+                model_name, len(stripped_sd), checkpoint_path.name
+            )
+            return
+        except RuntimeError:
+            pass
+
+    # Both attempts failed — produce a clear diagnostic
+    model_keys = set(model_sd.keys())
+    ckpt_keys = set(sd.keys())
+    missing = sorted(model_keys - ckpt_keys)
+    unexpected = sorted(ckpt_keys - model_keys)
+
+    diagnostic_parts = [
+        f"{model_name} checkpoint is incompatible with the model architecture."
+    ]
+    if missing:
+        diagnostic_parts.append(
+            f"  Missing keys ({len(missing)}): {missing[:5]}"
+            + (" ..." if len(missing) > 5 else "")
         )
-        missing, unexpected = model.load_state_dict(sd, strict=False)
+    if unexpected:
+        diagnostic_parts.append(
+            f"  Unexpected keys ({len(unexpected)}): {unexpected[:5]}"
+            + (" ..." if len(unexpected) > 5 else "")
+        )
+    diagnostic_parts.append(f"  Original error: {first_error[:200]}")
 
-        model_keys = set(dict(model.named_parameters()).keys())
-        model_keys.update(dict(model.named_buffers()).keys())
-        loaded_keys = set(sd.keys()) - set(unexpected)
-        coverage = len(loaded_keys) / max(len(model_keys), 1)
+    raise CheckpointLoadError("\n".join(diagnostic_parts))
 
-        if missing:
-            logger.warning(
-                "%s: %d missing keys (%.1f%% coverage). Missing: %s",
-                model_name, len(missing), coverage * 100,
-                missing[:5]  # Log first 5 for diagnostics
-            )
-        if unexpected:
-            logger.warning(
-                "%s: %d unexpected keys ignored: %s",
-                model_name, len(unexpected), unexpected[:5]
-            )
 
-        # Reject if coverage is too low (likely wrong checkpoint)
-        if coverage < 0.5:
-            raise CheckpointLoadError(
-                f"{model_name} checkpoint at {checkpoint_path} has only "
-                f"{coverage:.0%} key coverage. This likely indicates an "
-                f"incompatible checkpoint file."
-            )
+def _strip_known_prefixes(sd: dict) -> dict:
+    """Strip known wrapper prefixes (e.g. 'module.' from DataParallel).
+
+    Returns a new dict if any prefix was stripped, otherwise returns
+    the original dict unchanged.
+    """
+    KNOWN_PREFIXES = ('module.',)
+    for prefix in KNOWN_PREFIXES:
+        if all(k.startswith(prefix) for k in sd.keys()):
+            logger.info("Stripping '%s' prefix from checkpoint keys.", prefix)
+            return {k[len(prefix):]: v for k, v in sd.items()}
+    return sd
+
+
+def _validate_tensor_shapes(sd: dict, model_sd: dict, model_name: str, checkpoint_path: Path):
+    """Validate that checkpoint tensor shapes match model expectations.
+
+    Only checks keys that exist in both dicts (missing/unexpected keys
+    are caught by strict=True loading).
+    """
+    shape_mismatches = []
+    common_keys = set(sd.keys()) & set(model_sd.keys())
+    for key in sorted(common_keys):
+        ckpt_val = sd[key]
+        model_val = model_sd[key]
+        if hasattr(ckpt_val, 'shape') and hasattr(model_val, 'shape'):
+            if ckpt_val.shape != model_val.shape:
+                shape_mismatches.append(
+                    f"  {key}: checkpoint={list(ckpt_val.shape)}, "
+                    f"model={list(model_val.shape)}"
+                )
+    if shape_mismatches:
+        raise CheckpointLoadError(
+            f"{model_name} checkpoint has tensor shape mismatches:\n"
+            + "\n".join(shape_mismatches[:10])
+            + (f"\n  ... and {len(shape_mismatches) - 10} more"
+               if len(shape_mismatches) > 10 else "")
+        )
 
 
 def load_swinunetr(weights_path=None, fallback_path=None, device=None):
