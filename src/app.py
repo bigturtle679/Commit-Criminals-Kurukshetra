@@ -1,12 +1,12 @@
 from pathlib import Path
-import json, uuid, threading, shutil, traceback
+import json, uuid, threading, shutil, time, traceback
 from concurrent.futures import ThreadPoolExecutor
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 import sys
 sys.path.insert(0, str(Path(__file__).parent))
-from pipeline import ROOT, run_case
+from pipeline import ROOT, run_case, _gpu_name
 
 app = FastAPI(title='NeuroScope Local · 3D Brain Tumor Segmentation')
 RUNS = ROOT / 'work/runs'
@@ -52,7 +52,7 @@ def index():
 @app.get('/api/status')
 def status():
     import torch
-    dev_name = torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'Apple Silicon (MPS)' if (hasattr(torch.backends, 'mps') and torch.backends.mps.is_available()) else 'CPU'
+    dev_name = _gpu_name()
     return {
         'gpu': dev_name,
         'cuda_available': torch.cuda.is_available(),
@@ -80,7 +80,7 @@ def jobs():
     return list(JOBS.values())
 
 
-def execute(job_id, paths, expert, expert_et, name, model_name='swinunetr'):
+def execute(job_id, paths, expert, expert_et, name, model_name='ensemble'):
     job = JOBS[job_id]
     def update(message):
         job.update(status='running', message=message)
@@ -99,12 +99,12 @@ def new_job():
             raise HTTPException(409, 'An analysis is already running. Please wait for it to finish.')
         uid = uuid.uuid4().hex
         (RUNS / uid).mkdir()
-        JOBS[uid] = {'id': uid, 'status': 'queued', 'message': 'Queued for local RTX 4060 GPU'}
+        JOBS[uid] = {'id': uid, 'status': 'queued', 'message': f'Queued for {_gpu_name()} inference'}
         return uid
 
 
 @app.post('/api/demo')
-def demo(model: str = Query('swinunetr'), case: str = Query('00000')):
+def demo(model: str = Query('ensemble'), case: str = Query('00000')):
     case_info = PATIENT_CASES.get(case, PATIENT_CASES['00000'])
     folder = case_info['folder']
     code = case_info['code']
@@ -120,7 +120,7 @@ def demo(model: str = Query('swinunetr'), case: str = Query('00000')):
         raise HTTPException(404, f"MRI scans missing for case {case_info['name']}.")
 
     uid = new_job()
-    model_name = model if model in ('ensemble', 'swinunetr', 'segresnet') else 'swinunetr'
+    model_name = model if model in ('ensemble', 'swinunetr', 'segresnet') else 'ensemble'
     POOL.submit(
         execute,
         uid,
@@ -141,7 +141,7 @@ async def analyze(
     flair: UploadFile = File(...),
     expert: UploadFile | None = File(None),
     expert_et: int = Form(4),
-    model: str = Form('swinunetr')
+    model: str = Form('ensemble')
 ):
     if expert_et not in (3, 4):
         raise HTTPException(400, 'Expert ET label must be 3 or 4.')
@@ -168,7 +168,7 @@ async def analyze(
     except Exception as e:
         JOBS[uid].update(status='error', message=str(e))
         raise HTTPException(400, str(e))
-    model_name = model if model in ('ensemble', 'swinunetr', 'segresnet') else 'swinunetr'
+    model_name = model if model in ('ensemble', 'swinunetr', 'segresnet') else 'ensemble'
     POOL.submit(execute, uid, paths, paths.get('expert'), expert_et, f'Patient MRI ({model_name.upper()})', model_name=model_name)
     return {'id': uid}
 
@@ -182,7 +182,7 @@ def job(uid: str):
 
 @app.get('/api/files/{uid}/{name}')
 def file(uid: str, name: str):
-    allowed = {'flair.nii.gz', 't1c.nii.gz', 'segmentation.nii.gz', 'expert.nii.gz', 'brain.obj', 'tumor.obj', 'core.obj', 'report.json'}
+    allowed = {'flair.nii.gz', 't1c.nii.gz', 'segmentation.nii.gz', 'expert.nii.gz', 'uncertainty.nii.gz', 'brain.obj', 'tumor.obj', 'core.obj', 'et.obj', 'report.json'}
     if uid not in JOBS or name not in allowed:
         raise HTTPException(404)
     path = RUNS / uid / name
