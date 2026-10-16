@@ -70,12 +70,23 @@ def test_dice_division_by_zero_underflow():
 
 
 def test_model_weights_finite_check():
-    """Verify that loaded models contain no NaN or Inf in their parameters."""
-    swin, _, _ = load_swinunetr(device=torch.device('cpu'))
+    """Verify that loaded models contain no NaN or Inf in their parameters.
+    
+    Skipped when checkpoint files are not available (CPU-only dev machine).
+    """
+    try:
+        swin, _, _ = load_swinunetr(device=torch.device('cpu'))
+    except FileNotFoundError:
+        import pytest
+        pytest.skip("SwinUNETR checkpoint not available on this machine")
     for name, param in swin.named_parameters():
         assert torch.isfinite(param).all(), f"SwinUNETR parameter {name} has NaN or Inf!"
     
-    resenc, _, _ = load_resenc(preset='M', device=torch.device('cpu'))
+    try:
+        resenc, _, _ = load_resenc(preset='M', device=torch.device('cpu'))
+    except FileNotFoundError:
+        import pytest
+        pytest.skip("ResEnc checkpoint not available on this machine")
     for name, param in resenc.named_parameters():
         assert torch.isfinite(param).all(), f"ResEncUNet parameter {name} has NaN or Inf!"
     print("PASS: test_model_weights_finite_check (all model parameters strictly finite)")
