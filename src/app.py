@@ -1,10 +1,11 @@
 from pathlib import Path
 import json, uuid, threading, shutil, traceback
 from concurrent.futures import ThreadPoolExecutor
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query, Body
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pipeline import ROOT, run_case
+from review_store import load_review, save_review, ReviewConflict
 
 app = FastAPI(title='NeuroScope Local · 3D Brain Tumor Segmentation')
 RUNS = ROOT / 'work/runs'
@@ -56,9 +57,9 @@ def status():
         'cuda_available': torch.cuda.is_available(),
         'demo_ready': len(list((ROOT / 'data/demo').glob('*.nii.gz'))) >= 5 or len(list((ROOT / 'data/synthetic_demo').glob('*.nii.gz'))) >= 4,
         'models_available': [
-            {'id': 'ensemble', 'name': '8:2 Ensemble (SwinUNETR + nnU-Net ResEnc)', 'badge': 'High-Accuracy 8:2 Fusion', 'speed': '~5s'},
-            {'id': 'swinunetr', 'name': 'SwinUNETR (Vision Transformer)', 'badge': 'Tested on three cases', 'speed': '~5s'},
-            {'id': 'segresnet', 'name': 'SegResNet (3D CNN Autoencoder)', 'badge': 'BraTS baseline', 'speed': '~3s'}
+            {'id': 'ensemble', 'name': '8:2 Ensemble (SwinUNETR + nnU-Net ResEnc)', 'badge': 'Weighted probability fusion'},
+            {'id': 'swinunetr', 'name': 'SwinUNETR (Vision Transformer)', 'badge': 'Transformer baseline'},
+            {'id': 'segresnet', 'name': 'SegResNet (3D CNN Autoencoder)', 'badge': 'Convolutional baseline'}
         ],
         'default_model': 'ensemble',
         'patient_cases': [
@@ -101,8 +102,15 @@ def new_job():
         return uid
 
 
+def validate_model(model):
+    if model not in ('ensemble', 'swinunetr', 'segresnet'):
+        raise HTTPException(400, 'Unknown model. Choose ensemble, swinunetr or segresnet.')
+    return model
+
+
 @app.post('/api/demo')
-def demo(model: str = Query('swinunetr'), case: str = Query('00000')):
+def demo(model: str = Query('ensemble'), case: str = Query('00000')):
+    model_name = validate_model(model)
     case_info = PATIENT_CASES.get(case, PATIENT_CASES['00000'])
     folder = case_info['folder']
     code = case_info['code']
@@ -118,7 +126,6 @@ def demo(model: str = Query('swinunetr'), case: str = Query('00000')):
         raise HTTPException(404, f"MRI scans missing for case {case_info['name']}.")
 
     uid = new_job()
-    model_name = model if model in ('swinunetr', 'segresnet') else 'swinunetr'
     POOL.submit(
         execute,
         uid,
@@ -139,8 +146,9 @@ async def analyze(
     flair: UploadFile = File(...),
     expert: UploadFile | None = File(None),
     expert_et: int = Form(4),
-    model: str = Form('swinunetr')
+    model: str = Form('ensemble')
 ):
+    model_name = validate_model(model)
     if expert_et not in (3, 4):
         raise HTTPException(400, 'Expert ET label must be 3 or 4.')
     files = {'t1c': t1c, 't1': t1, 't2': t2, 'flair': flair}
@@ -166,7 +174,6 @@ async def analyze(
     except Exception as e:
         JOBS[uid].update(status='error', message=str(e))
         raise HTTPException(400, str(e))
-    model_name = model if model in ('swinunetr', 'segresnet') else 'swinunetr'
     POOL.submit(execute, uid, paths, paths.get('expert'), expert_et, f'Patient MRI ({model_name.upper()})', model_name=model_name)
     return {'id': uid}
 
@@ -178,9 +185,44 @@ def job(uid: str):
     return JOBS[uid]
 
 
+def review_metadata(uid):
+    if uid not in JOBS:
+        raise HTTPException(404, 'Analysis not found.')
+    if JOBS[uid]['status'] != 'complete':
+        raise HTTPException(409, 'Wait for the analysis to complete before reviewing it.')
+    folder = RUNS / uid
+    result = JOBS[uid]['result']
+    affine, shape = result.get('affine'), result.get('shape')
+    # Older runs do not have geometry in their report; read the header only.
+    if affine is None and (folder / 't1c.nii.gz').exists():
+        import nibabel as nib
+        reference = nib.load(str(folder / 't1c.nii.gz'))
+        affine, shape = reference.affine.tolist(), list(reference.shape)
+    return dict(affine=affine, shape=shape,
+                available_modalities=[m for m in ('t1', 't1c', 't2', 'flair') if (folder / f'{m}.nii.gz').exists()],
+                input_hashes=result.get('input_hashes'), has_expert=(folder / 'expert.nii.gz').exists())
+
+
+@app.get('/api/jobs/{uid}/review')
+def get_review(uid: str):
+    metadata = review_metadata(uid)
+    return {**load_review(RUNS / uid), 'metadata': metadata}
+
+
+@app.put('/api/jobs/{uid}/review')
+def put_review(uid: str, document: dict = Body(...)):
+    metadata = review_metadata(uid)
+    try:
+        return {**save_review(RUNS / uid, document, metadata), 'metadata': metadata}
+    except ReviewConflict as error:
+        raise HTTPException(409, str(error))
+    except (ValueError, TypeError, KeyError) as error:
+        raise HTTPException(400, str(error))
+
+
 @app.get('/api/files/{uid}/{name}')
 def file(uid: str, name: str):
-    allowed = {'flair.nii.gz', 't1c.nii.gz', 'segmentation.nii.gz', 'expert.nii.gz', 'brain.obj', 'tumor.obj', 'core.obj', 'report.json'}
+    allowed = {'flair.nii.gz', 't1c.nii.gz', 't1.nii.gz', 't2.nii.gz', 'segmentation.nii.gz', 'expert.nii.gz', 'brain.obj', 'tumor.obj', 'core.obj', 'report.json'}
     if uid not in JOBS or name not in allowed:
         raise HTTPException(404)
     path = RUNS / uid / name

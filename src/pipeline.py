@@ -1,5 +1,5 @@
 """Local BraTS-style research inference with SwinUNETR and SegResNet support."""
-import json, time, threading
+import json, time, threading, hashlib
 from pathlib import Path
 import nibabel as nib
 import numpy as np
@@ -155,6 +155,14 @@ def run_case(paths, out, update=lambda message: None, expert=None, expert_et=4, 
     if expert_img is not None and (expert_img.shape != original.shape or not np.allclose(expert_img.affine, original.affine, atol=1e-3)):
         raise ValueError('Expert mask must share the original MRI grid and affine.')
 
+    input_hashes = {}
+    for modality in ('t1', 't1c', 't2', 'flair'):
+        digest = hashlib.sha256()
+        with Path(paths[modality]).open('rb') as source:
+            for chunk in iter(lambda: source.read(1024 * 1024), b''):
+                digest.update(chunk)
+        input_hashes[modality] = digest.hexdigest()
+
     update('Standardizing to 1 mm isotropic RAS grid')
     canonical = nib.as_closest_canonical(original)
     if not np.allclose(nib.affines.voxel_sizes(canonical.affine), [1, 1, 1], atol=1e-3):
@@ -240,6 +248,8 @@ def run_case(paths, out, update=lambda message: None, expert=None, expert_et=4, 
     nib.save(nib.Nifti1Image(seg_data, original.affine, header), out / 'segmentation.nii.gz')
     nib.save(imgs[3], out / 'flair.nii.gz')
     nib.save(original, out / 't1c.nii.gz')
+    nib.save(imgs[1], out / 't1.nii.gz')
+    nib.save(imgs[2], out / 't2.nii.gz')
 
     regions = region_masks(seg_data)
     voxel_ml = abs(float(np.linalg.det(original.affine[:3, :3]))) / 1000
@@ -291,6 +301,9 @@ def run_case(paths, out, update=lambda message: None, expert=None, expert_et=4, 
         'peak_gpu_mib': peak,
         'gpu': torch.cuda.get_device_name(0),
         'shape': list(original.shape),
+        'affine': original.affine.tolist(),
+        'available_modalities': ['t1', 't1c', 't2', 'flair'],
+        'input_hashes': input_hashes,
         'spacing_mm': nib.affines.voxel_sizes(original.affine).round(4).tolist(),
         'meshes': meshes,
         'timestamp': time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()),

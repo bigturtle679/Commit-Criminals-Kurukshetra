@@ -1,13 +1,24 @@
 import { Niivue, SHOW_RENDER, MULTIPLANAR_TYPE } from '/static/vendor/niivue.js';
+import { ReviewController, worldToVoxel } from '/static/review.js';
 
 const $ = id => document.getElementById(id);
 
 let currentJob = null;
 let currentView = 3; // 3: Multiplanar Grid, 0: Axial, 1: Coronal, 2: Sagittal, 4: 3D Render
 let isBusy = false;
-let selectedModel = 'swinunetr';
+let selectedModel = 'ensemble';
 let selectedCase = '00002';
 let viewerReady = true;
+let review = null;
+let openingGeneration = 0;
+let requestedReviewJob = null;
+let viewerGeneration = 0;
+let viewerQueue = Promise.resolve();
+let loadedJobId = null;
+let pendingBlindJob = (() => { try { return sessionStorage.getItem('neuroscope-blind-job'); } catch { return null; } })();
+let opening = false;
+let gateSignature = '';
+const denyAccess = {prediction:false, expert:false, report:false};
 
 // Initialize NiiVue WebGL2 Engine
 const nv = new Niivue({
@@ -19,6 +30,9 @@ const nv = new Niivue({
 });
 
 try {
+  if (!$('gl-canvas').getContext('webgl2', {alpha:true, antialias:navigator.hardwareConcurrency > 6})) {
+    throw new Error('WebGL2 unavailable');
+  }
   await nv.attachTo('gl-canvas');
   nv.setSliceType(3);
 } catch (e) {
@@ -32,7 +46,9 @@ if (viewerReady) {
     if (!data) return;
     const { mm } = data;
     if (mm && mm.length >= 3) {
-      $('hud-crosshair').textContent = `X: ${mm[0].toFixed(1)} mm | Y: ${mm[1].toFixed(1)} mm | Z: ${mm[2].toFixed(1)} mm`;
+      let voxel = '';
+      try { voxel = ` | voxel: ${worldToVoxel(Array.from(mm).slice(0, 3), review.document.metadata.affine, review.document.metadata.shape).map(x => x.toFixed(1)).join(', ')}`; } catch {}
+      $('hud-crosshair').textContent = `X: ${mm[0].toFixed(1)} mm | Y: ${mm[1].toFixed(1)} mm | Z: ${mm[2].toFixed(1)} mm${voxel}`;
     }
   };
 }
@@ -45,7 +61,7 @@ function setStatus(text, isError = false) {
 
 function setBusy(value) {
   isBusy = value;
-  document.querySelectorAll('.patient-case-btn').forEach(b => b.disabled = value);
+  document.querySelectorAll('.patient-case-btn, .model-btn').forEach(b => b.disabled = value);
   $('btn-analyze').disabled = value;
   $('history-select').disabled = value;
   $('progress-container').hidden = !value;
@@ -66,17 +82,76 @@ function getFileUrl(filename) {
   return `/api/files/${currentJob.id}/${filename}`;
 }
 
-// Update Model Switcher Buttons
+// Model information describes architecture tradeoffs, not validated accuracy rankings.
+const MODEL_INFO = {
+  ensemble: {
+    name: '8:2 Ensemble',
+    description: 'Combines SwinUNETR and the project’s residual-encoder U-Net (ResEnc) by averaging their probabilities with weights 80% and 20%.',
+    advantages: 'Combines predictions from two architectures and supports inspecting disagreement between them.',
+    limitations: 'Runs both networks and requires both trained checkpoints. Shared errors can remain; improved accuracy must be established on held-out cases.',
+    use: 'Evaluate the combined prediction alongside the individual-model baselines.'
+  },
+  swinunetr: {
+    name: 'SwinUNETR',
+    description: 'A hierarchical 3D transformer with shifted-window attention and a U-shaped decoder, using the BraTS21 checkpoint.',
+    advantages: 'Uses attention to combine spatial context across scales. Provides a standalone reference for the transformer component of the ensemble.',
+    limitations: 'The 3D attention network can demand substantial memory. Predictions depend on matching the checkpoint’s channel order and preprocessing.',
+    use: 'Inspect the transformer baseline or compare it with the ensemble.',
+    source: 'https://github.com/Project-MONAI/research-contributions/blob/main/SwinUNETR/BRATS21/README.md'
+  },
+  segresnet: {
+    name: 'SegResNet',
+    description: 'A 3D residual convolutional encoder-decoder loaded from the MONAI brain-tumor segmentation bundle. This is a separate baseline, not the ResEnc component of the ensemble.',
+    advantages: 'Provides a convolutional baseline with residual connections and a single-network inference path.',
+    limitations: 'Does not use Swin-style attention or combine a second model’s predictions. Its accuracy and runtime need comparison on the same cases and hardware.',
+    use: 'Compare the MONAI convolutional baseline with SwinUNETR and the ensemble.',
+    source: 'https://arxiv.org/abs/1810.11654'
+  }
+};
+
 function setModel(modelId) {
+  const info = MODEL_INFO[modelId];
+  if (!info || isBusy) return;
   selectedModel = modelId;
-  const isSwin = modelId === 'swinunetr';
-  $('btn-swinunetr').classList.toggle('active', isSwin);
-  $('btn-segresnet').classList.toggle('active', !isSwin);
-  $('header-model-name').textContent = isSwin ? 'SwinUNETR (Transformer)' : 'SegResNet (CNN)';
+  document.querySelectorAll('.model-btn').forEach(button => {
+    const selected = button.dataset.model === modelId;
+    button.classList.toggle('active', selected);
+    button.setAttribute('aria-pressed', String(selected));
+  });
+  $('header-model-name').textContent = info.name;
+  const details = $('model-details');
+  details.replaceChildren();
+  const title = document.createElement('h4');
+  title.textContent = `About ${info.name}`;
+  details.append(title);
+  for (const [label, text] of [
+    ['', info.description], ['Advantages', info.advantages],
+    ['Limitations', info.limitations], ['Use it for', info.use],
+    ['Inputs / outputs', 'Four aligned MRI sequences: T1, T1Gd, T2 and FLAIR. Outputs: whole tumor, tumor core and enhancing tumor masks.']
+  ]) {
+    const paragraph = document.createElement('p');
+    if (label) {
+      const heading = document.createElement('strong');
+      heading.textContent = `${label}: `;
+      paragraph.append(heading);
+    }
+    paragraph.append(document.createTextNode(text));
+    details.append(paragraph);
+  }
+  if (info.source) {
+    const source = document.createElement('a');
+    source.href = info.source;
+    source.target = '_blank';
+    source.rel = 'noopener noreferrer';
+    source.textContent = 'Architecture reference ↗';
+    details.append(source);
+  }
 }
 
-$('btn-swinunetr').onclick = () => setModel('swinunetr');
-$('btn-segresnet').onclick = () => setModel('segresnet');
+document.querySelectorAll('.model-btn').forEach(button => {
+  button.onclick = () => setModel(button.dataset.model);
+});
+setModel(selectedModel);
 
 // Update Patient Case Selection
 function setCaseActive(caseId) {
@@ -87,11 +162,23 @@ function setCaseActive(caseId) {
 }
 
 // Refresh NiiVue Scene (Volumes & Meshes)
-async function refreshViewer() {
+function refreshViewer(options = {}) {
+  const token = ++viewerGeneration;
+  $('gl-canvas').hidden = true;
+  viewerQueue = viewerQueue.catch(() => {}).then(() => loadViewer(token, options.world));
+  return viewerQueue;
+}
+
+async function loadViewer(token, requestedWorld) {
   if (!currentJob || !viewerReady) return;
 
+  if (token !== viewerGeneration) return;
+  const jobId = currentJob.id;
+  const access = review?.access || denyAccess;
+  const previousWorld = requestedWorld || (loadedJobId === jobId && nv.volumes.length ? Array.from(nv.frac2mm(nv.scene.crosshairPos)).slice(0, 3) : null);
   const bgKey = $('select-background').value; // 't1c' or 'flair'
-  const overlayMode = $('select-overlay').value; // 'segmentation', 'expert', or 'none'
+  const selectedOverlay = $('select-overlay').value;
+  const overlayMode = selectedOverlay === 'expert' ? (access.expert ? 'expert' : 'none') : selectedOverlay === 'segmentation' && access.prediction ? 'segmentation' : 'none'; // 'segmentation', 'expert', or 'none'
   const opacity = parseFloat($('range-opacity').value);
 
   const volumes = [
@@ -104,7 +191,7 @@ async function refreshViewer() {
 
   if (overlayMode !== 'none') {
     const isExpert = overlayMode === 'expert';
-    if (!isExpert || currentJob.result.metrics) {
+    if (!isExpert || review.document.metadata.has_expert) {
       volumes.push({
         url: getFileUrl(`${overlayMode}.nii.gz`),
         opacity: opacity,
@@ -115,6 +202,7 @@ async function refreshViewer() {
   }
 
   await nv.loadVolumes(volumes);
+  if (token !== viewerGeneration || currentJob?.id !== jobId) return;
 
   if (nv.volumes.length > 1) {
     // Custom clinical BraTS subregion palette
@@ -142,7 +230,7 @@ async function refreshViewer() {
     });
   }
 
-  if (overlayMode === 'segmentation') {
+  if (access.prediction && overlayMode === 'segmentation') {
     if ($('chk-mesh-tumor').checked && availableMeshes.includes('tumor')) {
       meshes.push({
         url: getFileUrl('tumor.obj'),
@@ -160,14 +248,20 @@ async function refreshViewer() {
   }
 
   await nv.loadMeshes(meshes);
+  if (token !== viewerGeneration || currentJob?.id !== jobId) return;
   nv.setSliceType(currentView);
-  nv.setRenderAzimuthElevation(120, 15);
+  if (previousWorld) nv.scene.crosshairPos = nv.mm2frac(previousWorld);
+  if (loadedJobId !== jobId) nv.setRenderAzimuthElevation(120, 15);
+  loadedJobId = jobId;
+  nv.drawScene();
+  nv.onLocationChange?.({mm:Array.from(nv.frac2mm(nv.scene.crosshairPos)).slice(0, 3)});
+  $('gl-canvas').hidden = false;
+  review?.render();
   $('empty-state').hidden = true;
 }
 
 // Display Complete Analysis Results
-async function showResult(job) {
-  currentJob = job;
+function renderResultPanels(job) {
   const res = job.result;
 
   // Header and Metadata
@@ -215,7 +309,7 @@ async function showResult(job) {
   // Ground Truth Benchmark Scores Table
   const tbody = $('scores-body');
   tbody.replaceChildren();
-  if (res.metrics) {
+  if (res.metrics && review.access.expert) {
     for (const [key, score] of Object.entries(res.metrics)) {
       const tr = document.createElement('tr');
       const dsc = score.dice === null ? 'N/A' : `${(score.dice * 100).toFixed(1)}%`;
@@ -252,15 +346,73 @@ async function showResult(job) {
   meshLink.href = getFileUrl('tumor.obj');
   meshLink.classList.toggle('disabled', !(res.meshes || []).includes('tumor'));
 
+  applyReviewGate();
+}
+
+function applyReviewGate() {
+  const access = opening ? denyAccess : review?.access || denyAccess;
+  const signature = `${access.prediction}:${access.expert}:${access.report}`;
+  if (signature !== gateSignature) {
+    gateSignature = signature;
+    ++viewerGeneration;
+    $('gl-canvas').hidden = true;
+  }
+  document.querySelectorAll('[data-answer]').forEach(element => { element.hidden = !access[element.dataset.answer]; });
+  const overlay = $('select-overlay');
+  for (const option of overlay.options) {
+    option.disabled = option.value === 'expert' ? !access.expert : option.value === 'segmentation' ? !access.prediction : false;
+  }
+  if (overlay.selectedOptions[0]?.disabled) overlay.value = 'none';
+  for (const id of ['chk-mesh-tumor', 'chk-mesh-core']) $(id).disabled = !access.prediction;
+  for (const [id, allowed, filename] of [
+    ['link-download-mask', access.prediction, 'segmentation.nii.gz'],
+    ['link-download-mesh', access.prediction && currentJob?.result.meshes?.includes('tumor'), 'tumor.obj'],
+    ['link-download-report', access.report, 'report.json']
+  ]) {
+    if (allowed && currentJob) $(id).href = getFileUrl(filename);
+    else $(id).removeAttribute('href');
+  }
+  if (opening || review?.loading) $('gl-canvas').hidden = true;
+}
+
+async function showResult(job) {
+  requestedReviewJob = job;
+  const generation = ++openingGeneration;
+  ++viewerGeneration;
+  opening = true;
+  currentJob = null;
+  $('gl-canvas').hidden = true;
+  applyReviewGate();
   try {
-    await refreshViewer();
-    if (res.model_name === 'swinunetr' && !res.input_channel_order) {
-      setStatus('Old SwinUNETR run used the wrong MRI channel order. Rerun this case before using its scores.', true);
-    } else {
-      setStatus('Segmentation completed successfully. Ready to inspect.');
+    const blind = $('blind-next').checked || pendingBlindJob === job.id;
+    await review.load(job.id, blind);
+    if (generation !== openingGeneration) return;
+    if (review.pending) throw Error('Blind attempt could not be saved. Retry the review save before continuing.');
+    currentJob = job;
+    try { sessionStorage.setItem('neuroscope-open-analysis', job.id); } catch {}
+    pendingBlindJob = null;
+    try { sessionStorage.removeItem('neuroscope-blind-job'); } catch {}
+    const modalities = review.document.metadata.available_modalities;
+    for (const option of $('select-background').options) {
+      option.disabled = !modalities.includes(option.value);
+      option.textContent = ({t1:'T1',t1c:'T1Gd',t2:'T2',flair:'FLAIR'})[option.value] + (option.disabled ? ' — unavailable' : '');
     }
-  } catch (err) {
-    setStatus(`Analysis completed, but 3D viewer encountered an error: ${err.message}`, true);
+    if (!modalities.includes($('select-background').value)) $('select-background').value = modalities[0] || '';
+    opening = false;
+    if (!review.attempt && loadedJobId !== job.id) $('select-overlay').value = 'segmentation';
+    renderResultPanels(job);
+    review.markExposure();
+    await refreshViewer();
+    if (generation !== openingGeneration) return;
+    review.render();
+    setStatus(!viewerReady ? 'Review notes ready. WebGL unavailable; spatial capture and navigation are disabled.' : review.attempt ? 'Review session ready.' : 'Analysis ready to inspect.');
+  } catch (error) {
+    if (generation === openingGeneration) {
+      opening = true;
+      applyReviewGate();
+      review.error(error);
+      setStatus(`Could not open review: ${error.message}`, true);
+    }
   }
 }
 
@@ -305,11 +457,17 @@ async function pollJob(jobId) {
 // Start Analysis Job
 async function launchAnalysis(endpoint, options = {}) {
   if (isBusy) return;
+  if (review?.saving || review?.pending) { setStatus('Save or reload the pending review change before switching cases.', true); return; }
   setBusy(true);
-  setStatus('Running 3D segmentation on RTX 4060…');
+  setStatus(`Running ${MODEL_INFO[selectedModel].name} segmentation…`);
 
   try {
+    const blind = $('blind-next').checked;
     const res = await fetchApi(endpoint, options);
+    if (blind) {
+      pendingBlindJob = res.id;
+      try { sessionStorage.setItem('neuroscope-blind-job', res.id); } catch {}
+    }
     await pollJob(res.id);
   } catch (err) {
     setBusy(false);
@@ -338,6 +496,11 @@ $('upload-form').onsubmit = e => {
 $('history-select').onchange = async () => {
   const id = $('history-select').value;
   if (!id) return;
+  if (review?.saving || review?.pending) {
+    $('history-select').value = review.jobId || '';
+    setStatus('Save or reload the pending review change before switching cases.', true);
+    return;
+  }
   try {
     const job = await fetchApi(`/api/jobs/${id}`);
     await showResult(job);
@@ -388,8 +551,48 @@ $('btn-snapshot').onclick = () => {
 };
 
 $('btn-print-report').onclick = () => {
-  window.print();
+  if (review?.access.report && !opening) window.print();
 };
+
+review = new ReviewController({
+  fetch: fetchApi,
+  canCapture: () => viewerReady && !!currentJob && loadedJobId === currentJob.id && !!nv.volumes.length && !opening && !$('gl-canvas').hidden,
+  canNavigate: () => viewerReady && !!currentJob && !opening,
+  capture: () => {
+    if (!viewerReady || !currentJob || loadedJobId !== currentJob.id || !nv.volumes.length) throw Error('Load an MRI volume before saving a location.');
+    return {world_mm:Array.from(nv.frac2mm(nv.scene.crosshairPos)).slice(0, 3), modality:$('select-background').value,
+      view:currentView, overlay:review.attempt ? 'none' : $('select-overlay').value, opacity:Number($('range-opacity').value)};
+  },
+  navigate: async bookmark => {
+    worldToVoxel(bookmark.world_mm, review.document.metadata.affine, review.document.metadata.shape);
+    $('select-background').value = bookmark.modality;
+    currentView = bookmark.view;
+    $('view-tabs').querySelectorAll('[data-view]').forEach(b => b.classList.toggle('active', Number(b.dataset.view) === currentView));
+    const allowed = review.access;
+    $('select-overlay').value = bookmark.overlay === 'expert' && allowed.expert ? 'expert' : bookmark.overlay === 'segmentation' && allowed.prediction ? 'segmentation' : 'none';
+    $('range-opacity').value = bookmark.opacity;
+    $('opacity-val').textContent = `${Math.round(bookmark.opacity * 100)}%`;
+    await refreshViewer({world:bookmark.world_mm});
+  },
+  refresh: async () => {
+    if (opening || !currentJob) return;
+    renderResultPanels(currentJob);
+    review.markExposure();
+    await refreshViewer();
+  },
+  reveal: async stage => {
+    $('select-overlay').value = stage === 'expert' ? 'expert' : 'segmentation';
+    renderResultPanels(currentJob);
+    review.markExposure();
+    await refreshViewer();
+  },
+  gate: () => applyReviewGate(),
+  reopen: async () => {
+    const id = requestedReviewJob?.id || review?.jobId;
+    if (id) await showResult(await fetchApi(`/api/jobs/${id}`));
+  }
+});
+applyReviewGate();
 
 // File inputs change state update
 document.querySelectorAll('input[type="file"]').forEach(input => {
@@ -405,6 +608,7 @@ document.querySelectorAll('input[type="file"]').forEach(input => {
 // App Startup Initialization
 try {
   const status = await fetchApi('/api/status');
+  setModel(status.default_model || selectedModel);
   if (status.gpu) {
     $('gpu-text').textContent = status.gpu;
   }
@@ -416,10 +620,10 @@ try {
     setBusy(true);
     pollJob(running.id);
   } else {
-    const requestedId = new URLSearchParams(window.location.search).get('analysis');
+    const requestedId = new URLSearchParams(window.location.search).get('analysis') || (() => { try { return sessionStorage.getItem('neuroscope-open-analysis'); } catch { return null; } })();
     const completed = jobs.filter(j => j.status === 'complete');
     const requested = completed.find(j => j.id === requestedId);
-    const latest = requested || completed.filter(j => !(j.result.model_name === 'swinunetr' && !j.result.input_channel_order)).at(-1);
+    const latest = requested;
 
     if (latest) {
       $('history-select').value = latest.id;
