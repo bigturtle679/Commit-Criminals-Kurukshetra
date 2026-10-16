@@ -16,3 +16,13 @@ models/swinunetr_brats/*.pt
 *.h5
 *.hdf5
 .env
+
+# Frontend large binary assets
+frontend/assets/*.mp4
+frontend/assets/*.mov
+frontend/assets/*.webm
+
+# Frontend OS/editor files
+Thumbs.db
+.vscode/
+*.swp

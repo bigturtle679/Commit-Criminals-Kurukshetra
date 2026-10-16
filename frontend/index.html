@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#e9eaf5"><meta name="description" content="NeuroScope 3D — a new perspective on brain imaging. Research interface prototype."><title>NeuroScope 3D — See Beyond the Scan.</title><meta name="robots" content="index, follow">
+<meta property="og:title" content="NeuroScope 3D � See Beyond the Scan.">
+<meta property="og:description" content="A research-grade brain imaging interface. Explore a new dimension of understanding.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="styles.css"></head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="navbar"><a class="brand" href="#" aria-label="NeuroScope 3D home"><span class="brand-icon">✳</span>Neuro<span>Scope</span><sup>3D</sup></a><button class="menu" aria-expanded="false" aria-controls="navigation">Menu <span>☰</span></button><nav id="navigation" aria-label="Main navigation"><a href="#about">Overview</a><a href="#workflow">How it works</a><a href="#research">Research</a></nav><button class="nav-cta" data-start>Launch workspace <span>↗</span></button></header>
+<main id="main">
+<section class="hero" aria-labelledby="hero-title">
+<div class="hero-copy"><div class="eyebrow"><span class="dot"></span> A NEW PERSPECTIVE ON BRAIN IMAGING</div><h1 id="hero-title">See Beyond<br>the Scan<span class="period">.</span></h1><p>Every brain holds a bigger picture.<br>Explore a new dimension of understanding<br class="desktop"> with NeuroScope 3D.</p><div class="actions"><button class="primary" data-start>Start Analysis <span>↗</span></button><a class="text-link" href="#workflow">Discover the process <span>↘</span></a></div><div class="hero-note"><span class="mini-cross">+</span> Built for curiosity. Designed for research.</div></div>
+<div class="brain-stage"><div class="halo"></div><video id="brain" autoplay muted loop playsinline preload="auto" aria-label="Animated translucent anatomical brain visualization"><source src="assets/brain-cropped.mp4" type="video/mp4"></video><div class="visual-label"><span class="dot"></span> THE HUMAN BRAIN <span class="label-muted">A DIFFERENT PERSPECTIVE</span></div><button id="motion" class="motion" aria-label="Pause brain animation">Ⅱ</button><p id="video-error" hidden>Brain visualization unavailable.</p></div>
+<div class="hero-bottom"><span>NEUROSCOPE / 001</span><a href="#about">Explore what’s beneath <span>↓</span></a><span>SCIENCE, IN A NEW DIMENSION</span></div>
+</section>
+<aside class="disclaimer" id="research"><span class="info">i</span><strong>For research & education only.</strong><span>Not intended for clinical diagnosis, treatment, or medical decision-making.</span><span class="research-tag">RESEARCH PROTOTYPE</span></aside>
+<section class="about section" id="about"><div><div class="eyebrow">BEYOND THE SURFACE</div><h2>A little perspective.<br>A world of possibility.</h2></div><p>NeuroScope brings a calm, focused interface to the exploration of brain imaging. This homepage is the first step toward a research workspace — a place to look closer, ask questions, and see the bigger picture.</p></section>
+<section class="section workflow" id="workflow"><div class="section-heading"><div><div class="eyebrow">A CLEAR PATH FORWARD</div><h2>From scan to perspective.</h2></div><span class="prototype-label">PROPOSED WORKFLOW</span></div><div class="steps"><article><span>01 / PREPARE</span><h3>Start with your scan.</h3><p>Choose a de-identified research scan. The current demo checks the file name locally; it does not upload or process scan data.</p></article><article><span>02 / EXPLORE</span><h3>Find a new viewpoint.</h3><p>A future workspace for exploring imaging in three dimensions. The hero animation is illustrative, not a reconstruction of your scan.</p></article><article><span>03 / UNDERSTAND</span><h3>Keep asking questions.</h3><p>Built around research and learning. Analysis, segmentation, and clinical interpretation are not implemented in this prototype.</p></article></div></section>
+</main><footer><a class="brand" href="#">Neuro<span>Scope</span><sup>3D</sup></a><span>A new dimension of understanding.</span><span>Research interface · 2026</span></footer>
+<dialog id="workspace" aria-labelledby="dialog-title"><button class="close" aria-label="Close workspace">×</button><div class="eyebrow">RESEARCH WORKSPACE / PREVIEW</div><h2 id="dialog-title">Begin with a new perspective.</h2><p>This is an interface demo. Files stay on your device. No scan analysis or medical results are generated.</p><label class="file-zone" for="scan"><span class="upload-icon">↑</span><strong>Choose a research scan</strong><span>NIfTI (.nii, .nii.gz) or DICOM (.dcm)</span><input id="scan" type="file" accept=".nii,.gz,.dcm"></label><p id="file-status" role="status">Use de-identified research data only.</p><button class="primary done">Back to exploring <span>↗</span></button></dialog>
+<script src="app.js"></script></body></html>
+
+
