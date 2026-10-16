@@ -623,7 +623,8 @@ async function loadSamples() {
     item.className = 'sample-item';
     const name = document.createElement('span');
     name.className = 'sample-id';
-    name.textContent = sample.id.replace('BraTS2021_', 'Patient ');
+    name.textContent = sample.id.replace('BraTS2021_', '#');
+    name.title = sample.id;
     const actions = document.createElement('span');
     actions.className = 'sample-actions';
     const download = document.createElement('a');
