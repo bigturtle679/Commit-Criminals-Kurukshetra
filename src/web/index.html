@@ -30,11 +30,16 @@
     <div class="header-badges">
       <div class="status-pill gpu-pill">
         <span class="pulse-dot"></span>
-        <span id="gpu-text">NVIDIA RTX 4060</span>
+        <span id="gpu-text">Detecting hardware…</span>
       </div>
       <div class="status-pill model-pill">
+<<<<<<< HEAD
         <span class="model-indicator-tag">NEXT ANALYSIS</span>
         <span id="header-model-name">8:2 Ensemble</span>
+=======
+        <span class="model-indicator-tag">ACTIVE AI</span>
+        <span id="header-model-name">8:2 Hybrid Ensemble</span>
+>>>>>>> main
       </div>
       <div class="status-pill offline-pill">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -126,6 +131,15 @@
             <button type="button" class="model-btn" data-model="segresnet" id="btn-segresnet" aria-pressed="false" aria-controls="model-details">
               <span class="model-title">SegResNet</span>
               <span class="model-desc">3D residual convolutional network · MONAI bundle</span>
+            </button>
+
+            <button type="button" class="model-btn" data-model="ensemble" id="btn-ensemble">
+              <div class="model-btn-top">
+                <span class="model-badge" style="background: rgba(168,85,247,0.18); color: #c084fc; border: 1px solid rgba(168,85,247,0.35);">8:2 ENSEMBLE</span>
+                <span class="model-latency">~10s</span>
+              </div>
+              <div class="model-title">8:2 Hybrid Ensemble</div>
+              <div class="model-desc">SwinUNETR (80%) + nnU-Net ResEnc (20%) with entropy uncertainty.</div>
             </button>
           </div>
           <div id="model-details" class="model-details" aria-live="polite" aria-atomic="true"></div>
@@ -344,6 +358,7 @@
                 <span>Overlay:</span>
                 <select id="select-overlay">
                   <option value="segmentation">AI Prediction Mask</option>
+                  <option value="uncertainty" id="opt-uncertainty">Uncertainty Entropy Map</option>
                   <option value="expert">Expert Reference Mask</option>
                   <option value="none">Scan Only (No Mask)</option>
                 </select>
@@ -541,7 +556,16 @@
               <span>Download NIfTI Mask (.nii.gz)</span>
             </a>
 
+<<<<<<< HEAD
             <a id="link-download-mesh" data-answer="prediction" hidden class="btn-export disabled" download="tumor.obj">
+=======
+            <a id="link-download-uncertainty" class="btn-export disabled" download="uncertainty.nii.gz">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>Download Uncertainty (.nii.gz)</span>
+            </a>
+
+            <a id="link-download-mesh" class="btn-export disabled" download="tumor.obj">
+>>>>>>> main
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
               <span>Download 3D Tumor Mesh (.obj)</span>
             </a>
@@ -561,9 +585,9 @@
     <footer class="app-footer">
       <div>NeuroScope 3D · Autonomous 3D Segmentation Platform</div>
       <div class="footer-links">
-        <span>Dual Inference: <strong>SwinUNETR</strong> & <strong>SegResNet</strong></span>
+        <span>8:2 Ensemble: <strong>SwinUNETR (80%)</strong> & <strong>nnU-Net ResEnc M (20%)</strong></span>
         <span>•</span>
-        <span>Local RTX 4060 GPU Accelerated</span>
+        <span>Hardware-Accelerated / CPU-Safe Inference</span>
         <span>•</span>
         <span>MICCAI BraTS Standard Subregions</span>
       </div>
