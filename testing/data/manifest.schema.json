@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NeuroScope patient manifest",
+  "type": "object",
+  "required": [
+    "selection_seed",
+    "patients"
+  ],
+  "properties": {
+    "selection_seed": {
+      "type": "integer"
+    },
+    "patients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "patient_id",
+          "source",
+          "version",
+          "modalities",
+          "expert_mask",
+          "label_mapping",
+          "overlap_status",
+          "geometry_verified",
+          "sha256"
+        ],
+        "properties": {
+          "patient_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "modalities": {
+            "type": "object",
+            "required": [
+              "t1",
+              "t1c",
+              "t2",
+              "flair"
+            ],
+            "properties": {
+              "t1": {
+                "type": "string",
+                "minLength": 1
+              },
+              "t1c": {
+                "type": "string",
+                "minLength": 1
+              },
+              "t2": {
+                "type": "string",
+                "minLength": 1
+              },
+              "flair": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          },
+          "expert_mask": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label_mapping": {
+            "type": "object",
+            "required": [
+              "background",
+              "nonenhancing_core",
+              "edema",
+              "enhancing_tumor",
+              "evidence"
+            ],
+            "properties": {
+              "background": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "nonenhancing_core": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "edema": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "enhancing_tumor": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "evidence": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "overlap_status": {
+            "enum": [
+              "known_training_overlap",
+              "excluded_from_known_training",
+              "unknown"
+            ]
+          },
+          "geometry_verified": {
+            "type": "boolean"
+          },
+          "sha256": {
+            "type": "object",
+            "required": [
+              "t1",
+              "t1c",
+              "t2",
+              "flair",
+              "expert_mask"
+            ],
+            "properties": {
+              "t1": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "t1c": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "t2": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "flair": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "expert_mask": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
