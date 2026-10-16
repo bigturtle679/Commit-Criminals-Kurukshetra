@@ -21,6 +21,57 @@ let gateSignature = '';
 const denyAccess = {prediction:false, expert:false, report:false};
 // Overlay the user last picked; loading gates temporarily force 'none', this restores it.
 let preferredOverlay = 'segmentation';
+// Validated (dark surface, CVD-safe) steps of the viewer legend hues; order Edema, Necrotic, Enhancing.
+const REGION_COLORS = { edema: '#13a090', necrotic: '#c9651a', enhancing: '#c03a8c' };
+
+// Horizontal bar chart: label · bar from a shared zero baseline · direct value label; hover/focus tooltip.
+function renderHBars(container, rows, { max = 1, ref = null } = {}) {
+  container.replaceChildren();
+  for (const row of rows) {
+    const item = document.createElement('div');
+    item.className = 'hbar-row';
+    item.setAttribute('role', 'listitem');
+    item.tabIndex = 0;
+    item.dataset.tip = row.tip;
+    item.setAttribute('aria-label', row.tip);
+    const label = document.createElement('span');
+    label.className = 'hbar-label';
+    label.textContent = row.label;
+    const track = document.createElement('span');
+    track.className = 'hbar-track';
+    const bar = document.createElement('span');
+    bar.className = 'hbar-fill';
+    bar.style.width = `${Math.max(0, Math.min(1, row.value / max)) * 100}%`;
+    bar.style.background = row.color;
+    track.append(bar);
+    if (ref !== null) {
+      const line = document.createElement('span');
+      line.className = 'hbar-ref';
+      line.style.left = `${(ref / max) * 100}%`;
+      track.append(line);
+    }
+    const value = document.createElement('span');
+    value.className = 'hbar-value';
+    value.textContent = row.text;
+    item.append(label, track, value);
+    container.append(item);
+  }
+}
+
+const chartTip = document.createElement('div');
+chartTip.className = 'chart-tooltip';
+chartTip.hidden = true;
+document.body.append(chartTip);
+function showTip(row) {
+  chartTip.textContent = row.dataset.tip;
+  chartTip.hidden = false;
+  const r = row.getBoundingClientRect();
+  chartTip.style.left = `${Math.min(window.innerWidth - chartTip.offsetWidth - 8, Math.max(8, r.left))}px`;
+  chartTip.style.top = `${Math.max(8, r.top - chartTip.offsetHeight - 6)}px`;
+}
+for (const type of ['mouseover', 'focusin']) document.addEventListener(type, e => { const row = e.target.closest?.('.hbar-row'); if (row) showTip(row); });
+for (const type of ['mouseout', 'focusout']) document.addEventListener(type, e => { if (e.target.closest?.('.hbar-row')) chartTip.hidden = true; });
+
 function restoreOverlay() {
   if (review?.attempt) return;
   const overlay = $('select-overlay');
@@ -43,6 +94,11 @@ try {
   }
   await nv.attachTo('gl-canvas');
   nv.setSliceType(3);
+  // The viewer box is sized by the flex layout; re-measure the WebGL buffer whenever it changes.
+  // Watch the canvas itself too: it is hidden while results load, and un-hiding it does not resize the parent.
+  const viewerResize = new ResizeObserver(() => requestAnimationFrame(() => { try { nv.resizeListener(); } catch {} }));
+  viewerResize.observe($('gl-canvas').parentElement);
+  viewerResize.observe($('gl-canvas'));
 } catch (e) {
   viewerReady = false;
   setStatus('3D WebGL2 viewer unavailable in this environment. Inference and downloads remain functional.', true);
@@ -307,25 +363,37 @@ function renderResultPanels(job) {
   $('val-ET').textContent = vols.ET.toFixed(2);
   $('val-ED').textContent = vols.ED.toFixed(2);
 
-  // Stacked Bar Calculation
+  // Tumour composition chart: disjoint compartments, colours match the viewer legend
   const total = vols.WT;
-  $('composition-total').textContent = `Total Volume: ${total.toFixed(2)} mL`;
-  if (total > 0) {
-    const pET = (vols.ET / total) * 100;
-    const pNC = ((vols.TC - vols.ET) / total) * 100;
-    const pED = (vols.ED / total) * 100;
+  $('composition-total').textContent = `Whole tumour: ${total.toFixed(1)} mL`;
+  const necrotic = Math.max(0, vols.TC - vols.ET);
+  const share = v => (total > 0 ? (v / total) * 100 : 0);
+  renderHBars($('volume-chart'), [
+    { label: 'Edema (ED)', value: vols.ED, color: REGION_COLORS.edema, text: `${vols.ED.toFixed(1)} mL · ${share(vols.ED).toFixed(0)}%`,
+      tip: `Peritumoral edema: ${vols.ED.toFixed(2)} mL (${share(vols.ED).toFixed(1)}% of whole tumour)` },
+    { label: 'Necrotic core', value: necrotic, color: REGION_COLORS.necrotic, text: `${necrotic.toFixed(1)} mL · ${share(necrotic).toFixed(0)}%`,
+      tip: `Necrotic / non-enhancing core: ${necrotic.toFixed(2)} mL (${share(necrotic).toFixed(1)}% of whole tumour)` },
+    { label: 'Enhancing (ET)', value: vols.ET, color: REGION_COLORS.enhancing, text: `${vols.ET.toFixed(1)} mL · ${share(vols.ET).toFixed(0)}%`,
+      tip: `Enhancing tumour: ${vols.ET.toFixed(2)} mL (${share(vols.ET).toFixed(1)}% of whole tumour)` },
+  ], { max: Math.max(vols.ED, necrotic, vols.ET, 1e-6) });
 
-    $('bar-enhancing').style.width = `${pET.toFixed(1)}%`;
-    $('bar-core').style.width = `${Math.max(0, pNC).toFixed(1)}%`;
-    $('bar-edema').style.width = `${pED.toFixed(1)}%`;
+  // Explainability numbers
+  const unc = res.uncertainty || {};
+  $('explain-entropy').textContent = unc.available && Number.isFinite(unc.mean_in_tumor) ? unc.mean_in_tumor.toFixed(3) : 'n/a';
+  const dis = res.model_disagreement;
+  $('explain-disagree-wrap').hidden = !dis;
+  if (dis) $('explain-disagree').textContent = Number.isFinite(dis.tumor_region_mean) ? dis.tumor_region_mean.toFixed(3) : 'n/a';
+  $('btn-show-uncertainty').disabled = !unc.available;
 
-    $('pct-enhancing').textContent = `${pET.toFixed(1)}%`;
-    $('pct-core').textContent = `${Math.max(0, pNC).toFixed(1)}%`;
-    $('pct-edema').textContent = `${pED.toFixed(1)}%`;
-  } else {
-    $('bar-enhancing').style.width = '0%';
-    $('bar-core').style.width = '0%';
-    $('bar-edema').style.width = '0%';
+  // Dice vs expert chart (single series, one hue)
+  const showDice = !!(res.metrics && review.access.expert);
+  $('dice-chart').hidden = !showDice;
+  if (showDice) {
+    renderHBars($('dice-chart'), ['WT', 'TC', 'ET'].filter(k => res.metrics[k]).map(k => {
+      const d = res.metrics[k].dice;
+      return { label: k, value: d ?? 0, color: 'var(--primary)', text: d === null ? 'N/A' : d.toFixed(3),
+        tip: `${({WT: 'Whole tumour', TC: 'Tumour core', ET: 'Enhancing tumour'})[k]} Dice: ${d === null ? 'N/A' : d.toFixed(4)} (1.0 = perfect overlap with the expert)` };
+    }), { max: 1, ref: 0.85 });
   }
 
   // Measurements only: a single scan cannot establish tumor grade or RANO response.
@@ -423,6 +491,7 @@ function applyReviewGate() {
     $('gl-canvas').hidden = true;
   }
   document.querySelectorAll('[data-answer]').forEach(element => { element.hidden = !access[element.dataset.answer]; });
+  $('analysis-empty').hidden = !!access.prediction;
   const overlay = $('select-overlay');
   for (const option of overlay.options) {
     option.disabled = option.value === 'expert' ? !access.expert : option.value === 'segmentation' ? !access.prediction : false;
@@ -670,6 +739,13 @@ $('view-tabs').onclick = e => {
 // Controls Change
 $('select-background').onchange = () => refreshViewer();
 $('select-overlay').onchange = () => { preferredOverlay = $('select-overlay').value; refreshViewer(); };
+$('btn-show-uncertainty').onclick = () => {
+  const overlay = $('select-overlay');
+  if ([...overlay.options].some(o => o.value === 'uncertainty' && !o.disabled)) {
+    overlay.value = preferredOverlay = 'uncertainty';
+    refreshViewer();
+  }
+};
 
 $('range-opacity').oninput = e => {
   const val = e.target.value;

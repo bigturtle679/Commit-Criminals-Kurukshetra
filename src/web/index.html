@@ -444,6 +444,15 @@
           </div>
         </div>
 
+
+      </section>
+
+      <!-- Right: tumour analysis, visible alongside the viewer -->
+      <aside class="analysis-panel" aria-label="Tumour analysis">
+        <div class="analysis-empty" id="analysis-empty">
+          <h3>Analysis</h3>
+          <p>Drop a patient zip or run a test patient — volumes, charts, accuracy and uncertainty appear here next to the 3D view.</p>
+        </div>
         <!-- Quantitative Volumetric Diagnostics Grid -->
         <div class="metrics-grid" data-answer="prediction" hidden>
           <div class="metric-card wt-card">
@@ -495,26 +504,40 @@
           </div>
         </div>
 
-        <!-- Relative Volumetric Composition Stacked Bar -->
+        <!-- Tumour composition chart: one bar per disjoint compartment, colours match the viewer legend -->
         <div class="card composition-card" data-answer="prediction" hidden>
           <div class="card-title-row">
-            <h4>Volumetric Subregion Partition</h4>
-            <span class="card-aux" id="composition-total">Total Burden: —</span>
+            <h4>Tumour composition</h4>
+            <span class="card-aux" id="composition-total">Whole tumour: —</span>
           </div>
-          <div class="stacked-bar-track">
-            <div id="bar-enhancing" class="bar-segment enhancing-segment" style="width: 0%" title="Enhancing Tumor"></div>
-            <div id="bar-core" class="bar-segment core-segment" style="width: 0%" title="Necrotic Core"></div>
-            <div id="bar-edema" class="bar-segment edema-segment" style="width: 0%" title="Edema Region"></div>
+          <div id="volume-chart" class="hbar-chart" role="list" aria-label="Predicted volume of each tumour compartment in millilitres"></div>
+          <p class="chart-note">Predicted volume per compartment (mL) · share of whole tumour</p>
+        </div>
+
+        <!-- Explainability: where the AI is unsure, and how much the two models disagree -->
+        <div class="card explain-card" data-answer="prediction" hidden>
+          <div class="card-header-simple">
+            <span class="card-pill explain-pill">EXPLAINABILITY</span>
+            <h3>How sure is the AI?</h3>
           </div>
-          <div class="bar-labels-row">
-            <span>🔴 Enhancing: <strong id="pct-enhancing">0%</strong></span>
-            <span>🟡 Necrotic Core: <strong id="pct-core">0%</strong></span>
-            <span>🟢 Edema: <strong id="pct-edema">0%</strong></span>
+          <div class="explain-grid">
+            <div class="explain-stat">
+              <span class="explain-label">Uncertainty inside tumour</span>
+              <strong id="explain-entropy">—</strong>
+              <span class="explain-help">Mean voxel entropy, 0 = certain, 1 = coin-flip</span>
+            </div>
+            <div class="explain-stat" id="explain-disagree-wrap">
+              <span class="explain-label">Swin vs ResEnc disagreement</span>
+              <strong id="explain-disagree">—</strong>
+              <span class="explain-help">Mean |p<sub>Swin</sub> − p<sub>ResEnc</sub>| in tumour</span>
+            </div>
           </div>
+          <button type="button" id="btn-show-uncertainty" class="btn-explain">Show uncertainty map on the scan</button>
+          <p class="chart-note">Bright areas on the map are where the boundary is least certain — usually the tumour edge.</p>
         </div>
 
         <!-- Volume Summary & Reference Validation Grid -->
-        <div class="assessment-grid">
+        <div class="assessment-stack">
           
           <!-- Descriptive volume measurements -->
           <div class="card rano-card" data-answer="prediction" hidden>
@@ -541,6 +564,8 @@
               <span class="card-pill">ACCURACY METRICS</span>
               <h3>Ground Truth Benchmark</h3>
             </div>
+            <div id="dice-chart" class="hbar-chart dice-chart" role="list" aria-label="Dice overlap with the expert mask for each region"></div>
+            <p class="chart-note">Dashed line: ~0.85, typical agreement between two expert raters</p>
             <div class="table-container">
               <table class="metrics-table">
                 <thead>
@@ -625,8 +650,7 @@
             </a>
           </div>
         </div>
-
-      </section>
+      </aside>
 
     </div>
 

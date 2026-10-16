@@ -1453,3 +1453,67 @@ body.page-dragging .zip-drop { border-color: var(--primary); background: rgba(6,
 .blind-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid rgba(245, 158, 11, 0.45); background: rgba(245, 158, 11, 0.1); color: #fde68a; font-size: 13px; }
 .blind-banner-btn { padding: 7px 12px; border-radius: 6px; border: 1px solid var(--accent-amber); background: var(--accent-amber); color: #111; font-weight: 700; cursor: pointer; }
 .blind-banner-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* =====================================================================
+   One-screen workspace: controls | tumour viewer | analysis, side by side.
+   Each column scrolls on its own so the scan and the numbers stay visible.
+   ===================================================================== */
+.analysis-panel { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.analysis-panel .card { margin-bottom: 0; padding: 16px; }
+.analysis-panel .metrics-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+.analysis-panel .metric-card { padding: 12px; }
+.analysis-panel .metric-value { font-size: 24px; }
+.analysis-panel .metric-subnote { display: none; }
+.analysis-panel .export-card { padding: 16px; }
+.assessment-stack { display: flex; flex-direction: column; gap: 14px; }
+.analysis-empty { padding: 18px; border: 1px dashed var(--border-subtle); border-radius: var(--radius-lg); color: var(--text-muted); font-size: 13px; line-height: 1.6; }
+.analysis-empty h3 { margin: 0 0 6px; color: var(--text-main); }
+
+@media (min-width: 1280px) {
+  .main-container { max-width: none; padding: 12px 16px 16px; }
+  .hero-strip { display: none; }
+  .workspace-grid {
+    grid-template-columns: 300px minmax(0, 1fr) 380px;
+    gap: 14px;
+    height: calc(100vh - 130px);
+    min-height: 620px;
+    align-items: stretch;
+  }
+  .sidebar-panel, .analysis-panel { overflow-y: auto; padding-right: 4px; scrollbar-width: thin; }
+  .sidebar-panel .card { padding: 16px; margin-bottom: 14px; }
+  .viewport-panel { overflow: hidden; min-height: 0; }
+  .viewer-card { display: flex; flex-direction: column; height: 100%; }
+  .viewer-card .canvas-container { flex: 1 1 auto; height: auto; min-height: 360px; }
+  .app-footer { display: none; }
+}
+@media (min-width: 900px) and (max-width: 1279px) {
+  .workspace-grid { grid-template-columns: 300px minmax(0, 1fr); }
+  .analysis-panel { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: start; }
+}
+
+/* Horizontal bar charts: shared zero baseline, 4px rounded data-end, direct labels */
+.hbar-chart { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 6px; }
+.hbar-row { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 3px 4px; border-radius: 6px; cursor: default; }
+.hbar-row:hover, .hbar-row:focus-visible { background: rgba(255, 255, 255, 0.04); outline: none; }
+.hbar-row:focus-visible { box-shadow: 0 0 0 2px var(--primary); }
+.hbar-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hbar-track { position: relative; height: 12px; border-left: 1px solid rgba(255, 255, 255, 0.18); }
+.hbar-fill { display: block; height: 100%; min-width: 2px; border-radius: 0 4px 4px 0; transition: width .5s ease; }
+.hbar-ref { position: absolute; top: -3px; bottom: -3px; border-left: 2px dashed rgba(255, 255, 255, 0.45); }
+.hbar-value { font-size: 12px; font-weight: 600; color: var(--text-main); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chart-note { margin: 4px 0 0; font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+.chart-tooltip { position: fixed; z-index: 1000; max-width: 300px; padding: 7px 10px; border-radius: 6px; background: #0b1220; border: 1px solid var(--border-focus); color: var(--text-main); font-size: 12px; line-height: 1.4; pointer-events: none; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); }
+
+/* Explainability card */
+.explain-card { border-color: rgba(245, 158, 11, 0.3); }
+.explain-pill { background: rgba(245, 158, 11, 0.14); color: #fcd34d; border-color: rgba(245, 158, 11, 0.35); }
+.explain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+.explain-stat { display: flex; flex-direction: column; gap: 3px; padding: 10px; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); }
+.explain-stat[hidden] { display: none; }
+.explain-label { font-size: 11px; color: var(--text-muted); }
+.explain-stat strong { font-size: 20px; color: var(--text-main); font-variant-numeric: tabular-nums; }
+.explain-help { font-size: 10px; color: var(--text-dim); line-height: 1.4; }
+.btn-explain { width: 100%; padding: 9px; border-radius: var(--radius-sm); border: 1px solid rgba(245, 158, 11, 0.5); background: rgba(245, 158, 11, 0.12); color: #fde68a; font-weight: 600; cursor: pointer; }
+.btn-explain:hover:not(:disabled) { background: rgba(245, 158, 11, 0.22); }
+.btn-explain:disabled { opacity: .45; cursor: not-allowed; }
+.btn-explain:focus-visible { outline: 2px solid var(--accent-amber); outline-offset: 2px; }
