@@ -1,0 +1,22 @@
+{
+  "datasets": [
+    {"priority": 1, "id": "msd", "page": "https://registry.opendata.aws/msd/", "url": "https://msd-for-monai.s3.us-west-2.amazonaws.com/Task01_BrainTumour.tar", "archive_bytes": 7608266240, "license": "CC-BY-SA-4.0", "input_order": ["flair", "t1", "t1ce", "t2"], "labels": {"0": "background", "1": "edema", "2": "non-enhancing tumor", "3": "enhancing tumor"}},
+    {"priority": 2, "id": "brats2021", "page": "https://www.med.upenn.edu/cbica/brats2021/", "access": "Official registration/access required; import approved local NIfTI files", "input_order": ["t1ce", "t1", "t2", "flair"], "labels": {"0": "background", "1": "core", "2": "edema", "4": "enhancing"}},
+    {"priority": 3, "id": "brats2020", "page": "https://www.med.upenn.edu/cbica/brats2020/data.html", "access": "Import approved complete NIfTI cases; do not use the HDF5 mirror as geometry-preserving NIfTI"},
+    {"priority": 4, "id": "upenn_gbm", "page": "https://www.cancerimagingarchive.net/collection/upenn-gbm/", "access": "Future adapter; check per-subject modalities and patient overlap before import"},
+    {"priority": 5, "id": "lgg_2d", "page": "https://www.kaggle.com/datasets/mateuszbuda/lgg-mri-segmentation", "access": "Optional binary 2D experiment; different target from WT/TC/ET"}
+  ],
+  "pretrained_model": {
+    "id": "swinunetr_brats21_fold1",
+    "url": "https://github.com/Project-MONAI/MONAI-extra-test-data/releases/download/0.8.1/fold1_f48_ep300_4gpu_dice0_9059.zip",
+    "source": "https://github.com/Project-MONAI/research-contributions/tree/main/SwinUNETR/BRATS21",
+    "feature_size": 48,
+    "in_channels": 4,
+    "out_channels": 3,
+    "roi": [128, 128, 128],
+    "fold": 1,
+    "published_mean_dice": 0.9059,
+    "input_order_status": "Verify upstream fold manifest before inference; local U-Net ordering is independent",
+    "purpose": "Pretrained inference baseline; no full training authorized by setup command"
+  }
+}

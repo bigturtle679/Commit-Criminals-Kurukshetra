@@ -1,7 +1,17 @@
-
 # Local ML environment, datasets, and downloaded weights
 .venv/
 models/
 data/
 work/
+outputs/
 __pycache__/
+.DS_Store
+*.nii
+*.nii.gz
+*.pt
+*.pth
+*.zip
+*.tar
+*.h5
+*.hdf5
+.env
