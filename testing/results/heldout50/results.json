@@ -1,0 +1,3728 @@
+{
+ "meta": {
+  "cases": 50,
+  "seed": 42,
+  "resenc_checkpoint": "work/resenc_training/resenc_it2000.pt",
+  "resenc_iteration": 2000,
+  "resenc_note": "early-stopped checkpoint",
+  "git_revision": "456458c3f08ad4404ca0a1ecae347ec0c09ff845",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "training_overlap": {
+   "swinunetr": "known_training_overlap (BrainSegFounder trained on BraTS 2021)",
+   "resenc": "excluded_from_known_training (held out by split.json)"
+  }
+ },
+ "summary": {
+  "swinunetr": {
+   "WT": {
+    "mean_dice": 0.9491,
+    "median_dice": 0.9644
+   },
+   "TC": {
+    "mean_dice": 0.9591,
+    "median_dice": 0.9707
+   },
+   "ET": {
+    "mean_dice": 0.9355,
+    "median_dice": 0.9519
+   }
+  },
+  "resenc": {
+   "WT": {
+    "mean_dice": 0.8758,
+    "median_dice": 0.912
+   },
+   "TC": {
+    "mean_dice": 0.8743,
+    "median_dice": 0.8933
+   },
+   "ET": {
+    "mean_dice": 0.8586,
+    "median_dice": 0.8754
+   }
+  },
+  "ensemble_80_20": {
+   "WT": {
+    "mean_dice": 0.9492,
+    "median_dice": 0.9643
+   },
+   "TC": {
+    "mean_dice": 0.9594,
+    "median_dice": 0.9708
+   },
+   "ET": {
+    "mean_dice": 0.9355,
+    "median_dice": 0.9532
+   }
+  }
+ },
+ "paired_vs_swin": {
+  "WT": {
+   "ensemble_better": 26,
+   "ensemble_worse": 21,
+   "mean_delta": 0.0
+  },
+  "TC": {
+   "ensemble_better": 25,
+   "ensemble_worse": 24,
+   "mean_delta": 0.0003
+  },
+  "ET": {
+   "ensemble_better": 23,
+   "ensemble_worse": 25,
+   "mean_delta": -0.0
+  }
+ },
+ "cases": [
+  {
+   "patient_id": "BraTS2021_00144",
+   "seconds": 6.19,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9369,
+     "sensitivity": 0.9653,
+     "precision": 0.9101,
+     "pred_volume_ml": 68.253,
+     "gt_volume_ml": 64.347
+    },
+    "TC": {
+     "dice": 0.9553,
+     "sensitivity": 0.9939,
+     "precision": 0.9196,
+     "pred_volume_ml": 47.763,
+     "gt_volume_ml": 44.191
+    },
+    "ET": {
+     "dice": 0.8848,
+     "sensitivity": 0.9765,
+     "precision": 0.8088,
+     "pred_volume_ml": 23.493,
+     "gt_volume_ml": 19.458
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.8945,
+     "sensitivity": 0.9083,
+     "precision": 0.8811,
+     "pred_volume_ml": 66.334,
+     "gt_volume_ml": 64.347
+    },
+    "TC": {
+     "dice": 0.9403,
+     "sensitivity": 0.9586,
+     "precision": 0.9228,
+     "pred_volume_ml": 45.904,
+     "gt_volume_ml": 44.191
+    },
+    "ET": {
+     "dice": 0.8437,
+     "sensitivity": 0.8945,
+     "precision": 0.7984,
+     "pred_volume_ml": 21.801,
+     "gt_volume_ml": 19.458
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9375,
+     "sensitivity": 0.9646,
+     "precision": 0.9119,
+     "pred_volume_ml": 68.066,
+     "gt_volume_ml": 64.347
+    },
+    "TC": {
+     "dice": 0.9557,
+     "sensitivity": 0.9937,
+     "precision": 0.9204,
+     "pred_volume_ml": 47.709,
+     "gt_volume_ml": 44.191
+    },
+    "ET": {
+     "dice": 0.8848,
+     "sensitivity": 0.975,
+     "precision": 0.8099,
+     "pred_volume_ml": 23.424,
+     "gt_volume_ml": 19.458
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00723",
+   "seconds": 7.7,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9717,
+     "sensitivity": 0.977,
+     "precision": 0.9664,
+     "pred_volume_ml": 83.954,
+     "gt_volume_ml": 83.044
+    },
+    "TC": {
+     "dice": 0.9539,
+     "sensitivity": 0.9171,
+     "precision": 0.9938,
+     "pred_volume_ml": 31.59,
+     "gt_volume_ml": 34.233
+    },
+    "ET": {
+     "dice": 0.9157,
+     "sensitivity": 0.8606,
+     "precision": 0.9784,
+     "pred_volume_ml": 19.543,
+     "gt_volume_ml": 22.218
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9172,
+     "sensitivity": 0.9472,
+     "precision": 0.889,
+     "pred_volume_ml": 88.484,
+     "gt_volume_ml": 83.044
+    },
+    "TC": {
+     "dice": 0.9227,
+     "sensitivity": 0.8878,
+     "precision": 0.9604,
+     "pred_volume_ml": 31.646,
+     "gt_volume_ml": 34.233
+    },
+    "ET": {
+     "dice": 0.8475,
+     "sensitivity": 0.7956,
+     "precision": 0.9066,
+     "pred_volume_ml": 19.496,
+     "gt_volume_ml": 22.218
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9722,
+     "sensitivity": 0.9771,
+     "precision": 0.9674,
+     "pred_volume_ml": 83.874,
+     "gt_volume_ml": 83.044
+    },
+    "TC": {
+     "dice": 0.9542,
+     "sensitivity": 0.9171,
+     "precision": 0.9943,
+     "pred_volume_ml": 31.574,
+     "gt_volume_ml": 34.233
+    },
+    "ET": {
+     "dice": 0.9148,
+     "sensitivity": 0.8585,
+     "precision": 0.9789,
+     "pred_volume_ml": 19.485,
+     "gt_volume_ml": 22.218
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00120",
+   "seconds": 7.63,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9637,
+     "sensitivity": 0.9491,
+     "precision": 0.9787,
+     "pred_volume_ml": 88.793,
+     "gt_volume_ml": 91.56
+    },
+    "TC": {
+     "dice": 0.9516,
+     "sensitivity": 0.9185,
+     "precision": 0.9871,
+     "pred_volume_ml": 52.689,
+     "gt_volume_ml": 56.625
+    },
+    "ET": {
+     "dice": 0.9049,
+     "sensitivity": 0.878,
+     "precision": 0.9335,
+     "pred_volume_ml": 37.167,
+     "gt_volume_ml": 39.514
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.8982,
+     "sensitivity": 0.9208,
+     "precision": 0.8766,
+     "pred_volume_ml": 96.18,
+     "gt_volume_ml": 91.56
+    },
+    "TC": {
+     "dice": 0.7753,
+     "sensitivity": 0.6461,
+     "precision": 0.9691,
+     "pred_volume_ml": 37.754,
+     "gt_volume_ml": 56.625
+    },
+    "ET": {
+     "dice": 0.8453,
+     "sensitivity": 0.751,
+     "precision": 0.9667,
+     "pred_volume_ml": 30.696,
+     "gt_volume_ml": 39.514
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9638,
+     "sensitivity": 0.9497,
+     "precision": 0.9783,
+     "pred_volume_ml": 88.887,
+     "gt_volume_ml": 91.56
+    },
+    "TC": {
+     "dice": 0.9504,
+     "sensitivity": 0.916,
+     "precision": 0.9875,
+     "pred_volume_ml": 52.521,
+     "gt_volume_ml": 56.625
+    },
+    "ET": {
+     "dice": 0.9041,
+     "sensitivity": 0.8729,
+     "precision": 0.9377,
+     "pred_volume_ml": 36.78,
+     "gt_volume_ml": 39.514
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00685",
+   "seconds": 7.63,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.8823,
+     "sensitivity": 0.8258,
+     "precision": 0.9472,
+     "pred_volume_ml": 77.883,
+     "gt_volume_ml": 89.333
+    },
+    "TC": {
+     "dice": 0.9717,
+     "sensitivity": 0.9919,
+     "precision": 0.9522,
+     "pred_volume_ml": 41.777,
+     "gt_volume_ml": 40.106
+    },
+    "ET": {
+     "dice": 0.9153,
+     "sensitivity": 0.9587,
+     "precision": 0.8757,
+     "pred_volume_ml": 20.33,
+     "gt_volume_ml": 18.568
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.7919,
+     "sensitivity": 0.6847,
+     "precision": 0.9389,
+     "pred_volume_ml": 65.145,
+     "gt_volume_ml": 89.333
+    },
+    "TC": {
+     "dice": 0.7527,
+     "sensitivity": 0.6288,
+     "precision": 0.9373,
+     "pred_volume_ml": 26.904,
+     "gt_volume_ml": 40.106
+    },
+    "ET": {
+     "dice": 0.778,
+     "sensitivity": 0.6938,
+     "precision": 0.8853,
+     "pred_volume_ml": 14.552,
+     "gt_volume_ml": 18.568
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.8822,
+     "sensitivity": 0.8242,
+     "precision": 0.949,
+     "pred_volume_ml": 77.579,
+     "gt_volume_ml": 89.333
+    },
+    "TC": {
+     "dice": 0.9726,
+     "sensitivity": 0.9912,
+     "precision": 0.9546,
+     "pred_volume_ml": 41.643,
+     "gt_volume_ml": 40.106
+    },
+    "ET": {
+     "dice": 0.9174,
+     "sensitivity": 0.9556,
+     "precision": 0.8822,
+     "pred_volume_ml": 20.113,
+     "gt_volume_ml": 18.568
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00737",
+   "seconds": 5.78,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9532,
+     "sensitivity": 0.9435,
+     "precision": 0.9632,
+     "pred_volume_ml": 23.784,
+     "gt_volume_ml": 24.279
+    },
+    "TC": {
+     "dice": 0.9584,
+     "sensitivity": 0.9327,
+     "precision": 0.9855,
+     "pred_volume_ml": 15.356,
+     "gt_volume_ml": 16.225
+    },
+    "ET": {
+     "dice": 0.9401,
+     "sensitivity": 0.9066,
+     "precision": 0.9762,
+     "pred_volume_ml": 11.578,
+     "gt_volume_ml": 12.466
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9081,
+     "sensitivity": 0.8744,
+     "precision": 0.9445,
+     "pred_volume_ml": 22.477,
+     "gt_volume_ml": 24.279
+    },
+    "TC": {
+     "dice": 0.9344,
+     "sensitivity": 0.885,
+     "precision": 0.9897,
+     "pred_volume_ml": 14.508,
+     "gt_volume_ml": 16.225
+    },
+    "ET": {
+     "dice": 0.8913,
+     "sensitivity": 0.8273,
+     "precision": 0.966,
+     "pred_volume_ml": 10.676,
+     "gt_volume_ml": 12.466
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9533,
+     "sensitivity": 0.9419,
+     "precision": 0.965,
+     "pred_volume_ml": 23.699,
+     "gt_volume_ml": 24.279
+    },
+    "TC": {
+     "dice": 0.9584,
+     "sensitivity": 0.9318,
+     "precision": 0.9866,
+     "pred_volume_ml": 15.324,
+     "gt_volume_ml": 16.225
+    },
+    "ET": {
+     "dice": 0.9398,
+     "sensitivity": 0.9052,
+     "precision": 0.9771,
+     "pred_volume_ml": 11.548,
+     "gt_volume_ml": 12.466
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_01050",
+   "seconds": 5.89,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.7968,
+     "sensitivity": 0.8166,
+     "precision": 0.778,
+     "pred_volume_ml": 35.855,
+     "gt_volume_ml": 34.159
+    },
+    "TC": {
+     "dice": 0.94,
+     "sensitivity": 0.9772,
+     "precision": 0.9055,
+     "pred_volume_ml": 7.717,
+     "gt_volume_ml": 7.151
+    },
+    "ET": {
+     "dice": 0.9257,
+     "sensitivity": 0.9756,
+     "precision": 0.8807,
+     "pred_volume_ml": 7.619,
+     "gt_volume_ml": 6.878
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.6535,
+     "sensitivity": 0.8391,
+     "precision": 0.5351,
+     "pred_volume_ml": 53.567,
+     "gt_volume_ml": 34.159
+    },
+    "TC": {
+     "dice": 0.7966,
+     "sensitivity": 0.995,
+     "precision": 0.6641,
+     "pred_volume_ml": 10.713,
+     "gt_volume_ml": 7.151
+    },
+    "ET": {
+     "dice": 0.8015,
+     "sensitivity": 0.9894,
+     "precision": 0.6736,
+     "pred_volume_ml": 10.103,
+     "gt_volume_ml": 6.878
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.7961,
+     "sensitivity": 0.8169,
+     "precision": 0.7763,
+     "pred_volume_ml": 35.949,
+     "gt_volume_ml": 34.159
+    },
+    "TC": {
+     "dice": 0.9395,
+     "sensitivity": 0.9789,
+     "precision": 0.9032,
+     "pred_volume_ml": 7.75,
+     "gt_volume_ml": 7.151
+    },
+    "ET": {
+     "dice": 0.9251,
+     "sensitivity": 0.9769,
+     "precision": 0.8785,
+     "pred_volume_ml": 7.648,
+     "gt_volume_ml": 6.878
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00305",
+   "seconds": 5.86,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9332,
+     "sensitivity": 0.975,
+     "precision": 0.8948,
+     "pred_volume_ml": 63.175,
+     "gt_volume_ml": 57.981
+    },
+    "TC": {
+     "dice": 0.9828,
+     "sensitivity": 0.973,
+     "precision": 0.9928,
+     "pred_volume_ml": 5.554,
+     "gt_volume_ml": 5.667
+    },
+    "ET": {
+     "dice": 0.9632,
+     "sensitivity": 0.9373,
+     "precision": 0.9906,
+     "pred_volume_ml": 3.605,
+     "gt_volume_ml": 3.81
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.8755,
+     "sensitivity": 0.9482,
+     "precision": 0.8131,
+     "pred_volume_ml": 67.618,
+     "gt_volume_ml": 57.981
+    },
+    "TC": {
+     "dice": 0.9134,
+     "sensitivity": 0.9903,
+     "precision": 0.8476,
+     "pred_volume_ml": 6.621,
+     "gt_volume_ml": 5.667
+    },
+    "ET": {
+     "dice": 0.8661,
+     "sensitivity": 0.9745,
+     "precision": 0.7794,
+     "pred_volume_ml": 4.764,
+     "gt_volume_ml": 3.81
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9329,
+     "sensitivity": 0.9749,
+     "precision": 0.8945,
+     "pred_volume_ml": 63.192,
+     "gt_volume_ml": 57.981
+    },
+    "TC": {
+     "dice": 0.9831,
+     "sensitivity": 0.9753,
+     "precision": 0.991,
+     "pred_volume_ml": 5.577,
+     "gt_volume_ml": 5.667
+    },
+    "ET": {
+     "dice": 0.9649,
+     "sensitivity": 0.9423,
+     "precision": 0.9887,
+     "pred_volume_ml": 3.631,
+     "gt_volume_ml": 3.81
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00418",
+   "seconds": 7.68,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.8872,
+     "sensitivity": 0.8399,
+     "precision": 0.9402,
+     "pred_volume_ml": 155.715,
+     "gt_volume_ml": 174.308
+    },
+    "TC": {
+     "dice": 0.9836,
+     "sensitivity": 0.998,
+     "precision": 0.9696,
+     "pred_volume_ml": 31.563,
+     "gt_volume_ml": 30.663
+    },
+    "ET": {
+     "dice": 0.9828,
+     "sensitivity": 0.9961,
+     "precision": 0.97,
+     "pred_volume_ml": 26.69,
+     "gt_volume_ml": 25.99
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.8616,
+     "sensitivity": 0.8212,
+     "precision": 0.9062,
+     "pred_volume_ml": 157.956,
+     "gt_volume_ml": 174.308
+    },
+    "TC": {
+     "dice": 0.9739,
+     "sensitivity": 0.9937,
+     "precision": 0.9548,
+     "pred_volume_ml": 31.912,
+     "gt_volume_ml": 30.663
+    },
+    "ET": {
+     "dice": 0.9631,
+     "sensitivity": 0.9658,
+     "precision": 0.9604,
+     "pred_volume_ml": 26.135,
+     "gt_volume_ml": 25.99
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.8874,
+     "sensitivity": 0.8393,
+     "precision": 0.9414,
+     "pred_volume_ml": 155.402,
+     "gt_volume_ml": 174.308
+    },
+    "TC": {
+     "dice": 0.9837,
+     "sensitivity": 0.9981,
+     "precision": 0.9697,
+     "pred_volume_ml": 31.561,
+     "gt_volume_ml": 30.663
+    },
+    "ET": {
+     "dice": 0.9838,
+     "sensitivity": 0.9965,
+     "precision": 0.9714,
+     "pred_volume_ml": 26.66,
+     "gt_volume_ml": 25.99
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00156",
+   "seconds": 7.69,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9825,
+     "sensitivity": 0.9971,
+     "precision": 0.9682,
+     "pred_volume_ml": 144.84,
+     "gt_volume_ml": 140.635
+    },
+    "TC": {
+     "dice": 0.9957,
+     "sensitivity": 0.9944,
+     "precision": 0.997,
+     "pred_volume_ml": 61.475,
+     "gt_volume_ml": 61.633
+    },
+    "ET": {
+     "dice": 0.983,
+     "sensitivity": 0.9903,
+     "precision": 0.9758,
+     "pred_volume_ml": 41.026,
+     "gt_volume_ml": 40.427
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.958,
+     "sensitivity": 0.9796,
+     "precision": 0.9373,
+     "pred_volume_ml": 146.991,
+     "gt_volume_ml": 140.635
+    },
+    "TC": {
+     "dice": 0.9748,
+     "sensitivity": 0.9848,
+     "precision": 0.9649,
+     "pred_volume_ml": 62.909,
+     "gt_volume_ml": 61.633
+    },
+    "ET": {
+     "dice": 0.9618,
+     "sensitivity": 0.9613,
+     "precision": 0.9623,
+     "pred_volume_ml": 40.384,
+     "gt_volume_ml": 40.427
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9823,
+     "sensitivity": 0.9971,
+     "precision": 0.9679,
+     "pred_volume_ml": 144.871,
+     "gt_volume_ml": 140.635
+    },
+    "TC": {
+     "dice": 0.9959,
+     "sensitivity": 0.9952,
+     "precision": 0.9965,
+     "pred_volume_ml": 61.553,
+     "gt_volume_ml": 61.633
+    },
+    "ET": {
+     "dice": 0.9833,
+     "sensitivity": 0.99,
+     "precision": 0.9768,
+     "pred_volume_ml": 40.973,
+     "gt_volume_ml": 40.427
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_01014",
+   "seconds": 5.89,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9847,
+     "sensitivity": 0.9927,
+     "precision": 0.9768,
+     "pred_volume_ml": 34.752,
+     "gt_volume_ml": 34.197
+    },
+    "TC": {
+     "dice": 0.9899,
+     "sensitivity": 0.9965,
+     "precision": 0.9833,
+     "pred_volume_ml": 25.783,
+     "gt_volume_ml": 25.441
+    },
+    "ET": {
+     "dice": 0.9739,
+     "sensitivity": 0.9894,
+     "precision": 0.9589,
+     "pred_volume_ml": 13.681,
+     "gt_volume_ml": 13.259
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.8685,
+     "sensitivity": 0.9792,
+     "precision": 0.7803,
+     "pred_volume_ml": 42.916,
+     "gt_volume_ml": 34.197
+    },
+    "TC": {
+     "dice": 0.9277,
+     "sensitivity": 0.9996,
+     "precision": 0.8655,
+     "pred_volume_ml": 29.385,
+     "gt_volume_ml": 25.441
+    },
+    "ET": {
+     "dice": 0.8655,
+     "sensitivity": 0.9831,
+     "precision": 0.7729,
+     "pred_volume_ml": 16.864,
+     "gt_volume_ml": 13.259
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9849,
+     "sensitivity": 0.9934,
+     "precision": 0.9765,
+     "pred_volume_ml": 34.789,
+     "gt_volume_ml": 34.197
+    },
+    "TC": {
+     "dice": 0.9894,
+     "sensitivity": 0.9971,
+     "precision": 0.9818,
+     "pred_volume_ml": 25.837,
+     "gt_volume_ml": 25.441
+    },
+    "ET": {
+     "dice": 0.9736,
+     "sensitivity": 0.9912,
+     "precision": 0.9566,
+     "pred_volume_ml": 13.738,
+     "gt_volume_ml": 13.259
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00510",
+   "seconds": 9.45,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9307,
+     "sensitivity": 0.8907,
+     "precision": 0.9745,
+     "pred_volume_ml": 92.266,
+     "gt_volume_ml": 100.941
+    },
+    "TC": {
+     "dice": 0.9681,
+     "sensitivity": 0.9512,
+     "precision": 0.9855,
+     "pred_volume_ml": 56.351,
+     "gt_volume_ml": 58.382
+    },
+    "ET": {
+     "dice": 0.9187,
+     "sensitivity": 0.9035,
+     "precision": 0.9343,
+     "pred_volume_ml": 35.062,
+     "gt_volume_ml": 36.255
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.8569,
+     "sensitivity": 0.7876,
+     "precision": 0.9394,
+     "pred_volume_ml": 84.629,
+     "gt_volume_ml": 100.941
+    },
+    "TC": {
+     "dice": 0.8618,
+     "sensitivity": 0.7589,
+     "precision": 0.997,
+     "pred_volume_ml": 44.441,
+     "gt_volume_ml": 58.382
+    },
+    "ET": {
+     "dice": 0.821,
+     "sensitivity": 0.74,
+     "precision": 0.9219,
+     "pred_volume_ml": 29.102,
+     "gt_volume_ml": 36.255
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.93,
+     "sensitivity": 0.8886,
+     "precision": 0.9755,
+     "pred_volume_ml": 91.958,
+     "gt_volume_ml": 100.941
+    },
+    "TC": {
+     "dice": 0.968,
+     "sensitivity": 0.9499,
+     "precision": 0.9869,
+     "pred_volume_ml": 56.192,
+     "gt_volume_ml": 58.382
+    },
+    "ET": {
+     "dice": 0.9174,
+     "sensitivity": 0.8995,
+     "precision": 0.9359,
+     "pred_volume_ml": 34.847,
+     "gt_volume_ml": 36.255
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00409",
+   "seconds": 10.56,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9653,
+     "sensitivity": 0.9629,
+     "precision": 0.9677,
+     "pred_volume_ml": 119.615,
+     "gt_volume_ml": 120.207
+    },
+    "TC": {
+     "dice": 0.9852,
+     "sensitivity": 0.9774,
+     "precision": 0.993,
+     "pred_volume_ml": 37.361,
+     "gt_volume_ml": 37.957
+    },
+    "ET": {
+     "dice": 0.969,
+     "sensitivity": 0.9619,
+     "precision": 0.9763,
+     "pred_volume_ml": 30.228,
+     "gt_volume_ml": 30.682
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9405,
+     "sensitivity": 0.9647,
+     "precision": 0.9176,
+     "pred_volume_ml": 126.378,
+     "gt_volume_ml": 120.207
+    },
+    "TC": {
+     "dice": 0.9573,
+     "sensitivity": 0.982,
+     "precision": 0.9339,
+     "pred_volume_ml": 39.91,
+     "gt_volume_ml": 37.957
+    },
+    "ET": {
+     "dice": 0.9197,
+     "sensitivity": 0.9418,
+     "precision": 0.8986,
+     "pred_volume_ml": 32.159,
+     "gt_volume_ml": 30.682
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9656,
+     "sensitivity": 0.9643,
+     "precision": 0.967,
+     "pred_volume_ml": 119.868,
+     "gt_volume_ml": 120.207
+    },
+    "TC": {
+     "dice": 0.9859,
+     "sensitivity": 0.9791,
+     "precision": 0.9927,
+     "pred_volume_ml": 37.438,
+     "gt_volume_ml": 37.957
+    },
+    "ET": {
+     "dice": 0.9695,
+     "sensitivity": 0.9636,
+     "precision": 0.9755,
+     "pred_volume_ml": 30.307,
+     "gt_volume_ml": 30.682
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00677",
+   "seconds": 7.66,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.965,
+     "sensitivity": 0.9494,
+     "precision": 0.9812,
+     "pred_volume_ml": 175.329,
+     "gt_volume_ml": 181.191
+    },
+    "TC": {
+     "dice": 0.941,
+     "sensitivity": 0.9657,
+     "precision": 0.9176,
+     "pred_volume_ml": 35.085,
+     "gt_volume_ml": 33.337
+    },
+    "ET": {
+     "dice": 0.9207,
+     "sensitivity": 0.9314,
+     "precision": 0.9102,
+     "pred_volume_ml": 28.182,
+     "gt_volume_ml": 27.542
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9132,
+     "sensitivity": 0.8635,
+     "precision": 0.9689,
+     "pred_volume_ml": 161.479,
+     "gt_volume_ml": 181.191
+    },
+    "TC": {
+     "dice": 0.8532,
+     "sensitivity": 0.843,
+     "precision": 0.8638,
+     "pred_volume_ml": 32.536,
+     "gt_volume_ml": 33.337
+    },
+    "ET": {
+     "dice": 0.8222,
+     "sensitivity": 0.7978,
+     "precision": 0.8481,
+     "pred_volume_ml": 25.908,
+     "gt_volume_ml": 27.542
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9645,
+     "sensitivity": 0.9474,
+     "precision": 0.9823,
+     "pred_volume_ml": 174.762,
+     "gt_volume_ml": 181.191
+    },
+    "TC": {
+     "dice": 0.9419,
+     "sensitivity": 0.966,
+     "precision": 0.9191,
+     "pred_volume_ml": 35.039,
+     "gt_volume_ml": 33.337
+    },
+    "ET": {
+     "dice": 0.922,
+     "sensitivity": 0.9315,
+     "precision": 0.9128,
+     "pred_volume_ml": 28.106,
+     "gt_volume_ml": 27.542
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00309",
+   "seconds": 7.76,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9545,
+     "sensitivity": 0.9975,
+     "precision": 0.915,
+     "pred_volume_ml": 45.957,
+     "gt_volume_ml": 42.154
+    },
+    "TC": {
+     "dice": 0.982,
+     "sensitivity": 0.9794,
+     "precision": 0.9845,
+     "pred_volume_ml": 6.918,
+     "gt_volume_ml": 6.954
+    },
+    "ET": {
+     "dice": 0.9682,
+     "sensitivity": 0.9748,
+     "precision": 0.9618,
+     "pred_volume_ml": 6.069,
+     "gt_volume_ml": 5.988
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.8869,
+     "sensitivity": 0.9806,
+     "precision": 0.8095,
+     "pred_volume_ml": 51.064,
+     "gt_volume_ml": 42.154
+    },
+    "TC": {
+     "dice": 0.8198,
+     "sensitivity": 0.9861,
+     "precision": 0.7016,
+     "pred_volume_ml": 9.774,
+     "gt_volume_ml": 6.954
+    },
+    "ET": {
+     "dice": 0.8132,
+     "sensitivity": 0.9621,
+     "precision": 0.7043,
+     "pred_volume_ml": 8.18,
+     "gt_volume_ml": 5.988
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9539,
+     "sensitivity": 0.9974,
+     "precision": 0.9141,
+     "pred_volume_ml": 45.997,
+     "gt_volume_ml": 42.154
+    },
+    "TC": {
+     "dice": 0.9819,
+     "sensitivity": 0.9802,
+     "precision": 0.9837,
+     "pred_volume_ml": 6.929,
+     "gt_volume_ml": 6.954
+    },
+    "ET": {
+     "dice": 0.9673,
+     "sensitivity": 0.9749,
+     "precision": 0.9597,
+     "pred_volume_ml": 6.083,
+     "gt_volume_ml": 5.988
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00602",
+   "seconds": 5.84,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9542,
+     "sensitivity": 0.959,
+     "precision": 0.9495,
+     "pred_volume_ml": 36.455,
+     "gt_volume_ml": 36.091
+    },
+    "TC": {
+     "dice": 0.9596,
+     "sensitivity": 0.9874,
+     "precision": 0.9333,
+     "pred_volume_ml": 22.816,
+     "gt_volume_ml": 21.567
+    },
+    "ET": {
+     "dice": 0.9628,
+     "sensitivity": 0.9872,
+     "precision": 0.9396,
+     "pred_volume_ml": 22.536,
+     "gt_volume_ml": 21.449
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9176,
+     "sensitivity": 0.9475,
+     "precision": 0.8896,
+     "pred_volume_ml": 38.441,
+     "gt_volume_ml": 36.091
+    },
+    "TC": {
+     "dice": 0.9519,
+     "sensitivity": 0.9819,
+     "precision": 0.9236,
+     "pred_volume_ml": 22.927,
+     "gt_volume_ml": 21.567
+    },
+    "ET": {
+     "dice": 0.9606,
+     "sensitivity": 0.9625,
+     "precision": 0.9586,
+     "pred_volume_ml": 21.536,
+     "gt_volume_ml": 21.449
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9548,
+     "sensitivity": 0.9593,
+     "precision": 0.9503,
+     "pred_volume_ml": 36.435,
+     "gt_volume_ml": 36.091
+    },
+    "TC": {
+     "dice": 0.9605,
+     "sensitivity": 0.9873,
+     "precision": 0.9351,
+     "pred_volume_ml": 22.772,
+     "gt_volume_ml": 21.567
+    },
+    "ET": {
+     "dice": 0.9639,
+     "sensitivity": 0.9871,
+     "precision": 0.9418,
+     "pred_volume_ml": 22.48,
+     "gt_volume_ml": 21.449
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00405",
+   "seconds": 7.68,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9798,
+     "sensitivity": 0.9919,
+     "precision": 0.968,
+     "pred_volume_ml": 146.856,
+     "gt_volume_ml": 143.322
+    },
+    "TC": {
+     "dice": 0.9694,
+     "sensitivity": 0.9922,
+     "precision": 0.9475,
+     "pred_volume_ml": 31.475,
+     "gt_volume_ml": 30.059
+    },
+    "ET": {
+     "dice": 0.9691,
+     "sensitivity": 0.975,
+     "precision": 0.9632,
+     "pred_volume_ml": 28.007,
+     "gt_volume_ml": 27.668
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9607,
+     "sensitivity": 0.9676,
+     "precision": 0.9538,
+     "pred_volume_ml": 145.401,
+     "gt_volume_ml": 143.322
+    },
+    "TC": {
+     "dice": 0.9286,
+     "sensitivity": 0.9661,
+     "precision": 0.8938,
+     "pred_volume_ml": 32.491,
+     "gt_volume_ml": 30.059
+    },
+    "ET": {
+     "dice": 0.9242,
+     "sensitivity": 0.8927,
+     "precision": 0.9581,
+     "pred_volume_ml": 25.779,
+     "gt_volume_ml": 27.668
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9803,
+     "sensitivity": 0.992,
+     "precision": 0.9688,
+     "pred_volume_ml": 146.758,
+     "gt_volume_ml": 143.322
+    },
+    "TC": {
+     "dice": 0.9691,
+     "sensitivity": 0.9921,
+     "precision": 0.9472,
+     "pred_volume_ml": 31.483,
+     "gt_volume_ml": 30.059
+    },
+    "ET": {
+     "dice": 0.97,
+     "sensitivity": 0.9737,
+     "precision": 0.9663,
+     "pred_volume_ml": 27.879,
+     "gt_volume_ml": 27.668
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00780",
+   "seconds": 10.65,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9855,
+     "sensitivity": 0.979,
+     "precision": 0.992,
+     "pred_volume_ml": 121.121,
+     "gt_volume_ml": 122.732
+    },
+    "TC": {
+     "dice": 0.9878,
+     "sensitivity": 0.9856,
+     "precision": 0.99,
+     "pred_volume_ml": 43.722,
+     "gt_volume_ml": 43.916
+    },
+    "ET": {
+     "dice": 0.9754,
+     "sensitivity": 0.9771,
+     "precision": 0.9736,
+     "pred_volume_ml": 30.955,
+     "gt_volume_ml": 30.843
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9759,
+     "sensitivity": 0.9821,
+     "precision": 0.9698,
+     "pred_volume_ml": 124.29,
+     "gt_volume_ml": 122.732
+    },
+    "TC": {
+     "dice": 0.9629,
+     "sensitivity": 0.995,
+     "precision": 0.9327,
+     "pred_volume_ml": 46.851,
+     "gt_volume_ml": 43.916
+    },
+    "ET": {
+     "dice": 0.9427,
+     "sensitivity": 0.9609,
+     "precision": 0.9252,
+     "pred_volume_ml": 32.035,
+     "gt_volume_ml": 30.843
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9861,
+     "sensitivity": 0.9801,
+     "precision": 0.9921,
+     "pred_volume_ml": 121.25,
+     "gt_volume_ml": 122.732
+    },
+    "TC": {
+     "dice": 0.9877,
+     "sensitivity": 0.9862,
+     "precision": 0.9892,
+     "pred_volume_ml": 43.782,
+     "gt_volume_ml": 43.916
+    },
+    "ET": {
+     "dice": 0.9756,
+     "sensitivity": 0.9772,
+     "precision": 0.974,
+     "pred_volume_ml": 30.945,
+     "gt_volume_ml": 30.843
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00254",
+   "seconds": 7.71,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.976,
+     "sensitivity": 0.9796,
+     "precision": 0.9724,
+     "pred_volume_ml": 99.428,
+     "gt_volume_ml": 98.69
+    },
+    "TC": {
+     "dice": 0.9718,
+     "sensitivity": 0.9493,
+     "precision": 0.9954,
+     "pred_volume_ml": 30.136,
+     "gt_volume_ml": 31.599
+    },
+    "ET": {
+     "dice": 0.9644,
+     "sensitivity": 0.9463,
+     "precision": 0.9832,
+     "pred_volume_ml": 23.425,
+     "gt_volume_ml": 24.337
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9544,
+     "sensitivity": 0.9628,
+     "precision": 0.9462,
+     "pred_volume_ml": 100.413,
+     "gt_volume_ml": 98.69
+    },
+    "TC": {
+     "dice": 0.9541,
+     "sensitivity": 0.9761,
+     "precision": 0.933,
+     "pred_volume_ml": 33.059,
+     "gt_volume_ml": 31.599
+    },
+    "ET": {
+     "dice": 0.9308,
+     "sensitivity": 0.9371,
+     "precision": 0.9247,
+     "pred_volume_ml": 24.663,
+     "gt_volume_ml": 24.337
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9757,
+     "sensitivity": 0.9794,
+     "precision": 0.9721,
+     "pred_volume_ml": 99.432,
+     "gt_volume_ml": 98.69
+    },
+    "TC": {
+     "dice": 0.9724,
+     "sensitivity": 0.9511,
+     "precision": 0.9948,
+     "pred_volume_ml": 30.21,
+     "gt_volume_ml": 31.599
+    },
+    "ET": {
+     "dice": 0.9641,
+     "sensitivity": 0.9467,
+     "precision": 0.9821,
+     "pred_volume_ml": 23.46,
+     "gt_volume_ml": 24.337
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_01046",
+   "seconds": 7.7,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9661,
+     "sensitivity": 0.9945,
+     "precision": 0.9393,
+     "pred_volume_ml": 101.074,
+     "gt_volume_ml": 95.466
+    },
+    "TC": {
+     "dice": 0.9749,
+     "sensitivity": 0.9746,
+     "precision": 0.9752,
+     "pred_volume_ml": 54.899,
+     "gt_volume_ml": 54.932
+    },
+    "ET": {
+     "dice": 0.9572,
+     "sensitivity": 0.9793,
+     "precision": 0.936,
+     "pred_volume_ml": 42.257,
+     "gt_volume_ml": 40.39
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9343,
+     "sensitivity": 0.9925,
+     "precision": 0.8826,
+     "pred_volume_ml": 107.348,
+     "gt_volume_ml": 95.466
+    },
+    "TC": {
+     "dice": 0.9064,
+     "sensitivity": 0.9334,
+     "precision": 0.8808,
+     "pred_volume_ml": 58.213,
+     "gt_volume_ml": 54.932
+    },
+    "ET": {
+     "dice": 0.8957,
+     "sensitivity": 0.9556,
+     "precision": 0.843,
+     "pred_volume_ml": 45.786,
+     "gt_volume_ml": 40.39
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9658,
+     "sensitivity": 0.995,
+     "precision": 0.9383,
+     "pred_volume_ml": 101.232,
+     "gt_volume_ml": 95.466
+    },
+    "TC": {
+     "dice": 0.9748,
+     "sensitivity": 0.976,
+     "precision": 0.9737,
+     "pred_volume_ml": 55.058,
+     "gt_volume_ml": 54.932
+    },
+    "ET": {
+     "dice": 0.9565,
+     "sensitivity": 0.98,
+     "precision": 0.934,
+     "pred_volume_ml": 42.377,
+     "gt_volume_ml": 40.39
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00459",
+   "seconds": 5.89,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9783,
+     "sensitivity": 0.9822,
+     "precision": 0.9745,
+     "pred_volume_ml": 80.082,
+     "gt_volume_ml": 79.454
+    },
+    "TC": {
+     "dice": 0.875,
+     "sensitivity": 0.9012,
+     "precision": 0.8503,
+     "pred_volume_ml": 16.725,
+     "gt_volume_ml": 15.78
+    },
+    "ET": {
+     "dice": 0.8873,
+     "sensitivity": 0.8344,
+     "precision": 0.9474,
+     "pred_volume_ml": 13.888,
+     "gt_volume_ml": 15.769
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.8583,
+     "sensitivity": 0.9392,
+     "precision": 0.7902,
+     "pred_volume_ml": 94.44,
+     "gt_volume_ml": 79.454
+    },
+    "TC": {
+     "dice": 0.8407,
+     "sensitivity": 0.9496,
+     "precision": 0.7542,
+     "pred_volume_ml": 19.869,
+     "gt_volume_ml": 15.78
+    },
+    "ET": {
+     "dice": 0.8538,
+     "sensitivity": 0.7886,
+     "precision": 0.9309,
+     "pred_volume_ml": 13.358,
+     "gt_volume_ml": 15.769
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9785,
+     "sensitivity": 0.9816,
+     "precision": 0.9754,
+     "pred_volume_ml": 79.961,
+     "gt_volume_ml": 79.454
+    },
+    "TC": {
+     "dice": 0.8778,
+     "sensitivity": 0.9058,
+     "precision": 0.8515,
+     "pred_volume_ml": 16.785,
+     "gt_volume_ml": 15.78
+    },
+    "ET": {
+     "dice": 0.888,
+     "sensitivity": 0.8338,
+     "precision": 0.9497,
+     "pred_volume_ml": 13.845,
+     "gt_volume_ml": 15.769
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00729",
+   "seconds": 5.7,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9235,
+     "sensitivity": 0.8761,
+     "precision": 0.9764,
+     "pred_volume_ml": 14.678,
+     "gt_volume_ml": 16.357
+    },
+    "TC": {
+     "dice": 0.979,
+     "sensitivity": 0.9845,
+     "precision": 0.9735,
+     "pred_volume_ml": 6.608,
+     "gt_volume_ml": 6.534
+    },
+    "ET": {
+     "dice": 0.9638,
+     "sensitivity": 0.9765,
+     "precision": 0.9514,
+     "pred_volume_ml": 5.146,
+     "gt_volume_ml": 5.014
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.6784,
+     "sensitivity": 0.822,
+     "precision": 0.5775,
+     "pred_volume_ml": 23.283,
+     "gt_volume_ml": 16.357
+    },
+    "TC": {
+     "dice": 0.8943,
+     "sensitivity": 1.0,
+     "precision": 0.8089,
+     "pred_volume_ml": 8.078,
+     "gt_volume_ml": 6.534
+    },
+    "ET": {
+     "dice": 0.8651,
+     "sensitivity": 0.9705,
+     "precision": 0.7804,
+     "pred_volume_ml": 6.235,
+     "gt_volume_ml": 5.014
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9236,
+     "sensitivity": 0.876,
+     "precision": 0.9766,
+     "pred_volume_ml": 14.673,
+     "gt_volume_ml": 16.357
+    },
+    "TC": {
+     "dice": 0.9787,
+     "sensitivity": 0.9859,
+     "precision": 0.9716,
+     "pred_volume_ml": 6.63,
+     "gt_volume_ml": 6.534
+    },
+    "ET": {
+     "dice": 0.9627,
+     "sensitivity": 0.9775,
+     "precision": 0.9483,
+     "pred_volume_ml": 5.168,
+     "gt_volume_ml": 5.014
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00649",
+   "seconds": 7.6,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9505,
+     "sensitivity": 0.9183,
+     "precision": 0.9852,
+     "pred_volume_ml": 146.307,
+     "gt_volume_ml": 156.968
+    },
+    "TC": {
+     "dice": 0.9908,
+     "sensitivity": 0.9862,
+     "precision": 0.9954,
+     "pred_volume_ml": 87.112,
+     "gt_volume_ml": 87.921
+    },
+    "ET": {
+     "dice": 0.9515,
+     "sensitivity": 0.9365,
+     "precision": 0.9669,
+     "pred_volume_ml": 27.344,
+     "gt_volume_ml": 28.232
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9062,
+     "sensitivity": 0.8347,
+     "precision": 0.9911,
+     "pred_volume_ml": 132.2,
+     "gt_volume_ml": 156.968
+    },
+    "TC": {
+     "dice": 0.8923,
+     "sensitivity": 0.8189,
+     "precision": 0.9801,
+     "pred_volume_ml": 73.46,
+     "gt_volume_ml": 87.921
+    },
+    "ET": {
+     "dice": 0.8894,
+     "sensitivity": 0.8946,
+     "precision": 0.8843,
+     "pred_volume_ml": 28.562,
+     "gt_volume_ml": 28.232
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9504,
+     "sensitivity": 0.9169,
+     "precision": 0.9864,
+     "pred_volume_ml": 145.91,
+     "gt_volume_ml": 156.968
+    },
+    "TC": {
+     "dice": 0.9914,
+     "sensitivity": 0.9871,
+     "precision": 0.9956,
+     "pred_volume_ml": 87.17,
+     "gt_volume_ml": 87.921
+    },
+    "ET": {
+     "dice": 0.9541,
+     "sensitivity": 0.9402,
+     "precision": 0.9684,
+     "pred_volume_ml": 27.412,
+     "gt_volume_ml": 28.232
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00421",
+   "seconds": 10.45,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9875,
+     "sensitivity": 0.9953,
+     "precision": 0.9798,
+     "pred_volume_ml": 128.303,
+     "gt_volume_ml": 126.305
+    },
+    "TC": {
+     "dice": 0.9832,
+     "sensitivity": 0.9873,
+     "precision": 0.9791,
+     "pred_volume_ml": 16.382,
+     "gt_volume_ml": 16.245
+    },
+    "ET": {
+     "dice": 0.9773,
+     "sensitivity": 0.9809,
+     "precision": 0.9736,
+     "pred_volume_ml": 15.093,
+     "gt_volume_ml": 14.981
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9476,
+     "sensitivity": 0.9784,
+     "precision": 0.9186,
+     "pred_volume_ml": 134.53,
+     "gt_volume_ml": 126.305
+    },
+    "TC": {
+     "dice": 0.8644,
+     "sensitivity": 0.9988,
+     "precision": 0.7618,
+     "pred_volume_ml": 21.299,
+     "gt_volume_ml": 16.245
+    },
+    "ET": {
+     "dice": 0.9023,
+     "sensitivity": 0.9905,
+     "precision": 0.8286,
+     "pred_volume_ml": 17.908,
+     "gt_volume_ml": 14.981
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9876,
+     "sensitivity": 0.9958,
+     "precision": 0.9796,
+     "pred_volume_ml": 128.404,
+     "gt_volume_ml": 126.305
+    },
+    "TC": {
+     "dice": 0.9831,
+     "sensitivity": 0.9895,
+     "precision": 0.9769,
+     "pred_volume_ml": 16.454,
+     "gt_volume_ml": 16.245
+    },
+    "ET": {
+     "dice": 0.9771,
+     "sensitivity": 0.9826,
+     "precision": 0.9716,
+     "pred_volume_ml": 15.15,
+     "gt_volume_ml": 14.981
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_01013",
+   "seconds": 7.6,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9816,
+     "sensitivity": 0.997,
+     "precision": 0.9666,
+     "pred_volume_ml": 74.374,
+     "gt_volume_ml": 72.11
+    },
+    "TC": {
+     "dice": 0.9327,
+     "sensitivity": 0.9498,
+     "precision": 0.9162,
+     "pred_volume_ml": 11.697,
+     "gt_volume_ml": 11.283
+    },
+    "ET": {
+     "dice": 0.9296,
+     "sensitivity": 0.9446,
+     "precision": 0.9152,
+     "pred_volume_ml": 11.318,
+     "gt_volume_ml": 10.966
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9468,
+     "sensitivity": 0.9883,
+     "precision": 0.9086,
+     "pred_volume_ml": 78.433,
+     "gt_volume_ml": 72.11
+    },
+    "TC": {
+     "dice": 0.7597,
+     "sensitivity": 0.9792,
+     "precision": 0.6205,
+     "pred_volume_ml": 17.804,
+     "gt_volume_ml": 11.283
+    },
+    "ET": {
+     "dice": 0.8741,
+     "sensitivity": 0.9129,
+     "precision": 0.8384,
+     "pred_volume_ml": 11.941,
+     "gt_volume_ml": 10.966
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9814,
+     "sensitivity": 0.9972,
+     "precision": 0.9661,
+     "pred_volume_ml": 74.436,
+     "gt_volume_ml": 72.11
+    },
+    "TC": {
+     "dice": 0.9324,
+     "sensitivity": 0.9509,
+     "precision": 0.9146,
+     "pred_volume_ml": 11.731,
+     "gt_volume_ml": 11.283
+    },
+    "ET": {
+     "dice": 0.9302,
+     "sensitivity": 0.9441,
+     "precision": 0.9167,
+     "pred_volume_ml": 11.294,
+     "gt_volume_ml": 10.966
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00149",
+   "seconds": 7.63,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.8715,
+     "sensitivity": 0.7906,
+     "precision": 0.971,
+     "pred_volume_ml": 19.894,
+     "gt_volume_ml": 24.434
+    },
+    "TC": {
+     "dice": 0.8197,
+     "sensitivity": 0.708,
+     "precision": 0.9733,
+     "pred_volume_ml": 6.336,
+     "gt_volume_ml": 8.711
+    },
+    "ET": {
+     "dice": 0.764,
+     "sensitivity": 0.8388,
+     "precision": 0.7014,
+     "pred_volume_ml": 5.217,
+     "gt_volume_ml": 4.362
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.5985,
+     "sensitivity": 0.7428,
+     "precision": 0.5011,
+     "pred_volume_ml": 36.217,
+     "gt_volume_ml": 24.434
+    },
+    "TC": {
+     "dice": 0.8629,
+     "sensitivity": 0.8571,
+     "precision": 0.8688,
+     "pred_volume_ml": 8.593,
+     "gt_volume_ml": 8.711
+    },
+    "ET": {
+     "dice": 0.6645,
+     "sensitivity": 0.9195,
+     "precision": 0.5202,
+     "pred_volume_ml": 7.71,
+     "gt_volume_ml": 4.362
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.8712,
+     "sensitivity": 0.7893,
+     "precision": 0.9722,
+     "pred_volume_ml": 19.836,
+     "gt_volume_ml": 24.434
+    },
+    "TC": {
+     "dice": 0.8228,
+     "sensitivity": 0.7122,
+     "precision": 0.9741,
+     "pred_volume_ml": 6.369,
+     "gt_volume_ml": 8.711
+    },
+    "ET": {
+     "dice": 0.7626,
+     "sensitivity": 0.8404,
+     "precision": 0.6979,
+     "pred_volume_ml": 5.253,
+     "gt_volume_ml": 4.362
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00303",
+   "seconds": 7.7,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9847,
+     "sensitivity": 0.9929,
+     "precision": 0.9766,
+     "pred_volume_ml": 114.929,
+     "gt_volume_ml": 113.04
+    },
+    "TC": {
+     "dice": 0.9834,
+     "sensitivity": 0.9979,
+     "precision": 0.9693,
+     "pred_volume_ml": 31.966,
+     "gt_volume_ml": 31.05
+    },
+    "ET": {
+     "dice": 0.9648,
+     "sensitivity": 0.9932,
+     "precision": 0.9381,
+     "pred_volume_ml": 29.122,
+     "gt_volume_ml": 27.505
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9546,
+     "sensitivity": 0.9798,
+     "precision": 0.9306,
+     "pred_volume_ml": 119.025,
+     "gt_volume_ml": 113.04
+    },
+    "TC": {
+     "dice": 0.952,
+     "sensitivity": 0.9962,
+     "precision": 0.9116,
+     "pred_volume_ml": 33.93,
+     "gt_volume_ml": 31.05
+    },
+    "ET": {
+     "dice": 0.9379,
+     "sensitivity": 0.9664,
+     "precision": 0.9111,
+     "pred_volume_ml": 29.175,
+     "gt_volume_ml": 27.505
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9845,
+     "sensitivity": 0.9932,
+     "precision": 0.9759,
+     "pred_volume_ml": 115.048,
+     "gt_volume_ml": 113.04
+    },
+    "TC": {
+     "dice": 0.9833,
+     "sensitivity": 0.9982,
+     "precision": 0.9689,
+     "pred_volume_ml": 31.989,
+     "gt_volume_ml": 31.05
+    },
+    "ET": {
+     "dice": 0.9654,
+     "sensitivity": 0.9934,
+     "precision": 0.939,
+     "pred_volume_ml": 29.099,
+     "gt_volume_ml": 27.505
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00693",
+   "seconds": 7.57,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9228,
+     "sensitivity": 0.8767,
+     "precision": 0.9739,
+     "pred_volume_ml": 118.523,
+     "gt_volume_ml": 131.654
+    },
+    "TC": {
+     "dice": 0.9104,
+     "sensitivity": 0.8399,
+     "precision": 0.9936,
+     "pred_volume_ml": 12.749,
+     "gt_volume_ml": 15.082
+    },
+    "ET": {
+     "dice": 0.8841,
+     "sensitivity": 0.8018,
+     "precision": 0.9853,
+     "pred_volume_ml": 11.019,
+     "gt_volume_ml": 13.541
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.8756,
+     "sensitivity": 0.8237,
+     "precision": 0.9344,
+     "pred_volume_ml": 116.057,
+     "gt_volume_ml": 131.654
+    },
+    "TC": {
+     "dice": 0.8475,
+     "sensitivity": 0.8018,
+     "precision": 0.8987,
+     "pred_volume_ml": 13.456,
+     "gt_volume_ml": 15.082
+    },
+    "ET": {
+     "dice": 0.8373,
+     "sensitivity": 0.7713,
+     "precision": 0.9157,
+     "pred_volume_ml": 11.406,
+     "gt_volume_ml": 13.541
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9225,
+     "sensitivity": 0.8757,
+     "precision": 0.9744,
+     "pred_volume_ml": 118.32,
+     "gt_volume_ml": 131.654
+    },
+    "TC": {
+     "dice": 0.9099,
+     "sensitivity": 0.8391,
+     "precision": 0.9937,
+     "pred_volume_ml": 12.735,
+     "gt_volume_ml": 15.082
+    },
+    "ET": {
+     "dice": 0.8827,
+     "sensitivity": 0.7987,
+     "precision": 0.9866,
+     "pred_volume_ml": 10.962,
+     "gt_volume_ml": 13.541
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00834",
+   "seconds": 7.63,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.8812,
+     "sensitivity": 0.8489,
+     "precision": 0.9161,
+     "pred_volume_ml": 68.014,
+     "gt_volume_ml": 73.399
+    },
+    "TC": {
+     "dice": 0.9683,
+     "sensitivity": 0.9848,
+     "precision": 0.9524,
+     "pred_volume_ml": 28.184,
+     "gt_volume_ml": 27.257
+    },
+    "ET": {
+     "dice": 0.9596,
+     "sensitivity": 0.9716,
+     "precision": 0.948,
+     "pred_volume_ml": 23.277,
+     "gt_volume_ml": 22.713
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.8497,
+     "sensitivity": 0.8182,
+     "precision": 0.8837,
+     "pred_volume_ml": 67.962,
+     "gt_volume_ml": 73.399
+    },
+    "TC": {
+     "dice": 0.8797,
+     "sensitivity": 0.9067,
+     "precision": 0.8543,
+     "pred_volume_ml": 28.93,
+     "gt_volume_ml": 27.257
+    },
+    "ET": {
+     "dice": 0.8959,
+     "sensitivity": 0.9049,
+     "precision": 0.8871,
+     "pred_volume_ml": 23.169,
+     "gt_volume_ml": 22.713
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.8811,
+     "sensitivity": 0.8484,
+     "precision": 0.9163,
+     "pred_volume_ml": 67.961,
+     "gt_volume_ml": 73.399
+    },
+    "TC": {
+     "dice": 0.9684,
+     "sensitivity": 0.985,
+     "precision": 0.9524,
+     "pred_volume_ml": 28.191,
+     "gt_volume_ml": 27.257
+    },
+    "ET": {
+     "dice": 0.9599,
+     "sensitivity": 0.9711,
+     "precision": 0.9489,
+     "pred_volume_ml": 23.245,
+     "gt_volume_ml": 22.713
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00118",
+   "seconds": 10.43,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9748,
+     "sensitivity": 0.9648,
+     "precision": 0.985,
+     "pred_volume_ml": 144.075,
+     "gt_volume_ml": 147.09
+    },
+    "TC": {
+     "dice": 0.9845,
+     "sensitivity": 0.9865,
+     "precision": 0.9826,
+     "pred_volume_ml": 62.057,
+     "gt_volume_ml": 61.811
+    },
+    "ET": {
+     "dice": 0.9698,
+     "sensitivity": 0.9737,
+     "precision": 0.9659,
+     "pred_volume_ml": 45.998,
+     "gt_volume_ml": 45.628
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.916,
+     "sensitivity": 0.9411,
+     "precision": 0.8923,
+     "pred_volume_ml": 155.136,
+     "gt_volume_ml": 147.09
+    },
+    "TC": {
+     "dice": 0.9495,
+     "sensitivity": 0.9582,
+     "precision": 0.941,
+     "pred_volume_ml": 62.943,
+     "gt_volume_ml": 61.811
+    },
+    "ET": {
+     "dice": 0.9178,
+     "sensitivity": 0.9088,
+     "precision": 0.9269,
+     "pred_volume_ml": 44.739,
+     "gt_volume_ml": 45.628
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9754,
+     "sensitivity": 0.9654,
+     "precision": 0.9855,
+     "pred_volume_ml": 144.092,
+     "gt_volume_ml": 147.09
+    },
+    "TC": {
+     "dice": 0.9849,
+     "sensitivity": 0.9865,
+     "precision": 0.9832,
+     "pred_volume_ml": 62.02,
+     "gt_volume_ml": 61.811
+    },
+    "ET": {
+     "dice": 0.9711,
+     "sensitivity": 0.9736,
+     "precision": 0.9686,
+     "pred_volume_ml": 45.862,
+     "gt_volume_ml": 45.628
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00837",
+   "seconds": 7.62,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.8457,
+     "sensitivity": 0.8171,
+     "precision": 0.8765,
+     "pred_volume_ml": 23.021,
+     "gt_volume_ml": 24.696
+    },
+    "TC": {
+     "dice": 0.9755,
+     "sensitivity": 0.9907,
+     "precision": 0.9606,
+     "pred_volume_ml": 4.343,
+     "gt_volume_ml": 4.211
+    },
+    "ET": {
+     "dice": 0.9486,
+     "sensitivity": 0.9852,
+     "precision": 0.9147,
+     "pred_volume_ml": 3.2,
+     "gt_volume_ml": 2.971
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.6649,
+     "sensitivity": 0.7796,
+     "precision": 0.5796,
+     "pred_volume_ml": 33.221,
+     "gt_volume_ml": 24.696
+    },
+    "TC": {
+     "dice": 0.8118,
+     "sensitivity": 0.996,
+     "precision": 0.6851,
+     "pred_volume_ml": 6.122,
+     "gt_volume_ml": 4.211
+    },
+    "ET": {
+     "dice": 0.7816,
+     "sensitivity": 0.9805,
+     "precision": 0.6498,
+     "pred_volume_ml": 4.483,
+     "gt_volume_ml": 2.971
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.8446,
+     "sensitivity": 0.8159,
+     "precision": 0.8753,
+     "pred_volume_ml": 23.021,
+     "gt_volume_ml": 24.696
+    },
+    "TC": {
+     "dice": 0.975,
+     "sensitivity": 0.9915,
+     "precision": 0.9591,
+     "pred_volume_ml": 4.353,
+     "gt_volume_ml": 4.211
+    },
+    "ET": {
+     "dice": 0.9469,
+     "sensitivity": 0.9852,
+     "precision": 0.9116,
+     "pred_volume_ml": 3.211,
+     "gt_volume_ml": 2.971
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00532",
+   "seconds": 7.58,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9675,
+     "sensitivity": 0.9525,
+     "precision": 0.983,
+     "pred_volume_ml": 163.821,
+     "gt_volume_ml": 169.057
+    },
+    "TC": {
+     "dice": 0.7861,
+     "sensitivity": 0.9491,
+     "precision": 0.6709,
+     "pred_volume_ml": 62.651,
+     "gt_volume_ml": 44.289
+    },
+    "ET": {
+     "dice": 0.7677,
+     "sensitivity": 0.6491,
+     "precision": 0.9392,
+     "pred_volume_ml": 19.24,
+     "gt_volume_ml": 27.841
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9375,
+     "sensitivity": 0.9558,
+     "precision": 0.9198,
+     "pred_volume_ml": 175.668,
+     "gt_volume_ml": 169.057
+    },
+    "TC": {
+     "dice": 0.7171,
+     "sensitivity": 0.7131,
+     "precision": 0.7212,
+     "pred_volume_ml": 43.793,
+     "gt_volume_ml": 44.289
+    },
+    "ET": {
+     "dice": 0.6644,
+     "sensitivity": 0.5956,
+     "precision": 0.751,
+     "pred_volume_ml": 22.08,
+     "gt_volume_ml": 27.841
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9676,
+     "sensitivity": 0.953,
+     "precision": 0.9826,
+     "pred_volume_ml": 163.962,
+     "gt_volume_ml": 169.057
+    },
+    "TC": {
+     "dice": 0.7943,
+     "sensitivity": 0.9462,
+     "precision": 0.6844,
+     "pred_volume_ml": 61.236,
+     "gt_volume_ml": 44.289
+    },
+    "ET": {
+     "dice": 0.7649,
+     "sensitivity": 0.6453,
+     "precision": 0.9388,
+     "pred_volume_ml": 19.139,
+     "gt_volume_ml": 27.841
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00636",
+   "seconds": 10.37,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9458,
+     "sensitivity": 0.9868,
+     "precision": 0.9081,
+     "pred_volume_ml": 34.692,
+     "gt_volume_ml": 31.924
+    },
+    "TC": {
+     "dice": 0.9878,
+     "sensitivity": 0.9892,
+     "precision": 0.9863,
+     "pred_volume_ml": 11.497,
+     "gt_volume_ml": 11.464
+    },
+    "ET": {
+     "dice": 0.9769,
+     "sensitivity": 0.9691,
+     "precision": 0.9848,
+     "pred_volume_ml": 9.58,
+     "gt_volume_ml": 9.735
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.7381,
+     "sensitivity": 0.9631,
+     "precision": 0.5983,
+     "pred_volume_ml": 51.386,
+     "gt_volume_ml": 31.924
+    },
+    "TC": {
+     "dice": 0.9356,
+     "sensitivity": 0.9935,
+     "precision": 0.8841,
+     "pred_volume_ml": 12.882,
+     "gt_volume_ml": 11.464
+    },
+    "ET": {
+     "dice": 0.9056,
+     "sensitivity": 0.9138,
+     "precision": 0.8975,
+     "pred_volume_ml": 9.912,
+     "gt_volume_ml": 9.735
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9469,
+     "sensitivity": 0.9873,
+     "precision": 0.9098,
+     "pred_volume_ml": 34.643,
+     "gt_volume_ml": 31.924
+    },
+    "TC": {
+     "dice": 0.988,
+     "sensitivity": 0.9898,
+     "precision": 0.9862,
+     "pred_volume_ml": 11.506,
+     "gt_volume_ml": 11.464
+    },
+    "ET": {
+     "dice": 0.977,
+     "sensitivity": 0.9681,
+     "precision": 0.9862,
+     "pred_volume_ml": 9.556,
+     "gt_volume_ml": 9.735
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00359",
+   "seconds": 5.88,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9755,
+     "sensitivity": 0.9971,
+     "precision": 0.9548,
+     "pred_volume_ml": 80.827,
+     "gt_volume_ml": 77.401
+    },
+    "TC": {
+     "dice": 0.9836,
+     "sensitivity": 0.9885,
+     "precision": 0.9786,
+     "pred_volume_ml": 15.681,
+     "gt_volume_ml": 15.524
+    },
+    "ET": {
+     "dice": 0.973,
+     "sensitivity": 0.9848,
+     "precision": 0.9616,
+     "pred_volume_ml": 15.2,
+     "gt_volume_ml": 14.842
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9108,
+     "sensitivity": 0.9741,
+     "precision": 0.8552,
+     "pred_volume_ml": 88.167,
+     "gt_volume_ml": 77.401
+    },
+    "TC": {
+     "dice": 0.9216,
+     "sensitivity": 0.9953,
+     "precision": 0.8582,
+     "pred_volume_ml": 18.005,
+     "gt_volume_ml": 15.524
+    },
+    "ET": {
+     "dice": 0.9311,
+     "sensitivity": 0.9769,
+     "precision": 0.8894,
+     "pred_volume_ml": 16.302,
+     "gt_volume_ml": 14.842
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.975,
+     "sensitivity": 0.9974,
+     "precision": 0.9537,
+     "pred_volume_ml": 80.95,
+     "gt_volume_ml": 77.401
+    },
+    "TC": {
+     "dice": 0.9833,
+     "sensitivity": 0.9889,
+     "precision": 0.9777,
+     "pred_volume_ml": 15.702,
+     "gt_volume_ml": 15.524
+    },
+    "ET": {
+     "dice": 0.9726,
+     "sensitivity": 0.9845,
+     "precision": 0.9609,
+     "pred_volume_ml": 15.206,
+     "gt_volume_ml": 14.842
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00466",
+   "seconds": 10.3,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9748,
+     "sensitivity": 0.9627,
+     "precision": 0.9872,
+     "pred_volume_ml": 135.188,
+     "gt_volume_ml": 138.631
+    },
+    "TC": {
+     "dice": 0.9195,
+     "sensitivity": 0.9124,
+     "precision": 0.9267,
+     "pred_volume_ml": 34.922,
+     "gt_volume_ml": 35.47
+    },
+    "ET": {
+     "dice": 0.9064,
+     "sensitivity": 0.8743,
+     "precision": 0.9411,
+     "pred_volume_ml": 27.546,
+     "gt_volume_ml": 29.651
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9292,
+     "sensitivity": 0.9024,
+     "precision": 0.9577,
+     "pred_volume_ml": 130.631,
+     "gt_volume_ml": 138.631
+    },
+    "TC": {
+     "dice": 0.8896,
+     "sensitivity": 0.9089,
+     "precision": 0.871,
+     "pred_volume_ml": 37.016,
+     "gt_volume_ml": 35.47
+    },
+    "ET": {
+     "dice": 0.8649,
+     "sensitivity": 0.8158,
+     "precision": 0.9202,
+     "pred_volume_ml": 26.287,
+     "gt_volume_ml": 29.651
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9748,
+     "sensitivity": 0.9616,
+     "precision": 0.9885,
+     "pred_volume_ml": 134.853,
+     "gt_volume_ml": 138.631
+    },
+    "TC": {
+     "dice": 0.9194,
+     "sensitivity": 0.9126,
+     "precision": 0.9264,
+     "pred_volume_ml": 34.941,
+     "gt_volume_ml": 35.47
+    },
+    "ET": {
+     "dice": 0.9063,
+     "sensitivity": 0.8725,
+     "precision": 0.9428,
+     "pred_volume_ml": 27.439,
+     "gt_volume_ml": 29.651
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00640",
+   "seconds": 10.4,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9133,
+     "sensitivity": 0.904,
+     "precision": 0.9227,
+     "pred_volume_ml": 104.299,
+     "gt_volume_ml": 106.459
+    },
+    "TC": {
+     "dice": 0.9696,
+     "sensitivity": 0.9439,
+     "precision": 0.9968,
+     "pred_volume_ml": 82.617,
+     "gt_volume_ml": 87.254
+    },
+    "ET": {
+     "dice": 0.8925,
+     "sensitivity": 0.8173,
+     "precision": 0.9828,
+     "pred_volume_ml": 31.062,
+     "gt_volume_ml": 37.353
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.8449,
+     "sensitivity": 0.7686,
+     "precision": 0.938,
+     "pred_volume_ml": 87.23,
+     "gt_volume_ml": 106.459
+    },
+    "TC": {
+     "dice": 0.6374,
+     "sensitivity": 0.4724,
+     "precision": 0.9793,
+     "pred_volume_ml": 42.092,
+     "gt_volume_ml": 87.254
+    },
+    "ET": {
+     "dice": 0.7447,
+     "sensitivity": 0.6144,
+     "precision": 0.9452,
+     "pred_volume_ml": 24.282,
+     "gt_volume_ml": 37.353
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9123,
+     "sensitivity": 0.8995,
+     "precision": 0.9255,
+     "pred_volume_ml": 103.472,
+     "gt_volume_ml": 106.459
+    },
+    "TC": {
+     "dice": 0.9676,
+     "sensitivity": 0.9395,
+     "precision": 0.9974,
+     "pred_volume_ml": 82.187,
+     "gt_volume_ml": 87.254
+    },
+    "ET": {
+     "dice": 0.8878,
+     "sensitivity": 0.8077,
+     "precision": 0.9856,
+     "pred_volume_ml": 30.61,
+     "gt_volume_ml": 37.353
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00594",
+   "seconds": 9.67,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9734,
+     "sensitivity": 0.977,
+     "precision": 0.9699,
+     "pred_volume_ml": 78.314,
+     "gt_volume_ml": 77.74
+    },
+    "TC": {
+     "dice": 0.9639,
+     "sensitivity": 0.9573,
+     "precision": 0.9705,
+     "pred_volume_ml": 46.678,
+     "gt_volume_ml": 47.325
+    },
+    "ET": {
+     "dice": 0.9537,
+     "sensitivity": 0.9539,
+     "precision": 0.9535,
+     "pred_volume_ml": 30.944,
+     "gt_volume_ml": 30.93
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.5258,
+     "sensitivity": 0.9469,
+     "precision": 0.3639,
+     "pred_volume_ml": 202.288,
+     "gt_volume_ml": 77.74
+    },
+    "TC": {
+     "dice": 0.5719,
+     "sensitivity": 0.7393,
+     "precision": 0.4663,
+     "pred_volume_ml": 75.043,
+     "gt_volume_ml": 47.325
+    },
+    "ET": {
+     "dice": 0.5832,
+     "sensitivity": 0.8977,
+     "precision": 0.4319,
+     "pred_volume_ml": 64.279,
+     "gt_volume_ml": 30.93
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9737,
+     "sensitivity": 0.9768,
+     "precision": 0.9707,
+     "pred_volume_ml": 78.231,
+     "gt_volume_ml": 77.74
+    },
+    "TC": {
+     "dice": 0.9636,
+     "sensitivity": 0.9561,
+     "precision": 0.9712,
+     "pred_volume_ml": 46.59,
+     "gt_volume_ml": 47.325
+    },
+    "ET": {
+     "dice": 0.9536,
+     "sensitivity": 0.9523,
+     "precision": 0.9549,
+     "pred_volume_ml": 30.847,
+     "gt_volume_ml": 30.93
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00580",
+   "seconds": 10.63,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9449,
+     "sensitivity": 0.9343,
+     "precision": 0.9557,
+     "pred_volume_ml": 153.809,
+     "gt_volume_ml": 157.326
+    },
+    "TC": {
+     "dice": 0.9506,
+     "sensitivity": 0.9366,
+     "precision": 0.9651,
+     "pred_volume_ml": 59.39,
+     "gt_volume_ml": 61.196
+    },
+    "ET": {
+     "dice": 0.9205,
+     "sensitivity": 0.9464,
+     "precision": 0.896,
+     "pred_volume_ml": 35.029,
+     "gt_volume_ml": 33.164
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9262,
+     "sensitivity": 0.9109,
+     "precision": 0.9421,
+     "pred_volume_ml": 152.103,
+     "gt_volume_ml": 157.326
+    },
+    "TC": {
+     "dice": 0.8525,
+     "sensitivity": 0.7951,
+     "precision": 0.9189,
+     "pred_volume_ml": 52.955,
+     "gt_volume_ml": 61.196
+    },
+    "ET": {
+     "dice": 0.8767,
+     "sensitivity": 0.9187,
+     "precision": 0.8383,
+     "pred_volume_ml": 36.343,
+     "gt_volume_ml": 33.164
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9445,
+     "sensitivity": 0.9335,
+     "precision": 0.9557,
+     "pred_volume_ml": 153.679,
+     "gt_volume_ml": 157.326
+    },
+    "TC": {
+     "dice": 0.951,
+     "sensitivity": 0.9373,
+     "precision": 0.9651,
+     "pred_volume_ml": 59.431,
+     "gt_volume_ml": 61.196
+    },
+    "ET": {
+     "dice": 0.9201,
+     "sensitivity": 0.9457,
+     "precision": 0.8959,
+     "pred_volume_ml": 35.008,
+     "gt_volume_ml": 33.164
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00177",
+   "seconds": 7.72,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9839,
+     "sensitivity": 0.9806,
+     "precision": 0.9871,
+     "pred_volume_ml": 149.084,
+     "gt_volume_ml": 150.08
+    },
+    "TC": {
+     "dice": 0.9835,
+     "sensitivity": 0.971,
+     "precision": 0.9964,
+     "pred_volume_ml": 73.519,
+     "gt_volume_ml": 75.441
+    },
+    "ET": {
+     "dice": 0.9528,
+     "sensitivity": 0.9192,
+     "precision": 0.9889,
+     "pred_volume_ml": 35.169,
+     "gt_volume_ml": 37.834
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9568,
+     "sensitivity": 0.9598,
+     "precision": 0.9537,
+     "pred_volume_ml": 151.043,
+     "gt_volume_ml": 150.08
+    },
+    "TC": {
+     "dice": 0.9211,
+     "sensitivity": 0.8963,
+     "precision": 0.9474,
+     "pred_volume_ml": 71.369,
+     "gt_volume_ml": 75.441
+    },
+    "ET": {
+     "dice": 0.8859,
+     "sensitivity": 0.9153,
+     "precision": 0.8584,
+     "pred_volume_ml": 40.345,
+     "gt_volume_ml": 37.834
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9841,
+     "sensitivity": 0.981,
+     "precision": 0.9873,
+     "pred_volume_ml": 149.115,
+     "gt_volume_ml": 150.08
+    },
+    "TC": {
+     "dice": 0.9837,
+     "sensitivity": 0.9718,
+     "precision": 0.9958,
+     "pred_volume_ml": 73.626,
+     "gt_volume_ml": 75.441
+    },
+    "ET": {
+     "dice": 0.9551,
+     "sensitivity": 0.9239,
+     "precision": 0.9884,
+     "pred_volume_ml": 35.366,
+     "gt_volume_ml": 37.834
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00318",
+   "seconds": 9.72,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9405,
+     "sensitivity": 0.9277,
+     "precision": 0.9537,
+     "pred_volume_ml": 166.795,
+     "gt_volume_ml": 171.454
+    },
+    "TC": {
+     "dice": 0.9558,
+     "sensitivity": 0.9324,
+     "precision": 0.9804,
+     "pred_volume_ml": 46.025,
+     "gt_volume_ml": 48.395
+    },
+    "ET": {
+     "dice": 0.8918,
+     "sensitivity": 0.8547,
+     "precision": 0.9322,
+     "pred_volume_ml": 25.858,
+     "gt_volume_ml": 28.203
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9315,
+     "sensitivity": 0.9087,
+     "precision": 0.9554,
+     "pred_volume_ml": 163.067,
+     "gt_volume_ml": 171.454
+    },
+    "TC": {
+     "dice": 0.9562,
+     "sensitivity": 0.9593,
+     "precision": 0.9532,
+     "pred_volume_ml": 48.7,
+     "gt_volume_ml": 48.395
+    },
+    "ET": {
+     "dice": 0.8813,
+     "sensitivity": 0.9007,
+     "precision": 0.8626,
+     "pred_volume_ml": 29.449,
+     "gt_volume_ml": 28.203
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9405,
+     "sensitivity": 0.9274,
+     "precision": 0.9539,
+     "pred_volume_ml": 166.686,
+     "gt_volume_ml": 171.454
+    },
+    "TC": {
+     "dice": 0.9561,
+     "sensitivity": 0.9337,
+     "precision": 0.9797,
+     "pred_volume_ml": 46.121,
+     "gt_volume_ml": 48.395
+    },
+    "ET": {
+     "dice": 0.8925,
+     "sensitivity": 0.8577,
+     "precision": 0.9302,
+     "pred_volume_ml": 26.004,
+     "gt_volume_ml": 28.203
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00285",
+   "seconds": 5.95,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9624,
+     "sensitivity": 0.9658,
+     "precision": 0.9591,
+     "pred_volume_ml": 6.532,
+     "gt_volume_ml": 6.487
+    },
+    "TC": {
+     "dice": 0.9324,
+     "sensitivity": 0.9192,
+     "precision": 0.9461,
+     "pred_volume_ml": 2.152,
+     "gt_volume_ml": 2.215
+    },
+    "ET": {
+     "dice": 0.9304,
+     "sensitivity": 0.9195,
+     "precision": 0.9417,
+     "pred_volume_ml": 2.074,
+     "gt_volume_ml": 2.124
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.7023,
+     "sensitivity": 0.9761,
+     "precision": 0.5485,
+     "pred_volume_ml": 11.545,
+     "gt_volume_ml": 6.487
+    },
+    "TC": {
+     "dice": 0.69,
+     "sensitivity": 0.9743,
+     "precision": 0.5342,
+     "pred_volume_ml": 4.04,
+     "gt_volume_ml": 2.215
+    },
+    "ET": {
+     "dice": 0.7068,
+     "sensitivity": 0.9675,
+     "precision": 0.5568,
+     "pred_volume_ml": 3.691,
+     "gt_volume_ml": 2.124
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9624,
+     "sensitivity": 0.9662,
+     "precision": 0.9586,
+     "pred_volume_ml": 6.539,
+     "gt_volume_ml": 6.487
+    },
+    "TC": {
+     "dice": 0.932,
+     "sensitivity": 0.9223,
+     "precision": 0.9419,
+     "pred_volume_ml": 2.169,
+     "gt_volume_ml": 2.215
+    },
+    "ET": {
+     "dice": 0.9299,
+     "sensitivity": 0.9218,
+     "precision": 0.9382,
+     "pred_volume_ml": 2.087,
+     "gt_volume_ml": 2.124
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00022",
+   "seconds": 5.72,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9384,
+     "sensitivity": 0.9425,
+     "precision": 0.9344,
+     "pred_volume_ml": 113.923,
+     "gt_volume_ml": 112.949
+    },
+    "TC": {
+     "dice": 0.9399,
+     "sensitivity": 0.9224,
+     "precision": 0.958,
+     "pred_volume_ml": 62.889,
+     "gt_volume_ml": 65.314
+    },
+    "ET": {
+     "dice": 0.8974,
+     "sensitivity": 0.8642,
+     "precision": 0.9331,
+     "pred_volume_ml": 44.321,
+     "gt_volume_ml": 47.855
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9135,
+     "sensitivity": 0.9558,
+     "precision": 0.8748,
+     "pred_volume_ml": 123.402,
+     "gt_volume_ml": 112.949
+    },
+    "TC": {
+     "dice": 0.8866,
+     "sensitivity": 0.8252,
+     "precision": 0.9579,
+     "pred_volume_ml": 56.27,
+     "gt_volume_ml": 65.314
+    },
+    "ET": {
+     "dice": 0.8427,
+     "sensitivity": 0.7669,
+     "precision": 0.9351,
+     "pred_volume_ml": 39.249,
+     "gt_volume_ml": 47.855
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9387,
+     "sensitivity": 0.9432,
+     "precision": 0.9342,
+     "pred_volume_ml": 114.041,
+     "gt_volume_ml": 112.949
+    },
+    "TC": {
+     "dice": 0.9398,
+     "sensitivity": 0.9212,
+     "precision": 0.9593,
+     "pred_volume_ml": 62.72,
+     "gt_volume_ml": 65.314
+    },
+    "ET": {
+     "dice": 0.8966,
+     "sensitivity": 0.8608,
+     "precision": 0.9354,
+     "pred_volume_ml": 44.036,
+     "gt_volume_ml": 47.855
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00249",
+   "seconds": 7.66,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9814,
+     "sensitivity": 0.9926,
+     "precision": 0.9705,
+     "pred_volume_ml": 134.588,
+     "gt_volume_ml": 131.601
+    },
+    "TC": {
+     "dice": 0.9783,
+     "sensitivity": 0.9814,
+     "precision": 0.9752,
+     "pred_volume_ml": 62.202,
+     "gt_volume_ml": 61.807
+    },
+    "ET": {
+     "dice": 0.9582,
+     "sensitivity": 0.937,
+     "precision": 0.9803,
+     "pred_volume_ml": 31.735,
+     "gt_volume_ml": 33.201
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9546,
+     "sensitivity": 0.9893,
+     "precision": 0.9223,
+     "pred_volume_ml": 141.174,
+     "gt_volume_ml": 131.601
+    },
+    "TC": {
+     "dice": 0.9455,
+     "sensitivity": 0.9514,
+     "precision": 0.9397,
+     "pred_volume_ml": 62.577,
+     "gt_volume_ml": 61.807
+    },
+    "ET": {
+     "dice": 0.8949,
+     "sensitivity": 0.8872,
+     "precision": 0.9028,
+     "pred_volume_ml": 32.627,
+     "gt_volume_ml": 33.201
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9815,
+     "sensitivity": 0.9933,
+     "precision": 0.97,
+     "pred_volume_ml": 134.764,
+     "gt_volume_ml": 131.601
+    },
+    "TC": {
+     "dice": 0.9784,
+     "sensitivity": 0.9816,
+     "precision": 0.9752,
+     "pred_volume_ml": 62.212,
+     "gt_volume_ml": 61.807
+    },
+    "ET": {
+     "dice": 0.9589,
+     "sensitivity": 0.9376,
+     "precision": 0.9812,
+     "pred_volume_ml": 31.726,
+     "gt_volume_ml": 33.201
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00371",
+   "seconds": 10.42,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9795,
+     "sensitivity": 0.9974,
+     "precision": 0.9621,
+     "pred_volume_ml": 86.894,
+     "gt_volume_ml": 83.82
+    },
+    "TC": {
+     "dice": 0.9866,
+     "sensitivity": 0.9902,
+     "precision": 0.983,
+     "pred_volume_ml": 8.807,
+     "gt_volume_ml": 8.743
+    },
+    "ET": {
+     "dice": 0.9292,
+     "sensitivity": 0.9799,
+     "precision": 0.8835,
+     "pred_volume_ml": 7.778,
+     "gt_volume_ml": 7.013
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9298,
+     "sensitivity": 0.9829,
+     "precision": 0.8822,
+     "pred_volume_ml": 93.386,
+     "gt_volume_ml": 83.82
+    },
+    "TC": {
+     "dice": 0.8064,
+     "sensitivity": 0.9997,
+     "precision": 0.6757,
+     "pred_volume_ml": 12.934,
+     "gt_volume_ml": 8.743
+    },
+    "ET": {
+     "dice": 0.8173,
+     "sensitivity": 0.9906,
+     "precision": 0.6957,
+     "pred_volume_ml": 9.986,
+     "gt_volume_ml": 7.013
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9789,
+     "sensitivity": 0.9975,
+     "precision": 0.961,
+     "pred_volume_ml": 87.005,
+     "gt_volume_ml": 83.82
+    },
+    "TC": {
+     "dice": 0.9868,
+     "sensitivity": 0.9919,
+     "precision": 0.9818,
+     "pred_volume_ml": 8.833,
+     "gt_volume_ml": 8.743
+    },
+    "ET": {
+     "dice": 0.9289,
+     "sensitivity": 0.981,
+     "precision": 0.8821,
+     "pred_volume_ml": 7.8,
+     "gt_volume_ml": 7.013
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00275",
+   "seconds": 10.57,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.974,
+     "sensitivity": 0.9677,
+     "precision": 0.9804,
+     "pred_volume_ml": 68.133,
+     "gt_volume_ml": 69.029
+    },
+    "TC": {
+     "dice": 0.981,
+     "sensitivity": 0.9869,
+     "precision": 0.9751,
+     "pred_volume_ml": 21.161,
+     "gt_volume_ml": 20.908
+    },
+    "ET": {
+     "dice": 0.9277,
+     "sensitivity": 0.9834,
+     "precision": 0.8779,
+     "pred_volume_ml": 20.465,
+     "gt_volume_ml": 18.271
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.8722,
+     "sensitivity": 0.9543,
+     "precision": 0.8032,
+     "pred_volume_ml": 82.014,
+     "gt_volume_ml": 69.029
+    },
+    "TC": {
+     "dice": 0.9043,
+     "sensitivity": 0.9791,
+     "precision": 0.84,
+     "pred_volume_ml": 24.369,
+     "gt_volume_ml": 20.908
+    },
+    "ET": {
+     "dice": 0.8855,
+     "sensitivity": 0.936,
+     "precision": 0.8402,
+     "pred_volume_ml": 20.355,
+     "gt_volume_ml": 18.271
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9747,
+     "sensitivity": 0.9692,
+     "precision": 0.9803,
+     "pred_volume_ml": 68.246,
+     "gt_volume_ml": 69.029
+    },
+    "TC": {
+     "dice": 0.9805,
+     "sensitivity": 0.9874,
+     "precision": 0.9736,
+     "pred_volume_ml": 21.204,
+     "gt_volume_ml": 20.908
+    },
+    "ET": {
+     "dice": 0.928,
+     "sensitivity": 0.9824,
+     "precision": 0.8793,
+     "pred_volume_ml": 20.412,
+     "gt_volume_ml": 18.271
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_01027",
+   "seconds": 10.37,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.8684,
+     "sensitivity": 0.7816,
+     "precision": 0.9768,
+     "pred_volume_ml": 52.904,
+     "gt_volume_ml": 66.111
+    },
+    "TC": {
+     "dice": 0.9231,
+     "sensitivity": 0.8746,
+     "precision": 0.9773,
+     "pred_volume_ml": 9.24,
+     "gt_volume_ml": 10.325
+    },
+    "ET": {
+     "dice": 0.9025,
+     "sensitivity": 0.8478,
+     "precision": 0.9648,
+     "pred_volume_ml": 8.206,
+     "gt_volume_ml": 9.338
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.8934,
+     "sensitivity": 0.9185,
+     "precision": 0.8696,
+     "pred_volume_ml": 69.823,
+     "gt_volume_ml": 66.111
+    },
+    "TC": {
+     "dice": 0.8752,
+     "sensitivity": 0.913,
+     "precision": 0.8403,
+     "pred_volume_ml": 11.218,
+     "gt_volume_ml": 10.325
+    },
+    "ET": {
+     "dice": 0.8631,
+     "sensitivity": 0.8247,
+     "precision": 0.9053,
+     "pred_volume_ml": 8.507,
+     "gt_volume_ml": 9.338
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.8702,
+     "sensitivity": 0.7847,
+     "precision": 0.9767,
+     "pred_volume_ml": 53.115,
+     "gt_volume_ml": 66.111
+    },
+    "TC": {
+     "dice": 0.9238,
+     "sensitivity": 0.8763,
+     "precision": 0.9767,
+     "pred_volume_ml": 9.264,
+     "gt_volume_ml": 10.325
+    },
+    "ET": {
+     "dice": 0.9022,
+     "sensitivity": 0.8473,
+     "precision": 0.9646,
+     "pred_volume_ml": 8.202,
+     "gt_volume_ml": 9.338
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00294",
+   "seconds": 10.62,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9881,
+     "sensitivity": 0.9863,
+     "precision": 0.9899,
+     "pred_volume_ml": 148.409,
+     "gt_volume_ml": 148.942
+    },
+    "TC": {
+     "dice": 0.9816,
+     "sensitivity": 0.9906,
+     "precision": 0.9728,
+     "pred_volume_ml": 21.512,
+     "gt_volume_ml": 21.125
+    },
+    "ET": {
+     "dice": 0.9572,
+     "sensitivity": 0.9685,
+     "precision": 0.9461,
+     "pred_volume_ml": 12.953,
+     "gt_volume_ml": 12.653
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9614,
+     "sensitivity": 0.9607,
+     "precision": 0.9621,
+     "pred_volume_ml": 148.72,
+     "gt_volume_ml": 148.942
+    },
+    "TC": {
+     "dice": 0.7586,
+     "sensitivity": 0.9938,
+     "precision": 0.6134,
+     "pred_volume_ml": 34.226,
+     "gt_volume_ml": 21.125
+    },
+    "ET": {
+     "dice": 0.8038,
+     "sensitivity": 0.9626,
+     "precision": 0.69,
+     "pred_volume_ml": 17.653,
+     "gt_volume_ml": 12.653
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9885,
+     "sensitivity": 0.9865,
+     "precision": 0.9905,
+     "pred_volume_ml": 148.336,
+     "gt_volume_ml": 148.942
+    },
+    "TC": {
+     "dice": 0.9815,
+     "sensitivity": 0.9919,
+     "precision": 0.9714,
+     "pred_volume_ml": 21.569,
+     "gt_volume_ml": 21.125
+    },
+    "ET": {
+     "dice": 0.9572,
+     "sensitivity": 0.9701,
+     "precision": 0.9445,
+     "pred_volume_ml": 12.996,
+     "gt_volume_ml": 12.653
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00104",
+   "seconds": 7.67,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9637,
+     "sensitivity": 0.9599,
+     "precision": 0.9676,
+     "pred_volume_ml": 74.39,
+     "gt_volume_ml": 74.986
+    },
+    "TC": {
+     "dice": 0.9638,
+     "sensitivity": 0.9514,
+     "precision": 0.9765,
+     "pred_volume_ml": 34.918,
+     "gt_volume_ml": 35.839
+    },
+    "ET": {
+     "dice": 0.9481,
+     "sensitivity": 0.9718,
+     "precision": 0.9255,
+     "pred_volume_ml": 30.991,
+     "gt_volume_ml": 29.516
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9322,
+     "sensitivity": 0.982,
+     "precision": 0.8872,
+     "pred_volume_ml": 83.001,
+     "gt_volume_ml": 74.986
+    },
+    "TC": {
+     "dice": 0.9545,
+     "sensitivity": 0.9655,
+     "precision": 0.9437,
+     "pred_volume_ml": 36.669,
+     "gt_volume_ml": 35.839
+    },
+    "ET": {
+     "dice": 0.9321,
+     "sensitivity": 0.941,
+     "precision": 0.9235,
+     "pred_volume_ml": 30.076,
+     "gt_volume_ml": 29.516
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9641,
+     "sensitivity": 0.9611,
+     "precision": 0.9672,
+     "pred_volume_ml": 74.507,
+     "gt_volume_ml": 74.986
+    },
+    "TC": {
+     "dice": 0.9639,
+     "sensitivity": 0.9522,
+     "precision": 0.9759,
+     "pred_volume_ml": 34.967,
+     "gt_volume_ml": 35.839
+    },
+    "ET": {
+     "dice": 0.9487,
+     "sensitivity": 0.9714,
+     "precision": 0.9271,
+     "pred_volume_ml": 30.924,
+     "gt_volume_ml": 29.516
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00216",
+   "seconds": 7.72,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9855,
+     "sensitivity": 0.9834,
+     "precision": 0.9877,
+     "pred_volume_ml": 162.98,
+     "gt_volume_ml": 163.678
+    },
+    "TC": {
+     "dice": 0.9905,
+     "sensitivity": 0.9915,
+     "precision": 0.9894,
+     "pred_volume_ml": 53.415,
+     "gt_volume_ml": 53.301
+    },
+    "ET": {
+     "dice": 0.9734,
+     "sensitivity": 0.9827,
+     "precision": 0.9642,
+     "pred_volume_ml": 33.614,
+     "gt_volume_ml": 32.981
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.959,
+     "sensitivity": 0.9718,
+     "precision": 0.9466,
+     "pred_volume_ml": 168.026,
+     "gt_volume_ml": 163.678
+    },
+    "TC": {
+     "dice": 0.9729,
+     "sensitivity": 0.9903,
+     "precision": 0.956,
+     "pred_volume_ml": 55.212,
+     "gt_volume_ml": 53.301
+    },
+    "ET": {
+     "dice": 0.926,
+     "sensitivity": 0.9508,
+     "precision": 0.9025,
+     "pred_volume_ml": 34.748,
+     "gt_volume_ml": 32.981
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9858,
+     "sensitivity": 0.9839,
+     "precision": 0.9877,
+     "pred_volume_ml": 163.051,
+     "gt_volume_ml": 163.678
+    },
+    "TC": {
+     "dice": 0.9901,
+     "sensitivity": 0.9918,
+     "precision": 0.9884,
+     "pred_volume_ml": 53.483,
+     "gt_volume_ml": 53.301
+    },
+    "ET": {
+     "dice": 0.9732,
+     "sensitivity": 0.9831,
+     "precision": 0.9635,
+     "pred_volume_ml": 33.655,
+     "gt_volume_ml": 32.981
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00448",
+   "seconds": 7.65,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9784,
+     "sensitivity": 0.9973,
+     "precision": 0.9603,
+     "pred_volume_ml": 92.955,
+     "gt_volume_ml": 89.503
+    },
+    "TC": {
+     "dice": 0.9884,
+     "sensitivity": 0.992,
+     "precision": 0.9849,
+     "pred_volume_ml": 36.982,
+     "gt_volume_ml": 36.718
+    },
+    "ET": {
+     "dice": 0.9685,
+     "sensitivity": 0.9817,
+     "precision": 0.9557,
+     "pred_volume_ml": 24.393,
+     "gt_volume_ml": 23.747
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.9667,
+     "sensitivity": 0.9779,
+     "precision": 0.9558,
+     "pred_volume_ml": 91.576,
+     "gt_volume_ml": 89.503
+    },
+    "TC": {
+     "dice": 0.9742,
+     "sensitivity": 0.9958,
+     "precision": 0.9536,
+     "pred_volume_ml": 38.346,
+     "gt_volume_ml": 36.718
+    },
+    "ET": {
+     "dice": 0.9255,
+     "sensitivity": 0.9454,
+     "precision": 0.9065,
+     "pred_volume_ml": 24.767,
+     "gt_volume_ml": 23.747
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.979,
+     "sensitivity": 0.9975,
+     "precision": 0.9612,
+     "pred_volume_ml": 92.881,
+     "gt_volume_ml": 89.503
+    },
+    "TC": {
+     "dice": 0.9887,
+     "sensitivity": 0.9928,
+     "precision": 0.9846,
+     "pred_volume_ml": 37.027,
+     "gt_volume_ml": 36.718
+    },
+    "ET": {
+     "dice": 0.9699,
+     "sensitivity": 0.983,
+     "precision": 0.9572,
+     "pred_volume_ml": 24.388,
+     "gt_volume_ml": 23.747
+    }
+   }
+  },
+  {
+   "patient_id": "BraTS2021_00296",
+   "seconds": 5.78,
+   "swinunetr": {
+    "WT": {
+     "dice": 0.9447,
+     "sensitivity": 0.9339,
+     "precision": 0.9556,
+     "pred_volume_ml": 32.654,
+     "gt_volume_ml": 33.412
+    },
+    "TC": {
+     "dice": 0.9649,
+     "sensitivity": 0.9524,
+     "precision": 0.9776,
+     "pred_volume_ml": 10.056,
+     "gt_volume_ml": 10.322
+    },
+    "ET": {
+     "dice": 0.9522,
+     "sensitivity": 0.9214,
+     "precision": 0.9851,
+     "pred_volume_ml": 8.322,
+     "gt_volume_ml": 8.897
+    }
+   },
+   "resenc": {
+    "WT": {
+     "dice": 0.8406,
+     "sensitivity": 0.9211,
+     "precision": 0.7731,
+     "pred_volume_ml": 39.812,
+     "gt_volume_ml": 33.412
+    },
+    "TC": {
+     "dice": 0.8796,
+     "sensitivity": 0.9702,
+     "precision": 0.8045,
+     "pred_volume_ml": 12.448,
+     "gt_volume_ml": 10.322
+    },
+    "ET": {
+     "dice": 0.8822,
+     "sensitivity": 0.9561,
+     "precision": 0.819,
+     "pred_volume_ml": 10.386,
+     "gt_volume_ml": 8.897
+    }
+   },
+   "ensemble_80_20": {
+    "WT": {
+     "dice": 0.9443,
+     "sensitivity": 0.9343,
+     "precision": 0.9546,
+     "pred_volume_ml": 32.704,
+     "gt_volume_ml": 33.412
+    },
+    "TC": {
+     "dice": 0.9647,
+     "sensitivity": 0.9536,
+     "precision": 0.976,
+     "pred_volume_ml": 10.085,
+     "gt_volume_ml": 10.322
+    },
+    "ET": {
+     "dice": 0.9529,
+     "sensitivity": 0.9239,
+     "precision": 0.9837,
+     "pred_volume_ml": 8.356,
+     "gt_volume_ml": 8.897
+    }
+   }
+  }
+ ]
+}

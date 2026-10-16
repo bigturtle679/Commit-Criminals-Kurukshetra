@@ -1,0 +1,15 @@
+{
+  "code_commit": "456458c3f08ad4404ca0a1ecae347ec0c09ff845",
+  "dirty_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "manifest_sha256": "8c6da29de2ac840fdfd27d03794e19e3cf093cd666addc9561a466a0eb139c69",
+  "manifest_path": "/home/ryie/Documents/Codex/DI-02-Hackathon-2026-10-16/outputs/testing/antigravity/manifest.json",
+  "torch": "2.6.0+cu124",
+  "cuda": "12.4",
+  "models": [
+    "swinunetr",
+    "resenc",
+    "ensemble"
+  ],
+  "patient_count": 20,
+  "timing": "first patient per model includes cold load; later patients warm cache; end-to-end includes exports"
+}
