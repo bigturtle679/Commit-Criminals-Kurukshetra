@@ -18,26 +18,26 @@ PATIENT_CASES = {
     '00000': {
         'id': '00000',
         'code': 'BraTS-GLI-00000-000',
-        'name': 'Patient 1 · GLI-00000 (Infiltrative Edema)',
+        'name': 'BraTS GLI-00000',
         'folder': ROOT / 'data/demo',
         'et_label': 3,
-        'description': 'Extensive vasogenic edema & infiltrative margin with sub-centimeter active core.'
+        'description': 'Four MRI sequences with an expert reference mask.'
     },
     '00002': {
         'id': '00002',
         'code': 'BraTS-GLI-00002-000',
-        'name': 'Patient 2 · GLI-00002 (Contrast-Avid Glioblastoma)',
+        'name': 'BraTS GLI-00002',
         'folder': ROOT / 'data/BraTS-GLI-00002-000',
         'et_label': 3,
-        'description': 'Aggressive high-grade GBM with solid necrotic core and 10.9 mL contrast-enhancing active rim.'
+        'description': 'Four MRI sequences with an expert reference mask.'
     },
     '00003': {
         'id': '00003',
         'code': 'BraTS-GLI-00003-000',
-        'name': 'Patient 3 · GLI-00003 (Mixed High-Grade Glioma)',
+        'name': 'BraTS GLI-00003',
         'folder': ROOT / 'data/BraTS-GLI-00003-000',
         'et_label': 3,
-        'description': 'Mixed morphology glioma with 11.8 mL total burden and distinct surgical boundaries.'
+        'description': 'Four MRI sequences with an expert reference mask.'
     }
 }
 
@@ -55,8 +55,8 @@ def status():
         'cuda_available': torch.cuda.is_available(),
         'demo_ready': len(list((ROOT / 'data/demo').glob('*.nii.gz'))) >= 5,
         'models_available': [
-            {'id': 'swinunetr', 'name': 'SwinUNETR (Vision Transformer)', 'badge': 'SOTA Foundation Model', 'speed': '3.1s'},
-            {'id': 'segresnet', 'name': 'SegResNet (3D CNN Autoencoder)', 'badge': 'BraTS Winner', 'speed': '1.2s'}
+            {'id': 'swinunetr', 'name': 'SwinUNETR (Vision Transformer)', 'badge': 'Tested on three cases', 'speed': '~5s'},
+            {'id': 'segresnet', 'name': 'SegResNet (3D CNN Autoencoder)', 'badge': 'BraTS baseline', 'speed': '~3s'}
         ],
         'default_model': 'swinunetr',
         'patient_cases': [

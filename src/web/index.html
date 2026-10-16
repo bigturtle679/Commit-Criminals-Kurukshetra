@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NeuroScope 3D · Autonomous MRI Tumor Diagnostic Workstation</title>
+  <title>NeuroScope 3D · MRI Segmentation Research Demo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
       </div>
       <div>
         <div class="brand-title">NeuroScope <span class="accent-text">3D</span></div>
-        <div class="brand-subtitle">DI–02 DECENTRALIZED INTELLIGENCE · CLINICAL WORKSTATION</div>
+        <div class="brand-subtitle">DI–02 DECENTRALIZED INTELLIGENCE · RESEARCH DEMO</div>
       </div>
     </div>
 
@@ -52,9 +52,9 @@
     <!-- Top Hero Banner -->
     <section class="hero-strip">
       <div class="hero-content">
-        <span class="badge-hero">CLINICAL-GRADE 3D SEGMENTATION</span>
-        <h1>Volumetric Neuro-Oncology Diagnostic Suite</h1>
-        <p>Continuous multimodal 3D affine-invariant tumor boundary delineation, physical volume integration, and RANO 2.0 evaluation.</p>
+        <span class="badge-hero">3D MRI SEGMENTATION · RESEARCH USE</span>
+        <h1>Brain MRI Tumor Segmentation</h1>
+        <p>Explore predicted tumor regions, physical volumes, and overlap with expert masks. Not for diagnosis or treatment decisions.</p>
       </div>
       <div class="hero-meta">
         <div class="research-tag">
@@ -83,17 +83,17 @@
           <div class="model-toggle-group">
             <button type="button" class="model-btn active" data-model="swinunetr" id="btn-swinunetr">
               <div class="model-btn-top">
-                <span class="model-badge sota">RECOMMENDED SOTA</span>
-                <span class="model-latency">~3.1s</span>
+                <span class="model-badge sota">TESTED ON 3 CASES</span>
+                <span class="model-latency">~5s</span>
               </div>
               <div class="model-title">SwinUNETR (Vision Transformer)</div>
-              <div class="model-desc">3D Shifted-Window Transformer encoder pretrained on 42k brains.</div>
+              <div class="model-desc">BraTS21 checkpoint with 3D shifted-window attention.</div>
             </button>
 
             <button type="button" class="model-btn" data-model="segresnet" id="btn-segresnet">
               <div class="model-btn-top">
                 <span class="model-badge">BRATS WINNER</span>
-                <span class="model-latency">~1.2s</span>
+                <span class="model-latency">~3s</span>
               </div>
               <div class="model-title">SegResNet (3D CNN)</div>
               <div class="model-desc">NVIDIA ResNet with variational autoencoder regularization.</div>
@@ -119,8 +119,8 @@
                 <span class="case-code">CASE 02 · GLI-00002</span>
                 <span class="case-tag tag-contrast">ACTIVE ENHANCING CORE</span>
               </div>
-              <div class="patient-case-name">Aggressive Glioblastoma (GBM)</div>
-              <div class="patient-case-summary">17.0 mL tumor with prominent 10.9 mL contrast-enhancing solid active rim.</div>
+              <div class="patient-case-name">BraTS GLI-00002</div>
+              <div class="patient-case-summary">Four MRI sequences and an expert mask for comparing model predictions.</div>
               <div class="patient-case-action">
                 <span>⚡ Run Case 02 on GPU</span>
                 <span class="arrow-glyph">→</span>
@@ -132,8 +132,8 @@
                 <span class="case-code">CASE 01 · GLI-00000</span>
                 <span class="case-tag tag-edema">EDEMA-DOMINANT</span>
               </div>
-              <div class="patient-case-name">Infiltrative Astrocytoma</div>
-              <div class="patient-case-summary">19.6 mL whole tumor with marked vasogenic edema and infiltrative boundary.</div>
+              <div class="patient-case-name">BraTS GLI-00000</div>
+              <div class="patient-case-summary">Four MRI sequences and an expert mask for comparing model predictions.</div>
               <div class="patient-case-action">
                 <span>⚡ Run Case 01 on GPU</span>
                 <span class="arrow-glyph">→</span>
@@ -145,8 +145,8 @@
                 <span class="case-code">CASE 03 · GLI-00003</span>
                 <span class="case-tag tag-mixed">MIXED MORPHOLOGY</span>
               </div>
-              <div class="patient-case-name">High-Grade Glioma</div>
-              <div class="patient-case-summary">11.8 mL total tumor burden with distinct necrotic core and peripheral edema.</div>
+              <div class="patient-case-name">BraTS GLI-00003</div>
+              <div class="patient-case-summary">Four MRI sequences and an expert mask for comparing model predictions.</div>
               <div class="patient-case-action">
                 <span>⚡ Run Case 03 on GPU</span>
                 <span class="arrow-glyph">→</span>
@@ -437,25 +437,25 @@
           </div>
         </div>
 
-        <!-- RANO 2.0 & Reference Validation Grid -->
+        <!-- Volume Summary & Reference Validation Grid -->
         <div class="assessment-grid">
           
-          <!-- RANO 2.0 Clinical Assessment -->
+          <!-- Descriptive volume measurements -->
           <div class="card rano-card">
             <div class="card-header-simple">
-              <span class="card-pill rano-pill">CLINICAL PROTOCOL</span>
-              <h3>RANO 2.0 Volumetric Assessment</h3>
+              <span class="card-pill rano-pill">SEGMENTATION MEASUREMENTS</span>
+              <h3>Predicted Region Volumes</h3>
             </div>
             <div class="rano-content">
               <div class="rano-item">
-                <span class="rano-label">Target Measurability:</span>
+                <span class="rano-label">Whole tumor region:</span>
                 <strong id="rano-measurable" class="status-badge-meas">—</strong>
               </div>
               <div class="rano-item">
-                <span class="rano-label">Burden Phenotype:</span>
+                <span class="rano-label">Enhancing region:</span>
                 <strong id="rano-phenotype" class="text-white">—</strong>
               </div>
-              <p id="rano-summary" class="rano-narrative">Run an analysis to synthesize the clinical impression.</p>
+              <p id="rano-summary" class="rano-narrative">Run an analysis to calculate region volumes.</p>
             </div>
           </div>
 

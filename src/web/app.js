@@ -203,14 +203,11 @@ async function showResult(job) {
     $('bar-edema').style.width = '0%';
   }
 
-  // RANO 2.0 Assessment Card
-  if (res.rano_criteria) {
-    const rano = res.rano_criteria;
-    $('rano-measurable').textContent = rano.measurable_lesion_rano ? 'Measurable (≥ 1.0 mL)' : 'Sub-centimeter';
-    $('rano-measurable').className = rano.measurable_lesion_rano ? 'status-badge-meas' : 'status-badge-meas text-dim';
-    $('rano-phenotype').textContent = rano.primary_burden_type;
-    $('rano-summary').textContent = rano.clinical_summary;
-  }
+  // Measurements only: a single scan cannot establish tumor grade or RANO response.
+  $('rano-measurable').textContent = `${vols.WT.toFixed(2)} mL`;
+  $('rano-phenotype').textContent = `${vols.ET.toFixed(2)} mL`;
+  $('rano-summary').textContent = res.volume_summary?.summary ||
+    `Predicted whole-tumor region: ${vols.WT.toFixed(1)} mL; enhancing region: ${vols.ET.toFixed(1)} mL. These are segmentation measurements.`;
 
   // Telemetry Run Info
   $('run-telemetry').textContent = `Runtime: ${res.runtime_seconds.toFixed(2)}s · GPU Peak: ${(res.peak_gpu_mib / 1024).toFixed(2)} GB · Dimensions: ${res.shape.join('×')}`;
@@ -257,7 +254,11 @@ async function showResult(job) {
 
   try {
     await refreshViewer();
-    setStatus('Segmentation completed successfully. Ready to inspect.');
+    if (res.model_name === 'swinunetr' && !res.input_channel_order) {
+      setStatus('Old SwinUNETR run used the wrong MRI channel order. Rerun this case before using its scores.', true);
+    } else {
+      setStatus('Segmentation completed successfully. Ready to inspect.');
+    }
   } catch (err) {
     setStatus(`Analysis completed, but 3D viewer encountered an error: ${err.message}`, true);
   }
@@ -271,7 +272,8 @@ async function refreshHistory() {
 
   const completed = jobs.filter(j => j.status === 'complete').reverse();
   for (const job of completed) {
-    const label = `${job.result.case_name} · ${job.id.slice(0, 6)}`;
+    const oldSwin = job.result.model_name === 'swinunetr' && !job.result.input_channel_order;
+    const label = `${oldSwin ? '[INVALID OLD RUN] ' : ''}${job.result.case_name} · ${job.id.slice(0, 6)}`;
     select.add(new Option(label, job.id));
   }
   return jobs;
@@ -414,13 +416,13 @@ try {
     setBusy(true);
     pollJob(running.id);
   } else {
-    // Default to Patient 02 (the aggressive GBM with active enhancing tumor) or latest run
-    const patient2Job = jobs.find(j => j.id === 'patient-gli-00002-swin');
-    const latest = patient2Job || jobs.filter(j => j.status === 'complete').at(-1);
+    const requestedId = new URLSearchParams(window.location.search).get('analysis');
+    const completed = jobs.filter(j => j.status === 'complete');
+    const requested = completed.find(j => j.id === requestedId);
+    const latest = requested || completed.filter(j => !(j.result.model_name === 'swinunetr' && !j.result.input_channel_order)).at(-1);
 
     if (latest) {
       $('history-select').value = latest.id;
-      setCaseActive('00002');
       await showResult(latest);
     }
   }
