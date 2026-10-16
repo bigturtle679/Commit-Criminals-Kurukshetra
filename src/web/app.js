@@ -70,13 +70,17 @@ function getFileUrl(filename) {
 function setModel(modelId) {
   selectedModel = modelId;
   const isSwin = modelId === 'swinunetr';
+  const isEns = modelId === 'ensemble';
+  const isRes = modelId === 'segresnet';
   $('btn-swinunetr').classList.toggle('active', isSwin);
-  $('btn-segresnet').classList.toggle('active', !isSwin);
-  $('header-model-name').textContent = isSwin ? 'SwinUNETR (Transformer)' : 'SegResNet (CNN)';
+  $('btn-segresnet').classList.toggle('active', isRes);
+  if ($('btn-ensemble')) $('btn-ensemble').classList.toggle('active', isEns);
+  $('header-model-name').textContent = isEns ? '8:2 Hybrid Ensemble' : (isSwin ? 'SwinUNETR (Transformer)' : 'SegResNet (CNN)');
 }
 
 $('btn-swinunetr').onclick = () => setModel('swinunetr');
 $('btn-segresnet').onclick = () => setModel('segresnet');
+if ($('btn-ensemble')) $('btn-ensemble').onclick = () => setModel('ensemble');
 
 // Update Patient Case Selection
 function setCaseActive(caseId) {

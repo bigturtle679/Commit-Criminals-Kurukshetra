@@ -4,6 +4,8 @@ from concurrent.futures import ThreadPoolExecutor
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+import sys
+sys.path.insert(0, str(Path(__file__).parent))
 from pipeline import ROOT, run_case
 
 app = FastAPI(title='NeuroScope Local · 3D Brain Tumor Segmentation')
@@ -118,7 +120,7 @@ def demo(model: str = Query('swinunetr'), case: str = Query('00000')):
         raise HTTPException(404, f"MRI scans missing for case {case_info['name']}.")
 
     uid = new_job()
-    model_name = model if model in ('swinunetr', 'segresnet') else 'swinunetr'
+    model_name = model if model in ('ensemble', 'swinunetr', 'segresnet') else 'swinunetr'
     POOL.submit(
         execute,
         uid,
@@ -166,7 +168,7 @@ async def analyze(
     except Exception as e:
         JOBS[uid].update(status='error', message=str(e))
         raise HTTPException(400, str(e))
-    model_name = model if model in ('swinunetr', 'segresnet') else 'swinunetr'
+    model_name = model if model in ('ensemble', 'swinunetr', 'segresnet') else 'swinunetr'
     POOL.submit(execute, uid, paths, paths.get('expert'), expert_et, f'Patient MRI ({model_name.upper()})', model_name=model_name)
     return {'id': uid}
 
