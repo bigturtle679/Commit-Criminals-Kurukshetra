@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-17",
+  "patient_id": "BraTS2021_00003",
+  "model": "swinunetr",
+  "cli_output": "outputs/testing/antigravity/pilot20_run/swinunetr/000/segmentation.nii.gz",
+  "web_job_id": "bd9e011957564f75b176dc45050445a7",
+  "shape_equal": true,
+  "affine_equal": true,
+  "total_voxels": 8928000,
+  "mismatched_voxels": 0,
+  "labels_cli": [
+    0,
+    1,
+    2,
+    4
+  ],
+  "labels_web": [
+    0,
+    1,
+    2,
+    4
+  ],
+  "volumes_ml_cli": {
+    "WT": 98.935,
+    "TC": 42.126,
+    "ET": 25.646,
+    "ED": 56.809
+  },
+  "volumes_ml_web": {
+    "WT": 98.935,
+    "TC": 42.126,
+    "ET": 25.646,
+    "ED": 56.809
+  },
+  "dice_cli": {
+    "WT": 0.9837,
+    "TC": 0.9788,
+    "ET": 0.944
+  },
+  "dice_web": {
+    "WT": 0.9837,
+    "TC": 0.9788,
+    "ET": 0.944
+  },
+  "note": "Web result obtained by uploading the same four NIfTI files and mask (expert_et=4) to POST /api/analyze on the running local server.",
+  "identical": true
+}
