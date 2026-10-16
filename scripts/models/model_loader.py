@@ -46,7 +46,7 @@ def _resolve_checkpoint(candidates, model_name):
     """Find the first existing checkpoint from a list of candidate paths.
 
     Returns the resolved Path.
-    Raises CheckpointNotFoundError with all searched locations if none found.
+    Raises CheckpointNotFoundError with searched locations if none found.
     """
     searched = []
     for p in candidates:
@@ -56,7 +56,11 @@ def _resolve_checkpoint(candidates, model_name):
         # Resolve relative paths against ROOT
         if not p.is_absolute():
             p = ROOT / p
-        searched.append(str(p))
+        try:
+            rel = p.relative_to(ROOT)
+            searched.append(str(rel))
+        except ValueError:
+            searched.append(p.name)
         if p.exists():
             return p
     raise CheckpointNotFoundError(
@@ -67,33 +71,36 @@ def _resolve_checkpoint(candidates, model_name):
     )
 
 
-def _load_state_dict(model, checkpoint_path, model_name):
+def _load_state_dict(model, checkpoint_path, model_name, allow_unsafe_legacy_weights: bool = False):
     """Load checkpoint into model with strict validation.
 
-    Strategy:
-    1. Try strict=True with the raw state dict.
-    2. If that fails, try known prefix normalization (e.g. 'module.' from
+    Safety:
+    1. Loads using weights_only=True by default for secure deserialization.
+       Never automatically falls back to unsafe weights_only=False.
+       An explicit, opt-in allow_unsafe_legacy_weights=True is required for legacy files.
+    2. Try strict=True with the raw state dict.
+    3. If that fails, try known prefix normalization (e.g. 'module.' from
        DataParallel) and retry strict=True.
-    3. If both fail, reject the checkpoint entirely.
+    4. If both fail, reject the checkpoint entirely.
 
-    Never falls back to partial/non-strict loading.
+    Never returns partially loaded models.
     Raises CheckpointLoadError if loading fails for any reason.
     """
     try:
-        # Prefer weights_only=True for security; fall back if checkpoint
-        # contains non-tensor objects (e.g. optimizer state wrappers).
-        try:
+        if not allow_unsafe_legacy_weights:
             state = torch.load(checkpoint_path, map_location='cpu', weights_only=True)
-        except Exception:
-            logger.warning(
-                "%s: weights_only=True failed, falling back to weights_only=False. "
-                "Only use trusted checkpoint files.",
-                model_name
-            )
-            state = torch.load(checkpoint_path, map_location='cpu', weights_only=False)
+        else:
+            try:
+                state = torch.load(checkpoint_path, map_location='cpu', weights_only=True)
+            except Exception as e:
+                logger.warning(
+                    "%s: Explicit opt-in allow_unsafe_legacy_weights=True used after weights_only=True failed: %s",
+                    model_name, e
+                )
+                state = torch.load(checkpoint_path, map_location='cpu', weights_only=False)
     except Exception as e:
         raise CheckpointLoadError(
-            f"Failed to read checkpoint file for {model_name}: {e}"
+            f"Failed to read checkpoint file for {model_name} (weights_only=True): {e}"
         ) from e
 
     # Extract state dict from common wrapper formats
@@ -293,19 +300,22 @@ def load_resenc(preset='M', weights_path=None, device=None):
     return model, desc, resolved_path
 
 
-def load_ensemble_models(config_path=None, device=None):
+def load_ensemble_models(config_path=None, validated_config=None, device=None):
     """Load both ensemble models with validated checkpoints.
 
+    Uses configs/config_loader.py to guarantee authoritative validation.
     Raises CheckpointNotFoundError if either checkpoint is missing.
     Raises CheckpointLoadError if either checkpoint is incompatible.
     """
     device = device or get_device()
-    if config_path is None:
-        config_path = ROOT / 'configs/ensemble.json'
-    cfg = json.loads(Path(config_path).read_text())
+    if validated_config is not None:
+        cfg = validated_config
+    else:
+        from configs.config_loader import load_ensemble_config
+        cfg = load_ensemble_config(config_path)
 
-    model_a_cfg = cfg.get('model_a', {})
-    model_b_cfg = cfg.get('model_b', {})
+    model_a_cfg = cfg['model_a']
+    model_b_cfg = cfg['model_b']
 
     model_a, desc_a, path_a = load_swinunetr(
         weights_path=model_a_cfg.get('weights_path'),
@@ -319,7 +329,6 @@ def load_ensemble_models(config_path=None, device=None):
         device=device
     )
 
-    weights = cfg.get('weights', {'model_a': 0.8, 'model_b': 0.2})
     return {
         'model_a': model_a,
         'model_b': model_b,
@@ -327,8 +336,8 @@ def load_ensemble_models(config_path=None, device=None):
         'desc_b': desc_b,
         'path_a': path_a,
         'path_b': path_b,
-        'weight_a': float(weights['model_a']),
-        'weight_b': float(weights['model_b']),
+        'weight_a': cfg['weight_a'],
+        'weight_b': cfg['weight_b'],
         'config': cfg,
         'device': device
     }
