@@ -15,3 +15,12 @@ document.querySelectorAll('[data-start]').forEach(button=>button.addEventListene
 document.querySelectorAll('.close,.done').forEach(button=>button.addEventListener('click',()=>dialog.close()));
 dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}});
 document.querySelector('#scan').addEventListener('change',event=>{const file=event.target.files[0],status=document.querySelector('#file-status');if(!file){status.textContent='Use de-identified research data only.';return;}if(!/\.(nii|nii\.gz|dcm)$/i.test(file.name)){status.textContent='Please choose a .nii, .nii.gz, or .dcm file.';event.target.value='';return;}status.textContent=`Selected: ${file.name} (${(file.size/1024/1024).toFixed(2)} MB). Demo only — no data has been uploaded or analyzed.`;});
+
+// Scroll-reveal: fade-in sections as they enter viewport
+const revealTargets = document.querySelectorAll('.section, .disclaimer');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('revealed'); io.unobserve(e.target); }
+  });
+}, { threshold: 0.12 });
+revealTargets.forEach(el => { el.classList.add('reveal'); io.observe(el); });
