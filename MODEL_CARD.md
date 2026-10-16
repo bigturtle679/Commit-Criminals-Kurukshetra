@@ -20,10 +20,11 @@ The ensemble fuses two models at the probability level:
 
 ### Fusion Method
 - Both models produce 3-channel sigmoid probabilities (TC, WT, ET)
-- Weighted average: `prob = 0.8 × prob_A + 0.2 × prob_B`
+- Weighted average: `prob = 0.8 × prob_A + 0.2 × prob_B` (or configured logit fusion)
 - BraTS hierarchy enforcement: ET ≤ TC ≤ WT
 - Threshold: 0.5
-- Shannon entropy uncertainty map from fused probabilities
+- Shannon Bernoulli entropy uncertainty map ($H(p) = -p\log_2 p - (1-p)\log_2(1-p)$) representing voxel classification boundary confidence
+- Multi-model prediction disagreement ($|p_A - p_B|$), measuring genuine inter-model divergence between SwinUNETR and ResEnc M predictions
 
 ## Preprocessing
 

@@ -153,7 +153,13 @@ if __name__ == '__main__':
     test_entropy_underflow_and_log_zero()
     test_sigmoid_overflow_extreme_logits()
     test_dice_division_by_zero_underflow()
-    test_model_weights_finite_check()
+    try:
+        test_model_weights_finite_check()
+    except BaseException as e:
+        if type(e).__name__ in ('Skipped', 'OutcomeException'):
+            print("SKIPPED: test_model_weights_finite_check (checkpoints not present on disk)")
+        else:
+            raise
     test_forward_pass_underflow_overflow()
     test_fp16_autocast_dynamic_range()
     print("=" * 60)

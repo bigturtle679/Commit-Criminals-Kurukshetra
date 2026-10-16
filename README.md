@@ -10,7 +10,7 @@ NeuroScope 3D is an AI-powered 3D brain tumor segmentation and visualization pla
 - **BraTS-Standard Output**: WT, TC, ET segmentation with labels {0, 1, 2, 4}
 - **3D Visualization**: NiiVue WebGL2 viewer with multiplanar slices and 3D mesh rendering
 - **Volume Calculation**: Exact physical volumes using affine determinant (mL)
-- **Uncertainty Maps**: Shannon entropy from ensemble disagreement
+- **Uncertainty & Disagreement**: Shannon Bernoulli entropy boundary confidence and inter-model probability disagreement (|p_A - p_B|)
 - **Expert Comparison**: Optional ground-truth mask upload with Dice and sensitivity metrics
 - **Research Report**: JSON report with model provenance, preprocessing details, and SHA-256 input hashes
 
