@@ -78,6 +78,19 @@ async function fetchApi(endpoint, options = {}) {
   return data;
 }
 
+// Descriptive download names, e.g. NeuroScope_BraTS2021_00144_ensemble_segmentation.nii.gz
+function downloadName(filename) {
+  const res = currentJob?.result || {};
+  const slug = String(res.case_name || 'case').split('·')[0].trim().replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 40) || 'case';
+  return `NeuroScope_${slug}_${res.model_name || 'model'}_${filename}`;
+}
+
+function setDownload(id, filename) {
+  const link = $(id);
+  link.href = getFileUrl(filename);
+  link.download = downloadName(filename);
+}
+
 function getFileUrl(filename) {
   return `/api/files/${currentJob.id}/${filename}`;
 }
@@ -373,21 +386,21 @@ function renderResultPanels(job) {
 
   // Configure Download Links
   const maskLink = $('link-download-mask');
-  maskLink.href = getFileUrl('segmentation.nii.gz');
+  setDownload('link-download-mask', 'segmentation.nii.gz');
   maskLink.classList.remove('disabled');
 
   const reportLink = $('link-download-report');
-  reportLink.href = getFileUrl('report.json');
+  setDownload('link-download-report', 'report.json');
   reportLink.classList.remove('disabled');
 
   const uncLink = $('link-download-uncertainty');
   if (uncLink) {
-    uncLink.href = getFileUrl('uncertainty.nii.gz');
+    setDownload('link-download-uncertainty', 'uncertainty.nii.gz');
     uncLink.classList.toggle('disabled', !hasUncertainty);
   }
 
   const meshLink = $('link-download-mesh');
-  meshLink.href = getFileUrl('tumor.obj');
+  setDownload('link-download-mesh', 'tumor.obj');
   meshLink.classList.toggle('disabled', !(res.meshes || []).includes('tumor'));
 
   applyReviewGate();
@@ -413,7 +426,7 @@ function applyReviewGate() {
     ['link-download-mesh', access.prediction && currentJob?.result.meshes?.includes('tumor'), 'tumor.obj'],
     ['link-download-report', access.report, 'report.json']
   ]) {
-    if (allowed && currentJob) $(id).href = getFileUrl(filename);
+    if (allowed && currentJob) setDownload(id, filename);
     else $(id).removeAttribute('href');
   }
   if (opening || review?.loading) $('gl-canvas').hidden = true;
@@ -519,6 +532,44 @@ async function launchAnalysis(endpoint, options = {}) {
     setStatus(err.message, true);
   }
 }
+
+// Unseen test patients: named zip download or one-click run
+async function loadSamples() {
+  const list = $('sample-list');
+  if (!list) return;
+  let samples = [];
+  try { samples = await fetchApi('/api/samples'); } catch (err) { list.replaceChildren(); return; }
+  list.replaceChildren();
+  for (const sample of samples) {
+    const item = document.createElement('li');
+    item.className = 'sample-item';
+    const name = document.createElement('span');
+    name.className = 'sample-id';
+    name.textContent = sample.id.replace('BraTS2021_', 'Patient ');
+    const actions = document.createElement('span');
+    actions.className = 'sample-actions';
+    const download = document.createElement('a');
+    download.className = 'sample-btn';
+    download.textContent = '⬇ Download';
+    const run = document.createElement('button');
+    run.type = 'button';
+    run.className = 'sample-btn sample-run';
+    run.textContent = '▶ Run';
+    if (sample.available) {
+      download.href = `/api/samples/${encodeURIComponent(sample.id)}/download`;
+      download.download = `NeuroScope_TestCase_${sample.id}.zip`;
+      run.onclick = () => launchAnalysis(`/api/samples/${encodeURIComponent(sample.id)}/run?model=${selectedModel}`, { method: 'POST' });
+    } else {
+      download.setAttribute('aria-disabled', 'true');
+      run.disabled = true;
+      item.title = 'Case files are not on this machine.';
+    }
+    actions.append(download, run);
+    item.append(name, actions);
+    list.append(item);
+  }
+}
+loadSamples();
 
 // Patient Case Click Handlers
 ['00000', '00002', '00003'].forEach(caseId => {

@@ -128,14 +128,6 @@
               <span class="model-desc">3D residual convolutional network · MONAI bundle</span>
             </button>
 
-            <button type="button" class="model-btn" data-model="ensemble" id="btn-ensemble">
-              <div class="model-btn-top">
-                <span class="model-badge" style="background: rgba(168,85,247,0.18); color: #c084fc; border: 1px solid rgba(168,85,247,0.35);">8:2 ENSEMBLE</span>
-                <span class="model-latency">~10s</span>
-              </div>
-              <div class="model-title">8:2 Hybrid Ensemble</div>
-              <div class="model-desc">SwinUNETR (80%) + nnU-Net ResEnc (20%) with entropy uncertainty.</div>
-            </button>
           </div>
           <div id="model-details" class="model-details" aria-live="polite" aria-atomic="true"></div>
           <p class="model-selection-note">Applies to your next analysis. Run a patient case or upload scans to generate a new result. The displayed result keeps its original model.</p>
@@ -248,6 +240,21 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
           </form>
+        </section>
+
+        <!-- Held-out test cases: download as named zip or run in one click -->
+        <section class="card samples-card">
+          <div class="card-header">
+            <span class="step-num">02b</span>
+            <div>
+              <h3>Unseen Test Patients</h3>
+              <p class="card-caption">BraTS 2021 cases never used to train ResEnc · download or run</p>
+            </div>
+          </div>
+          <ul id="sample-list" class="sample-list" aria-live="polite">
+            <li class="muted-td">Loading test cases…</li>
+          </ul>
+          <p class="model-selection-note">Download saves <code>NeuroScope_TestCase_&lt;ID&gt;.zip</code> to your Downloads folder: four MRI scans, the expert mask and upload instructions. Unzip and use the upload form above to verify the model yourself.</p>
         </section>
 
         <!-- Progress / Status Card -->
@@ -524,6 +531,31 @@
                 </tbody>
               </table>
             </div>
+          </div>
+
+          <!-- Validation evidence: measured, not marketing -->
+          <div class="card evidence-card">
+            <div class="card-header-simple">
+              <span class="card-pill evidence-pill">MODEL EVIDENCE</span>
+              <h3>How well does it work?</h3>
+            </div>
+            <p class="evidence-caption">Mean Dice on 50 random BraTS 2021 patients held out from ResEnc training (seed 42).</p>
+            <div class="table-container">
+              <table class="metrics-table evidence-table">
+                <thead><tr><th>Model</th><th>WT</th><th>TC</th><th>ET</th></tr></thead>
+                <tbody>
+                  <tr><td>8:2 Ensemble</td><td>0.949</td><td>0.959</td><td>0.936</td></tr>
+                  <tr><td>SwinUNETR<sup>*</sup></td><td>0.949</td><td>0.959</td><td>0.936</td></tr>
+                  <tr><td>ResEnc (ours, unseen)</td><td>0.876</td><td>0.874</td><td>0.859</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="evidence-notes">
+              <li><strong>~8 s</strong> per patient · <strong>1.7 GB</strong> peak VRAM on an RTX 4060 laptop GPU.</li>
+              <li>Ensemble ≈ SwinUNETR: at 80:20, ResEnc only changes voxels where Swin is 37.5–62.5% sure.</li>
+              <li><sup>*</sup>The public SwinUNETR checkpoint was trained on BraTS 2021, so its score on these patients is optimistic.</li>
+              <li>Expert raters typically agree at ~0.85–0.90 WT Dice. Research demo — not for diagnosis.</li>
+            </ul>
           </div>
 
         </div>

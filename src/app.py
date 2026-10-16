@@ -214,6 +214,65 @@ def validate_model(model):
     return model
 
 
+# Held-out BraTS 2021 patients (never used to train ResEnc; see testing/results/heldout50).
+SAMPLE_DIR = ROOT / 'data/external/brats2021_task1'
+SAMPLE_IDS = ['BraTS2021_00144', 'BraTS2021_00723', 'BraTS2021_00120', 'BraTS2021_00685', 'BraTS2021_00737',
+              'BraTS2021_01050', 'BraTS2021_00305', 'BraTS2021_00418', 'BraTS2021_00156', 'BraTS2021_01014']
+SAMPLE_FILES = {'t1': 't1', 't1c': 't1ce', 't2': 't2', 'flair': 'flair', 'expert': 'seg'}
+SAMPLE_README = """NeuroScope 3D - held-out test case {pid} (BraTS 2021 Task 1)
+
+Upload in the NeuroScope "Upload MRI" form:
+  T1c slot    -> {pid}_t1ce.nii.gz
+  T1 slot     -> {pid}_t1.nii.gz
+  T2 slot     -> {pid}_t2.nii.gz
+  FLAIR slot  -> {pid}_flair.nii.gz
+  Expert mask -> {pid}_seg.nii.gz   (set enhancing-tumour label to 4)
+
+The expert mask is only used to score the prediction (Dice), never as model input.
+This patient was excluded from ResEnc training. Research demonstration only - not for diagnosis.
+"""
+
+
+def sample_paths(pid):
+    if pid not in SAMPLE_IDS:
+        raise HTTPException(404, 'Unknown sample case.')
+    paths = {k: SAMPLE_DIR / pid / f'{pid}_{suffix}.nii.gz' for k, suffix in SAMPLE_FILES.items()}
+    if not all(p.is_file() for p in paths.values()):
+        raise HTTPException(404, f'Sample case {pid} is not downloaded on this machine.')
+    return paths
+
+
+@app.get('/api/samples')
+def samples():
+    return [{'id': pid, 'available': all((SAMPLE_DIR / pid / f'{pid}_{s}.nii.gz').is_file() for s in SAMPLE_FILES.values())}
+            for pid in SAMPLE_IDS]
+
+
+@app.get('/api/samples/{pid}/download')
+def sample_download(pid: str):
+    import io, zipfile
+    from fastapi.responses import Response
+    paths = sample_paths(pid)
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_STORED) as archive:
+        for path in paths.values():
+            archive.write(path, f'NeuroScope_TestCase_{pid}/{path.name}')
+        archive.writestr(f'NeuroScope_TestCase_{pid}/HOW_TO_UPLOAD.txt', SAMPLE_README.format(pid=pid))
+    name = f'NeuroScope_TestCase_{pid}.zip'
+    return Response(buffer.getvalue(), media_type='application/zip',
+                    headers={'Content-Disposition': f'attachment; filename="{name}"'})
+
+
+@app.post('/api/samples/{pid}/run')
+def sample_run(pid: str, model: str = Query('ensemble')):
+    model_name = validate_model(model)
+    paths = sample_paths(pid)
+    expert = paths.pop('expert')
+    uid = new_job()
+    POOL.submit(execute, uid, paths, expert, 4, f'{pid} · unseen test case ({model_name.upper()})', model_name=model_name)
+    return {'id': uid}
+
+
 @app.post('/api/demo')
 def demo(model: str = Query('ensemble'), case: str = Query('00000')):
     model_name = validate_model(model)
@@ -357,7 +416,10 @@ def file(uid: str, name: str):
     path = (job_dir / name).resolve()
     if not path.is_relative_to(job_dir) or not path.exists():
         raise HTTPException(404, 'Artifact not found.')
-    return FileResponse(path, filename=name)
+    case = str((JOBS.get(uid, {}).get('result') or {}).get('case_name', 'case'))
+    model = str((JOBS.get(uid, {}).get('result') or {}).get('model_name', 'model'))
+    slug = ''.join(c if c.isalnum() else '_' for c in case.split('·')[0].strip())[:40].strip('_') or 'case'
+    return FileResponse(path, filename=f'NeuroScope_{slug}_{model}_{name}')
 
 
 # Startup recovery: reload persisted jobs and mark unfinished jobs as interrupted
