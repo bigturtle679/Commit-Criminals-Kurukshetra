@@ -6,6 +6,7 @@ let currentJob = null;
 let currentView = 3; // 3: Multiplanar Grid, 0: Axial, 1: Coronal, 2: Sagittal, 4: 3D Render
 let isBusy = false;
 let selectedModel = 'swinunetr';
+let selectedCase = '00002';
 let viewerReady = true;
 
 // Initialize NiiVue WebGL2 Engine
@@ -44,7 +45,7 @@ function setStatus(text, isError = false) {
 
 function setBusy(value) {
   isBusy = value;
-  $('btn-demo').disabled = value;
+  document.querySelectorAll('.patient-case-btn').forEach(b => b.disabled = value);
   $('btn-analyze').disabled = value;
   $('history-select').disabled = value;
   $('progress-container').hidden = !value;
@@ -77,11 +78,19 @@ function setModel(modelId) {
 $('btn-swinunetr').onclick = () => setModel('swinunetr');
 $('btn-segresnet').onclick = () => setModel('segresnet');
 
+// Update Patient Case Selection
+function setCaseActive(caseId) {
+  selectedCase = caseId;
+  document.querySelectorAll('.patient-case-btn').forEach(btn => {
+    btn.classList.toggle('active-case', btn.dataset.case === caseId);
+  });
+}
+
 // Refresh NiiVue Scene (Volumes & Meshes)
 async function refreshViewer() {
   if (!currentJob || !viewerReady) return;
 
-  const bgKey = $('select-background').value; // 'flair' or 't1c'
+  const bgKey = $('select-background').value; // 't1c' or 'flair'
   const overlayMode = $('select-overlay').value; // 'segmentation', 'expert', or 'none'
   const opacity = parseFloat($('range-opacity').value);
 
@@ -295,7 +304,7 @@ async function pollJob(jobId) {
 async function launchAnalysis(endpoint, options = {}) {
   if (isBusy) return;
   setBusy(true);
-  setStatus('Initializing GPU pipeline on RTX 4060…');
+  setStatus('Running 3D segmentation on RTX 4060…');
 
   try {
     const res = await fetchApi(endpoint, options);
@@ -306,10 +315,16 @@ async function launchAnalysis(endpoint, options = {}) {
   }
 }
 
-// Event Listeners
-$('btn-demo').onclick = () => {
-  launchAnalysis(`/api/demo?model=${selectedModel}`, { method: 'POST' });
-};
+// Patient Case Click Handlers
+['00000', '00002', '00003'].forEach(caseId => {
+  const btn = $(`case-btn-${caseId}`);
+  if (btn) {
+    btn.onclick = () => {
+      setCaseActive(caseId);
+      launchAnalysis(`/api/demo?case=${caseId}&model=${selectedModel}`, { method: 'POST' });
+    };
+  }
+});
 
 $('upload-form').onsubmit = e => {
   e.preventDefault();
@@ -391,7 +406,6 @@ try {
   if (status.gpu) {
     $('gpu-text').textContent = status.gpu;
   }
-  $('btn-demo').disabled = !status.demo_ready;
 
   const jobs = await refreshHistory();
   const running = jobs.find(j => ['queued', 'running'].includes(j.status));
@@ -400,12 +414,13 @@ try {
     setBusy(true);
     pollJob(running.id);
   } else {
-    const urlParams = new URLSearchParams(window.location.search);
-    const reqId = urlParams.get('analysis');
-    const latest = jobs.find(j => j.id === reqId && j.status === 'complete') || jobs.filter(j => j.status === 'complete').at(-1);
+    // Default to Patient 02 (the aggressive GBM with active enhancing tumor) or latest run
+    const patient2Job = jobs.find(j => j.id === 'patient-gli-00002-swin');
+    const latest = patient2Job || jobs.filter(j => j.status === 'complete').at(-1);
 
     if (latest) {
       $('history-select').value = latest.id;
+      setCaseActive('00002');
       await showResult(latest);
     }
   }

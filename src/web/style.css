@@ -1274,3 +1274,98 @@ body {
     height: 380px !important;
   }
 }
+
+/* Patient Cases Gallery Styling */
+.patient-cases-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.patient-case-btn {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.patient-case-btn:hover {
+  background: rgba(20, 30, 48, 0.85);
+  border-color: rgba(6, 182, 212, 0.4);
+  transform: translateY(-1px);
+}
+
+.patient-case-btn.active-case {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(15, 23, 42, 0.9));
+  border-color: var(--primary);
+  box-shadow: 0 0 14px rgba(6, 182, 212, 0.2);
+}
+
+.patient-case-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.case-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.case-tag {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.case-tag.tag-contrast {
+  background: rgba(244, 63, 94, 0.25);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.4);
+}
+
+.case-tag.tag-edema {
+  background: rgba(45, 212, 191, 0.2);
+  color: #2dd4bf;
+  border: 1px solid rgba(45, 212, 191, 0.35);
+}
+
+.case-tag.tag-mixed {
+  background: rgba(251, 146, 60, 0.2);
+  color: #fb923c;
+  border: 1px solid rgba(251, 146, 60, 0.35);
+}
+
+.patient-case-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.patient-case-summary {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.35;
+}
+
+.patient-case-action {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+}

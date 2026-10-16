@@ -14,6 +14,33 @@ POOL = ThreadPoolExecutor(max_workers=1)
 GUARD = threading.Lock()
 app.mount('/static', StaticFiles(directory=ROOT / 'src/web'), name='static')
 
+PATIENT_CASES = {
+    '00000': {
+        'id': '00000',
+        'code': 'BraTS-GLI-00000-000',
+        'name': 'Patient 1 · GLI-00000 (Infiltrative Edema)',
+        'folder': ROOT / 'data/demo',
+        'et_label': 3,
+        'description': 'Extensive vasogenic edema & infiltrative margin with sub-centimeter active core.'
+    },
+    '00002': {
+        'id': '00002',
+        'code': 'BraTS-GLI-00002-000',
+        'name': 'Patient 2 · GLI-00002 (Contrast-Avid Glioblastoma)',
+        'folder': ROOT / 'data/BraTS-GLI-00002-000',
+        'et_label': 3,
+        'description': 'Aggressive high-grade GBM with solid necrotic core and 10.9 mL contrast-enhancing active rim.'
+    },
+    '00003': {
+        'id': '00003',
+        'code': 'BraTS-GLI-00003-000',
+        'name': 'Patient 3 · GLI-00003 (Mixed High-Grade Glioma)',
+        'folder': ROOT / 'data/BraTS-GLI-00003-000',
+        'et_label': 3,
+        'description': 'Mixed morphology glioma with 11.8 mL total burden and distinct surgical boundaries.'
+    }
+}
+
 
 @app.get('/')
 def index():
@@ -31,7 +58,16 @@ def status():
             {'id': 'swinunetr', 'name': 'SwinUNETR (Vision Transformer)', 'badge': 'SOTA Foundation Model', 'speed': '3.1s'},
             {'id': 'segresnet', 'name': 'SegResNet (3D CNN Autoencoder)', 'badge': 'BraTS Winner', 'speed': '1.2s'}
         ],
-        'default_model': 'swinunetr'
+        'default_model': 'swinunetr',
+        'patient_cases': [
+            {
+                'id': k,
+                'name': v['name'],
+                'description': v['description'],
+                'available': all((v['folder'] / f"{v['code']}-{s}.nii.gz").exists() for s in ['t1c', 't1n', 't2w', 't2f'])
+            }
+            for k, v in PATIENT_CASES.items()
+        ]
     }
 
 
@@ -64,16 +100,32 @@ def new_job():
 
 
 @app.post('/api/demo')
-def demo(model: str = Query('swinunetr')):
-    folder = ROOT / 'data/demo'
-    case = 'BraTS-GLI-00000-000'
-    paths = {k: folder / f'{case}-{s}.nii.gz' for k, s in [('t1c', 't1c'), ('t1', 't1n'), ('t2', 't2w'), ('flair', 't2f')]}
-    expert = folder / f'{case}-seg.nii.gz'
-    if not all(p.exists() for p in [*paths.values(), expert]):
-        raise HTTPException(404, 'Demo MRI volumes are missing in data/demo.')
+def demo(model: str = Query('swinunetr'), case: str = Query('00000')):
+    case_info = PATIENT_CASES.get(case, PATIENT_CASES['00000'])
+    folder = case_info['folder']
+    code = case_info['code']
+
+    paths = {
+        't1c': folder / f'{code}-t1c.nii.gz',
+        't1': folder / f'{code}-t1n.nii.gz',
+        't2': folder / f'{code}-t2w.nii.gz',
+        'flair': folder / f'{code}-t2f.nii.gz'
+    }
+    expert = folder / f'{code}-seg.nii.gz'
+    if not all(p.exists() for p in paths.values()):
+        raise HTTPException(404, f"MRI scans missing for case {case_info['name']}.")
+
     uid = new_job()
     model_name = model if model in ('swinunetr', 'segresnet') else 'swinunetr'
-    POOL.submit(execute, uid, paths, expert, 3, f'BraTS Demo · GLI-00000 ({model_name.upper()})', model_name=model_name)
+    POOL.submit(
+        execute,
+        uid,
+        paths,
+        expert if expert.exists() else None,
+        case_info['et_label'],
+        f"{case_info['name']} ({model_name.upper()})",
+        model_name=model_name
+    )
     return {'id': uid}
 
 

@@ -58,7 +58,7 @@
       </div>
       <div class="hero-meta">
         <div class="research-tag">
-          <strong>BraTS 2021 / 2023 Compliant</strong>
+          <strong>BraTS 2021 / 2023 Real MRI Scans</strong>
           <span>Sub-millimeter Voxel Determinant</span>
         </div>
       </div>
@@ -86,42 +86,76 @@
                 <span class="model-badge sota">RECOMMENDED SOTA</span>
                 <span class="model-latency">~3.1s</span>
               </div>
-              <div class="model-title">SwinUNETR</div>
+              <div class="model-title">SwinUNETR (Vision Transformer)</div>
               <div class="model-desc">3D Shifted-Window Transformer encoder pretrained on 42k brains.</div>
             </button>
 
             <button type="button" class="model-btn" data-model="segresnet" id="btn-segresnet">
               <div class="model-btn-top">
-                <span class="model-badge">BRA-TS WINNER</span>
+                <span class="model-badge">BRATS WINNER</span>
                 <span class="model-latency">~1.2s</span>
               </div>
-              <div class="model-title">SegResNet</div>
+              <div class="model-title">SegResNet (3D CNN)</div>
               <div class="model-desc">NVIDIA ResNet with variational autoencoder regularization.</div>
             </button>
           </div>
         </section>
 
-        <!-- Case Input Card -->
+        <!-- Real Patient Cases Selection Card -->
         <section class="card input-card">
           <div class="card-header">
             <span class="step-num">02</span>
             <div>
-              <h3>Case Selection</h3>
-              <p class="card-caption">Sample benchmark or patient scan</p>
+              <h3>Real Patient MRI Cases</h3>
+              <p class="card-caption">Click to run real 3D multimodal patient data</p>
             </div>
           </div>
 
-          <!-- Quick Sample Action -->
-          <button id="btn-demo" class="btn-primary-action">
-            <div class="btn-icon">⚡</div>
-            <div class="btn-text-wrap">
-              <span class="btn-title">Analyze BraTS Benchmark Case</span>
-              <span class="btn-subtitle">Case GLI-00000 · 4 MRI Sequences + Ground Truth</span>
-            </div>
-            <span class="arrow-glyph">→</span>
-          </button>
+          <!-- Patient Case Cards Gallery -->
+          <div class="patient-cases-list">
+            
+            <button type="button" class="patient-case-btn active-case" data-case="00002" id="case-btn-00002">
+              <div class="patient-case-header">
+                <span class="case-code">CASE 02 · GLI-00002</span>
+                <span class="case-tag tag-contrast">ACTIVE ENHANCING CORE</span>
+              </div>
+              <div class="patient-case-name">Aggressive Glioblastoma (GBM)</div>
+              <div class="patient-case-summary">17.0 mL tumor with prominent 10.9 mL contrast-enhancing solid active rim.</div>
+              <div class="patient-case-action">
+                <span>⚡ Run Case 02 on GPU</span>
+                <span class="arrow-glyph">→</span>
+              </div>
+            </button>
 
-          <div class="or-separator"><span>OR UPLOAD PATIENT NIFTI SCANS</span></div>
+            <button type="button" class="patient-case-btn" data-case="00000" id="case-btn-00000">
+              <div class="patient-case-header">
+                <span class="case-code">CASE 01 · GLI-00000</span>
+                <span class="case-tag tag-edema">EDEMA-DOMINANT</span>
+              </div>
+              <div class="patient-case-name">Infiltrative Astrocytoma</div>
+              <div class="patient-case-summary">19.6 mL whole tumor with marked vasogenic edema and infiltrative boundary.</div>
+              <div class="patient-case-action">
+                <span>⚡ Run Case 01 on GPU</span>
+                <span class="arrow-glyph">→</span>
+              </div>
+            </button>
+
+            <button type="button" class="patient-case-btn" data-case="00003" id="case-btn-00003">
+              <div class="patient-case-header">
+                <span class="case-code">CASE 03 · GLI-00003</span>
+                <span class="case-tag tag-mixed">MIXED MORPHOLOGY</span>
+              </div>
+              <div class="patient-case-name">High-Grade Glioma</div>
+              <div class="patient-case-summary">11.8 mL total tumor burden with distinct necrotic core and peripheral edema.</div>
+              <div class="patient-case-action">
+                <span>⚡ Run Case 03 on GPU</span>
+                <span class="arrow-glyph">→</span>
+              </div>
+            </button>
+
+          </div>
+
+          <div class="or-separator"><span>OR CUSTOM NIFTI UPLOAD</span></div>
 
           <!-- File Upload Form -->
           <form id="upload-form" class="upload-form">
@@ -162,15 +196,15 @@
                 <label class="select-label">
                   <span>Enhancing Tumor Label:</span>
                   <select name="expert_et" id="expert-et">
-                    <option value="4">Label 4 — BraTS 2018–2021</option>
                     <option value="3">Label 3 — BraTS 2023 GLI</option>
+                    <option value="4">Label 4 — BraTS 2018–2021</option>
                   </select>
                 </label>
               </div>
             </details>
 
             <button id="btn-analyze" type="submit" class="btn-secondary-action">
-              <span>Segment Patient MRI Scans</span>
+              <span>Segment Custom Upload</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
           </form>
@@ -221,7 +255,7 @@
           <div class="viewer-topbar">
             <div class="case-meta-group">
               <span class="case-badge">ACTIVE SUBJECT</span>
-              <h2 id="active-case-title">BraTS Benchmark Demonstration</h2>
+              <h2 id="active-case-title">Patient 2 · GLI-00002</h2>
               <div id="active-model-tag" class="model-used-tag">MONAI SwinUNETR</div>
             </div>
 
@@ -246,7 +280,7 @@
                 </svg>
               </div>
               <h3>No Volume Loaded</h3>
-              <p>Click "Analyze BraTS Benchmark Case" or upload four NIfTI MRI volumes to generate high-resolution segmentations.</p>
+              <p>Click on any of the patient cases to run 3D segmentation and render real MRI slices.</p>
             </div>
 
             <!-- In-Canvas Coordinates HUD -->
@@ -268,8 +302,8 @@
               <label class="toolbar-label">
                 <span>MRI Scan:</span>
                 <select id="select-background">
-                  <option value="flair">T2-FLAIR (Peritumoral Edema)</option>
-                  <option value="t1c">T1-CE (Enhancing Core)</option>
+                  <option value="t1c">T1-CE (Enhancing Core View)</option>
+                  <option value="flair">T2-FLAIR (Peritumoral Edema View)</option>
                 </select>
               </label>
 
