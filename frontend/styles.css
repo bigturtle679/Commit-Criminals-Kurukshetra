@@ -8,3 +8,6 @@
 .reveal { opacity: 0; transform: translateY(28px); transition: opacity .6s ease, transform .6s ease; }
 .reveal.revealed { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .reveal, .reveal.revealed { opacity: 1; transform: none; transition: none; } }
+
+/* Navbar scrolled state */
+.navbar.scrolled { box-shadow: 0 8px 40px #25273514; background: #ffffffcc; }

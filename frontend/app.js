@@ -24,3 +24,9 @@ const io = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.12 });
 revealTargets.forEach(el => { el.classList.add('reveal'); io.observe(el); });
+
+// Navbar: add shadow when scrolled past hero
+const navbar = document.querySelector('.navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 40);
+}, { passive: true });
