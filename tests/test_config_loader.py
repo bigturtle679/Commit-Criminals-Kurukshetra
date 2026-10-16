@@ -216,6 +216,99 @@ class TestPostprocessing:
             load_ensemble_config(_write_config(tmp_path, cfg))
 
 
+class TestBooleanRejection:
+    def test_in_channels_boolean_rejected(self, tmp_path):
+        cfg = _valid_config()
+        cfg['model_a']['in_channels'] = True
+        with pytest.raises(ConfigValidationError, match='got bool'):
+            load_ensemble_config(_write_config(tmp_path, cfg))
+
+    def test_roi_dim_boolean_rejected(self, tmp_path):
+        cfg = _valid_config()
+        cfg['model_a']['roi_size'] = [96, True, 96]
+        with pytest.raises(ConfigValidationError, match='must be an integer'):
+            load_ensemble_config(_write_config(tmp_path, cfg))
+
+    def test_weights_boolean_rejected(self, tmp_path):
+        cfg = _valid_config()
+        cfg['weights']['model_a'] = True
+        with pytest.raises(ConfigValidationError, match='boolean'):
+            load_ensemble_config(_write_config(tmp_path, cfg))
+
+    def test_threshold_boolean_rejected(self, tmp_path):
+        cfg = _valid_config()
+        cfg['postprocessing']['threshold'] = True
+        with pytest.raises(ConfigValidationError, match='numeric'):
+            load_ensemble_config(_write_config(tmp_path, cfg))
+
+    def test_min_et_boolean_rejected(self, tmp_path):
+        cfg = _valid_config()
+        cfg['postprocessing']['min_et_volume_voxels'] = True
+        with pytest.raises(ConfigValidationError, match='non-negative integer'):
+            load_ensemble_config(_write_config(tmp_path, cfg))
+
+
+class TestNonFiniteRejection:
+    def test_nan_weights_rejected(self, tmp_path):
+        cfg = _valid_config()
+        cfg['weights']['model_a'] = float('nan')
+        with pytest.raises(ConfigValidationError, match='finite'):
+            load_ensemble_config(_write_config(tmp_path, cfg))
+
+    def test_inf_weights_rejected(self, tmp_path):
+        cfg = _valid_config()
+        cfg['weights']['model_b'] = float('inf')
+        with pytest.raises(ConfigValidationError, match='finite'):
+            load_ensemble_config(_write_config(tmp_path, cfg))
+
+    def test_nan_overlap_rejected(self, tmp_path):
+        cfg = _valid_config()
+        cfg['model_a']['sliding_window_overlap'] = float('nan')
+        with pytest.raises(ConfigValidationError, match='finite'):
+            load_ensemble_config(_write_config(tmp_path, cfg))
+
+    def test_nan_threshold_rejected(self, tmp_path):
+        cfg = _valid_config()
+        cfg['postprocessing']['threshold'] = float('nan')
+        with pytest.raises(ConfigValidationError, match='finite'):
+            load_ensemble_config(_write_config(tmp_path, cfg))
+
+
+class TestTemperatureValidation:
+    def test_valid_temperature_loaded(self, tmp_path):
+        cfg = _valid_config()
+        cfg['temperature'] = {'model_a': 1.2, 'model_b': 0.8}
+        v = load_ensemble_config(_write_config(tmp_path, cfg))
+        assert v['temperature']['model_a'] == 1.2
+        assert v['temperature']['model_b'] == 0.8
+
+    def test_invalid_temperature_type(self, tmp_path):
+        cfg = _valid_config()
+        cfg['temperature'] = 'hot'
+        with pytest.raises(ConfigValidationError, match='temperature must be a dict'):
+            load_ensemble_config(_write_config(tmp_path, cfg))
+
+    def test_non_positive_temperature_rejected(self, tmp_path):
+        cfg = _valid_config()
+        cfg['temperature'] = {'model_a': 0.0, 'model_b': 1.0}
+        with pytest.raises(ConfigValidationError, match='positive finite number'):
+            load_ensemble_config(_write_config(tmp_path, cfg))
+
+
+class TestModeValidation:
+    def test_valid_mode_constant(self, tmp_path):
+        cfg = _valid_config()
+        cfg['model_a']['mode'] = 'constant'
+        v = load_ensemble_config(_write_config(tmp_path, cfg))
+        assert v['model_a']['mode'] == 'constant'
+
+    def test_invalid_mode_rejected(self, tmp_path):
+        cfg = _valid_config()
+        cfg['model_a']['mode'] = 'linear'
+        with pytest.raises(ConfigValidationError, match="must be 'gaussian' or 'constant'"):
+            load_ensemble_config(_write_config(tmp_path, cfg))
+
+
 class TestFileErrors:
     def test_missing_file(self, tmp_path):
         with pytest.raises(FileNotFoundError):
@@ -236,3 +329,4 @@ class TestFileErrors:
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
+
