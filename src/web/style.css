@@ -1448,3 +1448,8 @@ body {
 .upload-card { border-color: rgba(6, 182, 212, 0.35); }
 .upload-card .zip-drop { padding: 26px 14px; }
 body.page-dragging .zip-drop { border-color: var(--primary); background: rgba(6, 182, 212, 0.12); }
+
+/* Blind practice banner */
+.blind-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid rgba(245, 158, 11, 0.45); background: rgba(245, 158, 11, 0.1); color: #fde68a; font-size: 13px; }
+.blind-banner-btn { padding: 7px 12px; border-radius: 6px; border: 1px solid var(--accent-amber); background: var(--accent-amber); color: #111; font-weight: 700; cursor: pointer; }
+.blind-banner-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }

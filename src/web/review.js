@@ -60,6 +60,8 @@ export class ReviewController {
     $('reveal-prediction').onclick = () => this.advance('prediction');
     $('reveal-expert').onclick = () => this.advance('expert');
     $('exit-blind').onclick = () => this.mutate(doc => { doc.active_attempt_id = null; });
+    const bannerExit = document.getElementById('blind-banner-exit');
+    if (bannerExit) bannerExit.onclick = () => this.mutate(doc => { doc.active_attempt_id = null; });
     $('save-reflection').onclick = () => this.mutate(doc => { this.findAttempt(doc).reflection = $('reflection').value; this.findAttempt(doc).updated_at = now(); }, false);
     $('retry-review').onclick = async () => {
       if (this.pending) await this.persist(this.pending);
@@ -197,6 +199,8 @@ export class ReviewController {
   render() {
     const ready = !!this.document && !this.loading;
     const attempt = this.attempt;
+    const banner = document.getElementById('blind-banner');
+    if (banner) banner.hidden = !ready || !attempt || ['prediction', 'expert'].includes(attempt.stage);
     const blocked = !ready || this.saving || !!this.pending;
     $('review-stage').textContent = this.loading ? 'Open an analysis to review' : !attempt ? 'Normal viewing' :
       ({inspect:'Inspect', submitted:'Submitted', prediction:'Prediction revealed', expert:'Expert revealed'})[attempt.stage];

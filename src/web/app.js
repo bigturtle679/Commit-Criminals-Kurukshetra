@@ -19,6 +19,14 @@ let pendingBlindJob = (() => { try { return sessionStorage.getItem('neuroscope-b
 let opening = false;
 let gateSignature = '';
 const denyAccess = {prediction:false, expert:false, report:false};
+// Overlay the user last picked; loading gates temporarily force 'none', this restores it.
+let preferredOverlay = 'segmentation';
+function restoreOverlay() {
+  if (review?.attempt) return;
+  const overlay = $('select-overlay');
+  const wanted = [...overlay.options].find(o => o.value === preferredOverlay && !o.disabled);
+  overlay.value = wanted ? preferredOverlay : 'segmentation';
+}
 
 // Initialize NiiVue WebGL2 Engine
 const nv = new Niivue({
@@ -456,7 +464,7 @@ async function showResult(job) {
     }
     if (!modalities.includes($('select-background').value)) $('select-background').value = modalities[0] || '';
     opening = false;
-    if (!review.attempt && loadedJobId !== job.id) $('select-overlay').value = 'segmentation';
+    restoreOverlay();
     renderResultPanels(job);
     review.markExposure();
     await refreshViewer();
@@ -661,7 +669,7 @@ $('view-tabs').onclick = e => {
 
 // Controls Change
 $('select-background').onchange = () => refreshViewer();
-$('select-overlay').onchange = () => refreshViewer();
+$('select-overlay').onchange = () => { preferredOverlay = $('select-overlay').value; refreshViewer(); };
 
 $('range-opacity').oninput = e => {
   const val = e.target.value;
@@ -716,6 +724,7 @@ review = new ReviewController({
   refresh: async () => {
     if (opening || !currentJob) return;
     renderResultPanels(currentJob);
+    restoreOverlay();
     review.markExposure();
     await refreshViewer();
   },
