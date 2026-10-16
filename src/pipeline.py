@@ -325,6 +325,14 @@ def run_case(paths, out, update=lambda message: None, expert=None,
             ref_img = ens_result['_ref_img']
             volumes = ens_result['volumes_ml']
             metrics = ens_result.get('metrics')
+            uncertainty_info = {
+                'available': (out / 'uncertainty.nii.gz').exists(),
+                'mean_in_tumor': ens_result.get('mean_uncertainty_in_tumor'),
+                'metric': ens_result.get('uncertainty_metric'),
+                'interpretation': ens_result.get('uncertainty_interpretation'),
+            }
+            model_disagreement = ens_result.get('model_disagreement')
+            effective_config = ens_result.get('effective_config')
 
             input_channel_order = {
                 'model_a': vcfg['model_a']['channel_order'],
@@ -435,6 +443,15 @@ def run_case(paths, out, update=lambda message: None, expert=None,
                         'sensitivity': compute_sensitivity(p, g),
                     }
 
+            uncertainty_info = {
+                'available': False,
+                'mean_in_tumor': None,
+                'metric': None,
+                'interpretation': 'Uncertainty map generation is supported only in ensemble mode.',
+            }
+            model_disagreement = None
+            effective_config = None
+
         if torch.cuda.is_available():
             torch.cuda.synchronize()
             peak = round(torch.cuda.max_memory_allocated() / 1024**2, 1)
@@ -487,6 +504,9 @@ def run_case(paths, out, update=lambda message: None, expert=None,
         'volumes_ml': volumes,
         'volume_summary': volume_summary,
         'metrics': metrics,
+        'uncertainty': uncertainty_info,
+        'model_disagreement': model_disagreement,
+        'effective_config': effective_config,
         'runtime_seconds': round(time.perf_counter() - started, 2),
         'peak_gpu_mib': peak,
         'gpu': _gpu_name(),

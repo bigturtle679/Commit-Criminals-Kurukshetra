@@ -226,6 +226,8 @@ def run_ensemble(mri_paths, out_dir, config_path=None, validated_config=None,
         update(f"Fusing logits with {w_a:.1f} : {w_b:.1f} ratio")
         logits_ens = w_a * la + w_b * lb
         prob_ens = torch.sigmoid(logits_ens)
+        prob_a = torch.sigmoid(la)
+        prob_b = torch.sigmoid(lb)
     else:  # 'probability' (default)
         update(f"Fusing probabilities with {w_a:.1f} : {w_b:.1f} ratio")
         prob_a = torch.sigmoid(la)
@@ -236,6 +238,9 @@ def run_ensemble(mri_paths, out_dir, config_path=None, validated_config=None,
 
     if not torch.isfinite(prob_ens).all():
         raise RuntimeError("Ensemble produced non-finite probability values.")
+
+    # Multi-model prediction disagreement (|p_a - p_b|)
+    disagreement_crop = torch.abs(prob_a - prob_b)
 
     # Post-processing: Channel 0: TC, Channel 1: WT, Channel 2: ET
     p_tc, p_wt, p_et = prob_ens[0], prob_ens[1], prob_ens[2]
@@ -261,26 +266,26 @@ def run_ensemble(mri_paths, out_dir, config_path=None, validated_config=None,
         full_entropy = np.zeros(canonical.shape, dtype=np.float32)
         full_entropy[slices] = entropy_crop
     else:
-        full_entropy = np.zeros(canonical.shape, dtype=np.float32)
+        full_entropy = None
 
     update("Projecting segmentation & uncertainty to native patient space")
     seg_canonical_img = nib.Nifti1Image(full_labels, canonical.affine)
     seg_native = resample_from_to(seg_canonical_img, (ref.shape, ref.affine), order=0)
     seg_data = np.asarray(seg_native.dataobj, dtype=np.uint8)
 
-    if export_uncertainty:
+    if export_uncertainty and full_entropy is not None:
         ent_canonical_img = nib.Nifti1Image(full_entropy, canonical.affine)
         ent_native = resample_from_to(ent_canonical_img, (ref.shape, ref.affine), order=1)
         ent_data = np.asarray(ent_native.dataobj, dtype=np.float32)
     else:
-        ent_data = np.zeros(ref.shape, dtype=np.float32)
+        ent_data = None
 
     # Save NIfTI outputs
     header = ref.header.copy()
     header.set_data_dtype(np.uint8)
     nib.save(nib.Nifti1Image(seg_data, ref.affine, header), out_dir / 'segmentation.nii.gz')
 
-    if export_uncertainty:
+    if export_uncertainty and ent_data is not None:
         ent_header = ref.header.copy()
         ent_header.set_data_dtype(np.float32)
         nib.save(nib.Nifti1Image(ent_data, ref.affine, ent_header), out_dir / 'uncertainty.nii.gz')
@@ -350,7 +355,26 @@ def run_ensemble(mri_paths, out_dir, config_path=None, validated_config=None,
         'runtime_seconds': elapsed,
         'volumes_ml': volumes_ml,
         'metrics': metrics,
-        'mean_uncertainty_in_tumor': round(float(ent_data[regions['WT']].mean()), 4) if regions['WT'].any() else 0.0,
+        'mean_uncertainty_in_tumor': (
+            round(float(ent_data[regions['WT']].mean()), 4)
+            if (export_uncertainty and ent_data is not None and regions['WT'].any())
+            else None
+        ),
+        'uncertainty_metric': 'voxel_bernoulli_entropy' if export_uncertainty else None,
+        'uncertainty_interpretation': (
+            'Mean Shannon Bernoulli entropy across tumor regions (WT), representing '
+            'voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence.'
+            if export_uncertainty else 'Uncertainty map export disabled.'
+        ),
+        'model_disagreement': {
+            'whole_crop_mean': round(float(disagreement_crop.mean().item()), 4),
+            'tumor_region_mean': round(float(disagreement_crop[:, pred_wt].mean().item()), 4) if pred_wt.any() else 0.0,
+            'metric': 'mean_absolute_probability_difference',
+            'interpretation': (
+                'Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) '
+                'predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence.'
+            )
+        },
         'timestamp': time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         'effective_config': {
             'threshold': threshold,
