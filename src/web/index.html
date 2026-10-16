@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NeuroScope 3D · Autonomous MRI Tumor Diagnostic Workstation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Top App Navigation -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 3a9 9 0 0 1 9 9"/>
+          <path d="M12 7a5 5 0 0 1 5 5"/>
+          <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">NeuroScope <span class="accent-text">3D</span></div>
+        <div class="brand-subtitle">DI–02 DECENTRALIZED INTELLIGENCE · CLINICAL WORKSTATION</div>
+      </div>
+    </div>
+
+    <div class="header-badges">
+      <div class="status-pill gpu-pill">
+        <span class="pulse-dot"></span>
+        <span id="gpu-text">NVIDIA RTX 4060</span>
+      </div>
+      <div class="status-pill model-pill">
+        <span class="model-indicator-tag">ACTIVE AI</span>
+        <span id="header-model-name">SwinUNETR (Transformer)</span>
+      </div>
+      <div class="status-pill offline-pill">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <span>Air-Gapped Offline</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-container">
+    
+    <!-- Top Hero Banner -->
+    <section class="hero-strip">
+      <div class="hero-content">
+        <span class="badge-hero">CLINICAL-GRADE 3D SEGMENTATION</span>
+        <h1>Volumetric Neuro-Oncology Diagnostic Suite</h1>
+        <p>Continuous multimodal 3D affine-invariant tumor boundary delineation, physical volume integration, and RANO 2.0 evaluation.</p>
+      </div>
+      <div class="hero-meta">
+        <div class="research-tag">
+          <strong>BraTS 2021 / 2023 Compliant</strong>
+          <span>Sub-millimeter Voxel Determinant</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Workspace Grid -->
+    <div class="workspace-grid">
+      
+      <!-- Left Sidebar: Controls & Pipeline -->
+      <aside class="sidebar-panel">
+        
+        <!-- Model Selection Card -->
+        <section class="card model-card">
+          <div class="card-header">
+            <span class="step-num">01</span>
+            <div>
+              <h3>AI Model Engine</h3>
+              <p class="card-caption">Select segmentation architecture</p>
+            </div>
+          </div>
+          
+          <div class="model-toggle-group">
+            <button type="button" class="model-btn active" data-model="swinunetr" id="btn-swinunetr">
+              <div class="model-btn-top">
+                <span class="model-badge sota">RECOMMENDED SOTA</span>
+                <span class="model-latency">~3.1s</span>
+              </div>
+              <div class="model-title">SwinUNETR</div>
+              <div class="model-desc">3D Shifted-Window Transformer encoder pretrained on 42k brains.</div>
+            </button>
+
+            <button type="button" class="model-btn" data-model="segresnet" id="btn-segresnet">
+              <div class="model-btn-top">
+                <span class="model-badge">BRA-TS WINNER</span>
+                <span class="model-latency">~1.2s</span>
+              </div>
+              <div class="model-title">SegResNet</div>
+              <div class="model-desc">NVIDIA ResNet with variational autoencoder regularization.</div>
+            </button>
+          </div>
+        </section>
+
+        <!-- Case Input Card -->
+        <section class="card input-card">
+          <div class="card-header">
+            <span class="step-num">02</span>
+            <div>
+              <h3>Case Selection</h3>
+              <p class="card-caption">Sample benchmark or patient scan</p>
+            </div>
+          </div>
+
+          <!-- Quick Sample Action -->
+          <button id="btn-demo" class="btn-primary-action">
+            <div class="btn-icon">⚡</div>
+            <div class="btn-text-wrap">
+              <span class="btn-title">Analyze BraTS Benchmark Case</span>
+              <span class="btn-subtitle">Case GLI-00000 · 4 MRI Sequences + Ground Truth</span>
+            </div>
+            <span class="arrow-glyph">→</span>
+          </button>
+
+          <div class="or-separator"><span>OR UPLOAD PATIENT NIFTI SCANS</span></div>
+
+          <!-- File Upload Form -->
+          <form id="upload-form" class="upload-form">
+            <div class="file-inputs-grid">
+              <label class="file-drop-box">
+                <span class="file-label-title">T1c <small>(Gadolinium Contrast)</small></span>
+                <input type="file" name="t1c" accept=".nii,.nii.gz" required>
+                <span class="file-status">Select .nii / .nii.gz</span>
+              </label>
+
+              <label class="file-drop-box">
+                <span class="file-label-title">T1 <small>(Native Anatomy)</small></span>
+                <input type="file" name="t1" accept=".nii,.nii.gz" required>
+                <span class="file-status">Select .nii / .nii.gz</span>
+              </label>
+
+              <label class="file-drop-box">
+                <span class="file-label-title">T2 <small>(T2-Weighted Fluid)</small></span>
+                <input type="file" name="t2" accept=".nii,.nii.gz" required>
+                <span class="file-status">Select .nii / .nii.gz</span>
+              </label>
+
+              <label class="file-drop-box">
+                <span class="file-label-title">FLAIR <small>(Peritumoral Edema)</small></span>
+                <input type="file" name="flair" accept=".nii,.nii.gz" required>
+                <span class="file-status">Select .nii / .nii.gz</span>
+              </label>
+            </div>
+
+            <details class="expert-details">
+              <summary>Reference Ground Truth <span class="optional-pill">Optional</span></summary>
+              <div class="expert-input-wrap">
+                <label class="file-drop-box">
+                  <span class="file-label-title">Expert Mask (.nii.gz)</span>
+                  <input type="file" name="expert" accept=".nii,.nii.gz">
+                  <span class="file-status">Optional mask</span>
+                </label>
+                <label class="select-label">
+                  <span>Enhancing Tumor Label:</span>
+                  <select name="expert_et" id="expert-et">
+                    <option value="4">Label 4 — BraTS 2018–2021</option>
+                    <option value="3">Label 3 — BraTS 2023 GLI</option>
+                  </select>
+                </label>
+              </div>
+            </details>
+
+            <button id="btn-analyze" type="submit" class="btn-secondary-action">
+              <span>Segment Patient MRI Scans</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </form>
+        </section>
+
+        <!-- Progress / Status Card -->
+        <section class="card status-card">
+          <div class="card-header">
+            <span class="step-num">03</span>
+            <div>
+              <h3>Inference Pipeline Status</h3>
+              <p class="card-caption">Live GPU pipeline execution</p>
+            </div>
+          </div>
+
+          <div class="status-box">
+            <div class="status-indicator-row">
+              <span id="status-icon" class="status-spinner" hidden></span>
+              <p id="status-text">System ready for analysis.</p>
+            </div>
+            
+            <div id="progress-container" class="progress-bar-wrap" hidden>
+              <div class="progress-bar-track">
+                <div id="progress-bar-fill" class="progress-bar-fill"></div>
+              </div>
+            </div>
+
+            <div id="run-telemetry" class="run-telemetry">
+              <span>Awaiting input</span>
+            </div>
+          </div>
+
+          <div class="history-select-wrap">
+            <label for="history-select">Prior Executed Analyses:</label>
+            <select id="history-select">
+              <option value="">Load previous run…</option>
+            </select>
+          </div>
+        </section>
+
+      </aside>
+
+      <!-- Right Main: Interactive Viewport & Results Dashboard -->
+      <section class="viewport-panel">
+        
+        <!-- Viewport Header Toolbar -->
+        <div class="viewer-card">
+          <div class="viewer-topbar">
+            <div class="case-meta-group">
+              <span class="case-badge">ACTIVE SUBJECT</span>
+              <h2 id="active-case-title">BraTS Benchmark Demonstration</h2>
+              <div id="active-model-tag" class="model-used-tag">MONAI SwinUNETR</div>
+            </div>
+
+            <!-- View Slice Mode Buttons -->
+            <div class="view-mode-tabs" id="view-tabs">
+              <button class="view-tab active" data-view="3">Multiplanar</button>
+              <button class="view-tab" data-view="0">Axial</button>
+              <button class="view-tab" data-view="1">Coronal</button>
+              <button class="view-tab" data-view="2">Sagittal</button>
+              <button class="view-tab highlight" data-view="4">3D Volume</button>
+            </div>
+          </div>
+
+          <!-- NiiVue Canvas Viewport -->
+          <div class="canvas-container">
+            <canvas id="gl-canvas" aria-label="3D Neuro-Oncology MRI Viewer"></canvas>
+            
+            <div id="empty-state" class="empty-state-overlay" hidden>
+              <div class="empty-icon-wrap">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M12 2a10 10 0 0 0-10 10c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/>
+                </svg>
+              </div>
+              <h3>No Volume Loaded</h3>
+              <p>Click "Analyze BraTS Benchmark Case" or upload four NIfTI MRI volumes to generate high-resolution segmentations.</p>
+            </div>
+
+            <!-- In-Canvas Coordinates HUD -->
+            <div class="hud-coords">
+              <span id="hud-crosshair">Crosshairs: Centered</span>
+              <span id="hud-spacing">1.0 × 1.0 × 1.0 mm</span>
+            </div>
+
+            <!-- In-Canvas Action Controls -->
+            <div class="hud-quick-actions">
+              <button id="btn-reset-view" class="hud-btn" title="Reset View & Camera">↺ Reset Camera</button>
+              <button id="btn-snapshot" class="hud-btn" title="Save Snapshot">📸 Snapshot</button>
+            </div>
+          </div>
+
+          <!-- Bottom Viewport Controls Toolbar -->
+          <div class="viewer-bottom-bar">
+            <div class="control-cluster">
+              <label class="toolbar-label">
+                <span>MRI Scan:</span>
+                <select id="select-background">
+                  <option value="flair">T2-FLAIR (Peritumoral Edema)</option>
+                  <option value="t1c">T1-CE (Enhancing Core)</option>
+                </select>
+              </label>
+
+              <label class="toolbar-label">
+                <span>Overlay:</span>
+                <select id="select-overlay">
+                  <option value="segmentation">AI Prediction Mask</option>
+                  <option value="expert">Expert Reference Mask</option>
+                  <option value="none">Scan Only (No Mask)</option>
+                </select>
+              </label>
+
+              <div class="slider-control">
+                <label for="range-opacity">Mask Opacity: <span id="opacity-val">55%</span></label>
+                <input id="range-opacity" type="range" min="0" max="1" step="0.05" value="0.55">
+              </div>
+            </div>
+
+            <!-- 3D Mesh Toggle Toggles -->
+            <div class="mesh-toggles-cluster">
+              <span class="cluster-title">3D Surfaces:</span>
+              <label class="checkbox-tag">
+                <input type="checkbox" id="chk-mesh-brain" checked>
+                <span>Brain Shell</span>
+              </label>
+              <label class="checkbox-tag">
+                <input type="checkbox" id="chk-mesh-tumor" checked>
+                <span>Whole Tumor</span>
+              </label>
+              <label class="checkbox-tag">
+                <input type="checkbox" id="chk-mesh-core" checked>
+                <span>Tumor Core</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Color-Coded Anatomical Subregion Legend -->
+          <div class="anatomical-legend">
+            <div class="legend-item">
+              <span class="legend-swatch necrotic"></span>
+              <div class="legend-text">
+                <strong>Necrotic & Non-Enhancing Core (NC)</strong>
+                <small>Label 1 · Devascularized / Dead Tissue</small>
+              </div>
+            </div>
+
+            <div class="legend-item">
+              <span class="legend-swatch edema"></span>
+              <div class="legend-text">
+                <strong>Peritumoral Edema (ED)</strong>
+                <small>Label 2 · Vasogenic Swelling / Infiltration</small>
+              </div>
+            </div>
+
+            <div class="legend-item">
+              <span class="legend-swatch enhancing"></span>
+              <div class="legend-text">
+                <strong>Enhancing Active Tumor (ET)</strong>
+                <small>Label 4 · Proliferating Malignant Rim</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quantitative Volumetric Diagnostics Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card wt-card">
+            <div class="metric-top">
+              <span class="metric-name">WHOLE TUMOR (WT)</span>
+              <span class="metric-tag">Total Disease</span>
+            </div>
+            <div class="metric-value-wrap">
+              <span id="val-WT" class="metric-value">—</span>
+              <span class="metric-unit">mL</span>
+            </div>
+            <div class="metric-subnote">Includes Necrotic Core + Enhancing + Edema</div>
+          </div>
+
+          <div class="metric-card tc-card">
+            <div class="metric-top">
+              <span class="metric-name">TUMOR CORE (TC)</span>
+              <span class="metric-tag">Surgical Target</span>
+            </div>
+            <div class="metric-value-wrap">
+              <span id="val-TC" class="metric-value">—</span>
+              <span class="metric-unit">mL</span>
+            </div>
+            <div class="metric-subnote">Solid bulk tissue (Necrotic + Enhancing)</div>
+          </div>
+
+          <div class="metric-card et-card">
+            <div class="metric-top">
+              <span class="metric-name">ENHANCING TUMOR (ET)</span>
+              <span class="metric-tag">Contrast Avid</span>
+            </div>
+            <div class="metric-value-wrap">
+              <span id="val-ET" class="metric-value">—</span>
+              <span class="metric-unit">mL</span>
+            </div>
+            <div class="metric-subnote">Viable neo-vascularized active tumor rim</div>
+          </div>
+
+          <div class="metric-card ed-card">
+            <div class="metric-top">
+              <span class="metric-name">PERITUMORAL EDEMA (ED)</span>
+              <span class="metric-tag">Mass Effect</span>
+            </div>
+            <div class="metric-value-wrap">
+              <span id="val-ED" class="metric-value">—</span>
+              <span class="metric-unit">mL</span>
+            </div>
+            <div class="metric-subnote">FLAIR hyperintensity surrounding core</div>
+          </div>
+        </div>
+
+        <!-- Relative Volumetric Composition Stacked Bar -->
+        <div class="card composition-card">
+          <div class="card-title-row">
+            <h4>Volumetric Subregion Partition</h4>
+            <span class="card-aux" id="composition-total">Total Burden: —</span>
+          </div>
+          <div class="stacked-bar-track">
+            <div id="bar-enhancing" class="bar-segment enhancing-segment" style="width: 0%" title="Enhancing Tumor"></div>
+            <div id="bar-core" class="bar-segment core-segment" style="width: 0%" title="Necrotic Core"></div>
+            <div id="bar-edema" class="bar-segment edema-segment" style="width: 0%" title="Edema Region"></div>
+          </div>
+          <div class="bar-labels-row">
+            <span>🔴 Enhancing: <strong id="pct-enhancing">0%</strong></span>
+            <span>🟡 Necrotic Core: <strong id="pct-core">0%</strong></span>
+            <span>🟢 Edema: <strong id="pct-edema">0%</strong></span>
+          </div>
+        </div>
+
+        <!-- RANO 2.0 & Reference Validation Grid -->
+        <div class="assessment-grid">
+          
+          <!-- RANO 2.0 Clinical Assessment -->
+          <div class="card rano-card">
+            <div class="card-header-simple">
+              <span class="card-pill rano-pill">CLINICAL PROTOCOL</span>
+              <h3>RANO 2.0 Volumetric Assessment</h3>
+            </div>
+            <div class="rano-content">
+              <div class="rano-item">
+                <span class="rano-label">Target Measurability:</span>
+                <strong id="rano-measurable" class="status-badge-meas">—</strong>
+              </div>
+              <div class="rano-item">
+                <span class="rano-label">Burden Phenotype:</span>
+                <strong id="rano-phenotype" class="text-white">—</strong>
+              </div>
+              <p id="rano-summary" class="rano-narrative">Run an analysis to synthesize the clinical impression.</p>
+            </div>
+          </div>
+
+          <!-- Reference Ground Truth Evaluation (Dice & Sensitivity) -->
+          <div class="card validation-card">
+            <div class="card-header-simple">
+              <span class="card-pill">ACCURACY METRICS</span>
+              <h3>Ground Truth Benchmark</h3>
+            </div>
+            <div class="table-container">
+              <table class="metrics-table">
+                <thead>
+                  <tr>
+                    <th>Subregion</th>
+                    <th>Dice Similarity (DSC)</th>
+                    <th>Sensitivity (Recall)</th>
+                  </tr>
+                </thead>
+                <tbody id="scores-body">
+                  <tr>
+                    <td colspan="3" class="muted-td">Run sample or supply ground truth mask for automated scoring.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Export Suite -->
+        <div class="card export-card">
+          <div class="export-header">
+            <div>
+              <h3>Clinical Deliverables & Exports</h3>
+              <p class="card-caption">All outputs are co-registered in native patient coordinates</p>
+            </div>
+            <button id="btn-print-report" class="btn-print">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9"/>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                <rect x="6" y="14" width="12" height="8"/>
+              </svg>
+              <span>Print / Save PDF Report</span>
+            </button>
+          </div>
+
+          <div class="export-buttons-row">
+            <a id="link-download-mask" class="btn-export disabled" download="segmentation.nii.gz">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Download NIfTI Mask (.nii.gz)</span>
+            </a>
+
+            <a id="link-download-mesh" class="btn-export disabled" download="tumor.obj">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+              <span>Download 3D Tumor Mesh (.obj)</span>
+            </a>
+
+            <a id="link-download-report" class="btn-export disabled" download="report.json">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <span>Download Structured Report (.json)</span>
+            </a>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- App Footer -->
+    <footer class="app-footer">
+      <div>NeuroScope 3D · Autonomous 3D Segmentation Platform</div>
+      <div class="footer-links">
+        <span>Dual Inference: <strong>SwinUNETR</strong> & <strong>SegResNet</strong></span>
+        <span>•</span>
+        <span>Local RTX 4060 GPU Accelerated</span>
+        <span>•</span>
+        <span>MICCAI BraTS Standard Subregions</span>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- Modular Application Client Logic -->
+  <script type="module" src="/static/app.js"></script>
+</body>
+</html>
