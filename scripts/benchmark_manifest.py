@@ -46,7 +46,7 @@ def main():
         try:
             if model=='ensemble':
                 from scripts.models.model_loader import load_ensemble_models
-                loaded=load_ensemble_models(device='cpu');hashes=loaded['checkpoint_sha256'];del loaded
+                loaded=load_ensemble_models(device='cpu');hashes={'model_a':checkpoint_hash(loaded['path_a']),'model_b':checkpoint_hash(loaded['path_b'])};del loaded
             else:
                 paths={'resenc':'models/resenc_brats/resenc_m_brats.pt','swinunetr':'models/swinunetr_brats/model_weights_BRATS-finetune.pt','segresnet':'models/brats_mri_segmentation/models/model.pt'}
                 hashes={model:checkpoint_hash(resolve_weights(paths[model],[]))}

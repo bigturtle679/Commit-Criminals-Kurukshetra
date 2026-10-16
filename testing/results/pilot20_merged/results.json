@@ -1,0 +1,3722 @@
+[
+  {
+    "patient_id": "BraTS2021_00003",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 98.817,
+        "TC": 42.106,
+        "ET": 25.604,
+        "ED": 56.711
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 98.817,
+        "tumor_core_ml": 42.106,
+        "enhancing_tumor_ml": 25.604,
+        "edema_region_ml": 56.711,
+        "enhancing_fraction_pct": 25.9,
+        "edema_fraction_pct": 57.4,
+        "summary": "Predicted whole-tumor region: 98.8 mL; enhancing region: 25.6 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.9837,
+          "sensitivity": 0.9817
+        },
+        "TC": {
+          "dice": 0.9793,
+          "sensitivity": 0.9868
+        },
+        "ET": {
+          "dice": 0.9443,
+          "sensitivity": 0.9706
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.0717,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0021,
+        "tumor_region_mean": 0.0646,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 8.74,
+      "peak_gpu_mib": 1678.8,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "096b72773701b4b6759429eada4b3023c04bb40d7dbabec2493f229b2d47254b",
+        "t1": "3966450550bcb32711d221df2c4c3203de82112e754072161a967bfa38cf648b",
+        "t2": "bdb9382ed41b92cd3b886bae99b926e016b8e089b77dff6a54df5ec12daff8ac",
+        "flair": "17dae1ff91ae135e00ba056382f7bddbc0f4498934e4e24953b854c98ba49406"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:10:49Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 8.748431394000363
+  },
+  {
+    "patient_id": "BraTS2021_00025",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 21.76,
+        "TC": 4.573,
+        "ET": 4.325,
+        "ED": 17.187
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 21.76,
+        "tumor_core_ml": 4.573,
+        "enhancing_tumor_ml": 4.325,
+        "edema_region_ml": 17.187,
+        "enhancing_fraction_pct": 19.9,
+        "edema_fraction_pct": 79.0,
+        "summary": "Predicted whole-tumor region: 21.8 mL; enhancing region: 4.3 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.8236,
+          "sensitivity": 0.7051
+        },
+        "TC": {
+          "dice": 0.8817,
+          "sensitivity": 0.8111
+        },
+        "ET": {
+          "dice": 0.8369,
+          "sensitivity": 0.7699
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.129,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0012,
+        "tumor_region_mean": 0.1364,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 10.63,
+      "peak_gpu_mib": 1679.9,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "509a6dfde8a9e472315f3d9a1c2c96810a69ac2e293ea9f5e698938a4c171e40",
+        "t1": "b30e75ec322f8a7fbfa75503c56ffc9083e66c476eac5cb4bd0acd87f6ed5101",
+        "t2": "0b8388d40b4219e47cab22fa515a0ed089785363e0a13cce021784acfcefbf09",
+        "flair": "017c456c4ba2ff2362b7e72064b7c50f7376766d9c6ec85fb649b5446a9208c9"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:10:59Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 10.634196293000059
+  },
+  {
+    "patient_id": "BraTS2021_00658",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 70.233,
+        "TC": 40.546,
+        "ET": 23.078,
+        "ED": 29.687
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 70.233,
+        "tumor_core_ml": 40.546,
+        "enhancing_tumor_ml": 23.078,
+        "edema_region_ml": 29.687,
+        "enhancing_fraction_pct": 32.9,
+        "edema_fraction_pct": 42.3,
+        "summary": "Predicted whole-tumor region: 70.2 mL; enhancing region: 23.1 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.9557,
+          "sensitivity": 0.9468
+        },
+        "TC": {
+          "dice": 0.9718,
+          "sensitivity": 0.9614
+        },
+        "ET": {
+          "dice": 0.9095,
+          "sensitivity": 0.8813
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.1135,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0024,
+        "tumor_region_mean": 0.1062,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 10.67,
+      "peak_gpu_mib": 1683.2,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "1eb947d001fe474b375bdb3eabf6eec8ed25f708b19d2a16daca25c33543091e",
+        "t1": "2b7f7fadff5e7a94c0bd15f0b10eff508f7b0984b73d3de2522fdb3fef16535e",
+        "t2": "23f017d318f15a87162b620a44f6e5c780754484b3bc93784c45bccdce1e9d92",
+        "flair": "3389ae0fad439a4e4eecdda809e2dfecddd5d86920508685978ea686a8596e00"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:11:10Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 10.676649042999998
+  },
+  {
+    "patient_id": "BraTS2021_00733",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 82.941,
+        "TC": 37.402,
+        "ET": 20.922,
+        "ED": 45.539
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 82.941,
+        "tumor_core_ml": 37.402,
+        "enhancing_tumor_ml": 20.922,
+        "edema_region_ml": 45.539,
+        "enhancing_fraction_pct": 25.2,
+        "edema_fraction_pct": 54.9,
+        "summary": "Predicted whole-tumor region: 82.9 mL; enhancing region: 20.9 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.9684,
+          "sensitivity": 0.975
+        },
+        "TC": {
+          "dice": 0.9823,
+          "sensitivity": 0.9798
+        },
+        "ET": {
+          "dice": 0.9438,
+          "sensitivity": 0.9501
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.0544,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0023,
+        "tumor_region_mean": 0.0424,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 7.92,
+      "peak_gpu_mib": 1676.6,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "697ec98956c3cc151e73215870e11f24735f2f3dd85b0459e07d2cd19e1a0559",
+        "t1": "4ad58b6bb5ae8b069020ab2f603139fa6faaf4e02968119aad7e244e618f9a8b",
+        "t2": "2c05fe9490a5740fc37d6ff698d63048153269ef6942c82258a721d4f9aa03c0",
+        "flair": "80d49b2853104d47f37dd7ddeedbf873e62cc32592a9fa180160807851ca73ff"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:11:18Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 7.922201457000483
+  },
+  {
+    "patient_id": "BraTS2021_00529",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 47.541,
+        "TC": 16.186,
+        "ET": 9.154,
+        "ED": 31.355
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 47.541,
+        "tumor_core_ml": 16.186,
+        "enhancing_tumor_ml": 9.154,
+        "edema_region_ml": 31.355,
+        "enhancing_fraction_pct": 19.3,
+        "edema_fraction_pct": 66.0,
+        "summary": "Predicted whole-tumor region: 47.5 mL; enhancing region: 9.2 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.8885,
+          "sensitivity": 0.8273
+        },
+        "TC": {
+          "dice": 0.8211,
+          "sensitivity": 0.711
+        },
+        "ET": {
+          "dice": 0.7615,
+          "sensitivity": 0.6467
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.1142,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0017,
+        "tumor_region_mean": 0.107,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 10.66,
+      "peak_gpu_mib": 1680.1,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "8cc5b6475401a99bb6397affd2e1befe005d411d2a598049d3def5f5cec41780",
+        "t1": "292551031c09d34afa26f96c576fe68cb821089f0f96044770b15100f8f82bb5",
+        "t2": "78bc8e1b6e66dc8716973a4f94e61a9c10b1e0fc78043565e40dec3dd6ad83aa",
+        "flair": "1dfc8547aad05d3d4aac9815b49ddefe9f9c3eddd321683b3d1ffddc3e8b29c0"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:11:29Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 10.66267465599958
+  },
+  {
+    "patient_id": "BraTS2021_00096",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 114.397,
+        "TC": 25.177,
+        "ET": 14.935,
+        "ED": 89.22
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 114.397,
+        "tumor_core_ml": 25.177,
+        "enhancing_tumor_ml": 14.935,
+        "edema_region_ml": 89.22,
+        "enhancing_fraction_pct": 13.1,
+        "edema_fraction_pct": 78.0,
+        "summary": "Predicted whole-tumor region: 114.4 mL; enhancing region: 14.9 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.9645,
+          "sensitivity": 0.9446
+        },
+        "TC": {
+          "dice": 0.9838,
+          "sensitivity": 0.991
+        },
+        "ET": {
+          "dice": 0.9646,
+          "sensitivity": 0.9575
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.0368,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0025,
+        "tumor_region_mean": 0.0202,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 10.68,
+      "peak_gpu_mib": 1684.0,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "e00e6aa0ab1cbad293cedcb2fe04a0298c2f6ef9cecb44e37c31747e6f8e7d75",
+        "t1": "6448b39c18419808ac0e29219dab3b544dbeaf038c9387e7adf7deaf83779caf",
+        "t2": "06990956ff570ab3190159e155848dccf9e985e30b6f43eea984bd05d41cbfa6",
+        "flair": "bee188e40bbbf6e14c16ebd8ff0c1b316072b0e3665ecca30d800f35d2a67367"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:11:39Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 10.688382492000528
+  },
+  {
+    "patient_id": "BraTS2021_00774",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 143.054,
+        "TC": 15.051,
+        "ET": 14.541,
+        "ED": 128.003
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 143.054,
+        "tumor_core_ml": 15.051,
+        "enhancing_tumor_ml": 14.541,
+        "edema_region_ml": 128.003,
+        "enhancing_fraction_pct": 10.2,
+        "edema_fraction_pct": 89.5,
+        "summary": "Predicted whole-tumor region: 143.1 mL; enhancing region: 14.5 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.9647,
+          "sensitivity": 0.9371
+        },
+        "TC": {
+          "dice": 0.9698,
+          "sensitivity": 0.9753
+        },
+        "ET": {
+          "dice": 0.9659,
+          "sensitivity": 0.9685
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.0429,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0015,
+        "tumor_region_mean": 0.0272,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 7.88,
+      "peak_gpu_mib": 1676.1,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "7cc149a571cb2243bc210c790137a33585868476a297c27d31e98649d6236029",
+        "t1": "925bfc933a1ddc08fabfe13ed86aa01a89d22a633cc6dde64d0c75d778751fb5",
+        "t2": "f21a18f9322c9df685375866e11aa409679add3466b263abe71b6a63157a3c70",
+        "flair": "30e4259cce29df412b106bac19b2a31841c9084e6f824bca1aaaaac46e135f99"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:11:47Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 7.885440300000482
+  },
+  {
+    "patient_id": "BraTS2021_00501",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 112.53,
+        "TC": 11.586,
+        "ET": 7.339,
+        "ED": 100.944
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 112.53,
+        "tumor_core_ml": 11.586,
+        "enhancing_tumor_ml": 7.339,
+        "edema_region_ml": 100.944,
+        "enhancing_fraction_pct": 6.5,
+        "edema_fraction_pct": 89.7,
+        "summary": "Predicted whole-tumor region: 112.5 mL; enhancing region: 7.3 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.7296,
+          "sensitivity": 0.5763
+        },
+        "TC": {
+          "dice": 0.9416,
+          "sensitivity": 0.9116
+        },
+        "ET": {
+          "dice": 0.8899,
+          "sensitivity": 0.8275
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.0784,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0044,
+        "tumor_region_mean": 0.0655,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 7.84,
+      "peak_gpu_mib": 1673.8,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "3be5970eef6a92a9067e775a80c274c7d4362221eff2a89dbb6c6cb3a4bb5d20",
+        "t1": "4bb2cc9629e939877294513bfc7da1b370c2e8893964d63598dd36ea47b4b9c7",
+        "t2": "5875957e7e4a0b361027ee47cc9e52d736ce60ed55084b851b86545aadc3ce95",
+        "flair": "5ce126f4a75c01b841afe629abce9afad5dfddec3603ad5c5abd3d5ccee5ffe3"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:11:55Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 7.840043734000574
+  },
+  {
+    "patient_id": "BraTS2021_00684",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 19.276,
+        "TC": 2.19,
+        "ET": 1.635,
+        "ED": 17.086
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 19.276,
+        "tumor_core_ml": 2.19,
+        "enhancing_tumor_ml": 1.635,
+        "edema_region_ml": 17.086,
+        "enhancing_fraction_pct": 8.5,
+        "edema_fraction_pct": 88.6,
+        "summary": "Predicted whole-tumor region: 19.3 mL; enhancing region: 1.6 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.8039,
+          "sensitivity": 0.7341
+        },
+        "TC": {
+          "dice": 0.7656,
+          "sensitivity": 0.6694
+        },
+        "ET": {
+          "dice": 0.6215,
+          "sensitivity": 0.4844
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.192,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0015,
+        "tumor_region_mean": 0.2179,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 7.77,
+      "peak_gpu_mib": 1672.1,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "19c8056ba3cce5e18094209e3d6273477db8bf39c1b270cf627811515327bc1e",
+        "t1": "77f3825838b96f3fcf3ab0966d6bf015ece0ceabdea1a9a978c129f147550fe2",
+        "t2": "91aea9784f1c34bab90d1d3a23e565423b2a5bc3b03a79e2f096b64a766cb1fe",
+        "flair": "001ea9ac34c2516d61d65595fa54360dc8c7a485acaa5628e61ad19e43f7e2dd"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:12:03Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 7.772687433000101
+  },
+  {
+    "patient_id": "BraTS2021_00024",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 100.95,
+        "TC": 5.731,
+        "ET": 5.422,
+        "ED": 95.219
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 100.95,
+        "tumor_core_ml": 5.731,
+        "enhancing_tumor_ml": 5.422,
+        "edema_region_ml": 95.219,
+        "enhancing_fraction_pct": 5.4,
+        "edema_fraction_pct": 94.3,
+        "summary": "Predicted whole-tumor region: 101.0 mL; enhancing region: 5.4 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.9667,
+          "sensitivity": 0.9643
+        },
+        "TC": {
+          "dice": 0.9568,
+          "sensitivity": 0.9411
+        },
+        "ET": {
+          "dice": 0.9474,
+          "sensitivity": 0.9259
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.0474,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0016,
+        "tumor_region_mean": 0.0407,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 7.93,
+      "peak_gpu_mib": 1679.9,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "afa1662de41cd4dfc4388d2637fbcf89bdb347a92a49f6f5fd9411130244dea9",
+        "t1": "184500039cc940fd3fb2e610dd3e609e61bdd54ec79fd30cda1f77ed24996a8e",
+        "t2": "5b5ee20e317f55e9178fab8c3b9827c75c5ebc65d41bbd52edd3f6644544c794",
+        "flair": "51b06f2735b7ae1c686846691440d6ea6bc24f1f2bbc4031adf841785316b7a5"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:12:11Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 7.937494374999005
+  },
+  {
+    "patient_id": "BraTS2021_00731",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 23.275,
+        "TC": 2.745,
+        "ET": 2.74,
+        "ED": 20.53
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 23.275,
+        "tumor_core_ml": 2.745,
+        "enhancing_tumor_ml": 2.74,
+        "edema_region_ml": 20.53,
+        "enhancing_fraction_pct": 11.8,
+        "edema_fraction_pct": 88.2,
+        "summary": "Predicted whole-tumor region: 23.3 mL; enhancing region: 2.7 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.6593,
+          "sensitivity": 0.998
+        },
+        "TC": {
+          "dice": 0.8546,
+          "sensitivity": 0.7487
+        },
+        "ET": {
+          "dice": 0.8537,
+          "sensitivity": 0.7473
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.0642,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0016,
+        "tumor_region_mean": 0.0601,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 7.78,
+      "peak_gpu_mib": 1671.5,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "56f39955ef09c7a3cb88b3b3296a369938b1907cf21711257d2e6af67c75af6c",
+        "t1": "76d395f3d971a4c0e403ff2c0655c03c09df3ea4791c8c1dcadb73f5591da31f",
+        "t2": "c7e21db58a1b787c4b91fced27b50a293b4c775e955f57669e5b344b80be47dd",
+        "flair": "ecb1ffc3b66e0bbe9dca24dcdfdc24cd71e9094cf65dbb01d8e497393d01fe24"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:12:19Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 7.783285638999587
+  },
+  {
+    "patient_id": "BraTS2021_00026",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 65.59,
+        "TC": 32.735,
+        "ET": 29.938,
+        "ED": 32.855
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 65.59,
+        "tumor_core_ml": 32.735,
+        "enhancing_tumor_ml": 29.938,
+        "edema_region_ml": 32.855,
+        "enhancing_fraction_pct": 45.6,
+        "edema_fraction_pct": 50.1,
+        "summary": "Predicted whole-tumor region: 65.6 mL; enhancing region: 29.9 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.9177,
+          "sensitivity": 0.8795
+        },
+        "TC": {
+          "dice": 0.9507,
+          "sensitivity": 0.9384
+        },
+        "ET": {
+          "dice": 0.935,
+          "sensitivity": 0.9194
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.0861,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0016,
+        "tumor_region_mean": 0.0711,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 10.74,
+      "peak_gpu_mib": 1682.7,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "f8f0173233aeec002b730664ee42582fc8008c89665b2c76ea076f7b29f94a28",
+        "t1": "5a4844e4d4e4f8c272b6695a431a1974a32451a4f5051a894488650222089e90",
+        "t2": "a5dc30561870c46bb200584787eae40bc9f8041b2fe91d02c80568dccfabc82a",
+        "flair": "4038374404ef7adf0f4696fa024466becf30dcac6efee59d5b37bdadc5f9bb6b"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:12:29Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 10.748584488001143
+  },
+  {
+    "patient_id": "BraTS2021_01157",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 111.706,
+        "TC": 53.15,
+        "ET": 27.087,
+        "ED": 58.556
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 111.706,
+        "tumor_core_ml": 53.15,
+        "enhancing_tumor_ml": 27.087,
+        "edema_region_ml": 58.556,
+        "enhancing_fraction_pct": 24.2,
+        "edema_fraction_pct": 52.4,
+        "summary": "Predicted whole-tumor region: 111.7 mL; enhancing region: 27.1 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.9428,
+          "sensitivity": 0.9401
+        },
+        "TC": {
+          "dice": 0.9615,
+          "sensitivity": 0.9355
+        },
+        "ET": {
+          "dice": 0.8676,
+          "sensitivity": 0.7867
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.1582,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0161,
+        "tumor_region_mean": 0.1647,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 9.73,
+      "peak_gpu_mib": 1679.9,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "1ddc1328d698f36d6d9905ee38a2075480995dbfd32e7f31698144ed0ee61613",
+        "t1": "0ff5fd2ebffd7a64db0bb6f54fecd83ac14226cab07d9e4e07bdb192f55d5159",
+        "t2": "066a63e7491fad0866635b35463a895af32c64d066d07c6b102e93548510a557",
+        "flair": "f74833759ed4c10edc5072bcf4d6db4f850d8ae3aede0f4ad1ce527a4dcb38b1"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:12:39Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 9.730996918000528
+  },
+  {
+    "patient_id": "BraTS2021_00081",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 78.85,
+        "TC": 28.751,
+        "ET": 28.143,
+        "ED": 50.099
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 78.85,
+        "tumor_core_ml": 28.751,
+        "enhancing_tumor_ml": 28.143,
+        "edema_region_ml": 50.099,
+        "enhancing_fraction_pct": 35.7,
+        "edema_fraction_pct": 63.5,
+        "summary": "Predicted whole-tumor region: 78.8 mL; enhancing region: 28.1 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.9757,
+          "sensitivity": 0.9699
+        },
+        "TC": {
+          "dice": 0.9746,
+          "sensitivity": 0.9923
+        },
+        "ET": {
+          "dice": 0.9721,
+          "sensitivity": 0.9883
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.0537,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0015,
+        "tumor_region_mean": 0.0462,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 10.56,
+      "peak_gpu_mib": 1670.3,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "e6cbf3d2c8ce0a96257f5c7cbe2772f02d382e9f3547a3d4d7b9a1e87ec8431a",
+        "t1": "382fb65b6f44c175f2f7afc02a952892dfb34e9cc1bcfe66e9755a1b7888d464",
+        "t2": "896e72c066cf15d830c283866f03eac40ff966988de9238b257337015966a5aa",
+        "flair": "6e6241615de5c9fd87c6938b00d121774024970c57292ea755394fce44314167"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:12:50Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 10.560374597000191
+  },
+  {
+    "patient_id": "BraTS2021_00054",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 89.687,
+        "TC": 69.659,
+        "ET": 45.972,
+        "ED": 20.028
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 89.687,
+        "tumor_core_ml": 69.659,
+        "enhancing_tumor_ml": 45.972,
+        "edema_region_ml": 20.028,
+        "enhancing_fraction_pct": 51.3,
+        "edema_fraction_pct": 22.3,
+        "summary": "Predicted whole-tumor region: 89.7 mL; enhancing region: 46.0 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.9242,
+          "sensitivity": 0.8746
+        },
+        "TC": {
+          "dice": 0.8695,
+          "sensitivity": 0.7733
+        },
+        "ET": {
+          "dice": 0.7776,
+          "sensitivity": 0.7089
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.1668,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0059,
+        "tumor_region_mean": 0.1456,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 7.84,
+      "peak_gpu_mib": 1675.3,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "7613de9f1ba6a60a07896ccce481ca6d730e1caf8ff45c9f847f5c1ebb0d360f",
+        "t1": "d0fef06a2970f25fcb63582db08d9b43a1877720f9624c781a2ffb09ce75fcde",
+        "t2": "b125aa892356ef16b701dc2a6e2d184d5651ac6a3c74129750bbb188d3fdc4b6",
+        "flair": "ff33e9a6541767ce523e2c3130611cc7cb6098086afe8223182b7078fb4a8f48"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:12:57Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 7.8442265699995914
+  },
+  {
+    "patient_id": "BraTS2021_00697",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 132.811,
+        "TC": 68.575,
+        "ET": 42.235,
+        "ED": 64.236
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 132.811,
+        "tumor_core_ml": 68.575,
+        "enhancing_tumor_ml": 42.235,
+        "edema_region_ml": 64.236,
+        "enhancing_fraction_pct": 31.8,
+        "edema_fraction_pct": 48.4,
+        "summary": "Predicted whole-tumor region: 132.8 mL; enhancing region: 42.2 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.9602,
+          "sensitivity": 0.9364
+        },
+        "TC": {
+          "dice": 0.9658,
+          "sensitivity": 0.9375
+        },
+        "ET": {
+          "dice": 0.9341,
+          "sensitivity": 0.8987
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.2312,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0099,
+        "tumor_region_mean": 0.2601,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 10.64,
+      "peak_gpu_mib": 1676.1,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "3a5cbb40deb91fecd0a96106747f94a0e6cb9a70fcba2d79fb3f8c85f786b9fa",
+        "t1": "5b2d5df25034755e9c07d495097e5c2b0b43ca126012f20b780497dcb276c6a1",
+        "t2": "4e3991a01ad1532625b549e7ca39e376ae9a5a0f77ab5a01790b30b131d2057f",
+        "flair": "fe67754f2b7fa1005ea8cd4893b252ecf115b8171fd159d15ac3a994888b7557"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:13:08Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 10.64798127299946
+  },
+  {
+    "patient_id": "BraTS2021_00714",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 191.321,
+        "TC": 98.044,
+        "ET": 43.936,
+        "ED": 93.277
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 191.321,
+        "tumor_core_ml": 98.044,
+        "enhancing_tumor_ml": 43.936,
+        "edema_region_ml": 93.277,
+        "enhancing_fraction_pct": 23.0,
+        "edema_fraction_pct": 48.8,
+        "summary": "Predicted whole-tumor region: 191.3 mL; enhancing region: 43.9 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.9438,
+          "sensitivity": 0.8959
+        },
+        "TC": {
+          "dice": 0.965,
+          "sensitivity": 0.9374
+        },
+        "ET": {
+          "dice": 0.8982,
+          "sensitivity": 0.8371
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.142,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0116,
+        "tumor_region_mean": 0.1321,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 7.87,
+      "peak_gpu_mib": 1673.0,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "3ba040aceb6c54c2a0698b1089221670c871daaeed127dfb91fbe1a6ead7a5ac",
+        "t1": "7686572a5ea4476e2fbed8d7ea46805a54c1a471ac974948bb16f10e8891bf98",
+        "t2": "d6429bce541c214a1ef4ea6d4be1ec117d52232dde02ab77ac45484fc9237fc5",
+        "flair": "1d83d4a34a16299c46ea5aa7c086270a378b304c1a6088659e88fc1ee2e503fe"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:13:16Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 7.8738410500009195
+  },
+  {
+    "patient_id": "BraTS2021_01156",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 113.161,
+        "TC": 59.376,
+        "ET": 15.716,
+        "ED": 53.785
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 113.161,
+        "tumor_core_ml": 59.376,
+        "enhancing_tumor_ml": 15.716,
+        "edema_region_ml": 53.785,
+        "enhancing_fraction_pct": 13.9,
+        "edema_fraction_pct": 47.5,
+        "summary": "Predicted whole-tumor region: 113.2 mL; enhancing region: 15.7 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.9298,
+          "sensitivity": 0.9749
+        },
+        "TC": {
+          "dice": 0.9797,
+          "sensitivity": 0.9778
+        },
+        "ET": {
+          "dice": 0.8611,
+          "sensitivity": 0.8109
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.0878,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.003,
+        "tumor_region_mean": 0.0725,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 6.05,
+      "peak_gpu_mib": 1672.3,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "90c7e72535a1bebca0516691ae904b4916bbd1646a89289ff898fe41f537d4bb",
+        "t1": "76a78a43d420e270f868cd7fa66231bb79faa2762ffcdc0e9d8b5f16515bd887",
+        "t2": "8bdf7c6be393436170ee4381e7e2ccc5f87c17d5a835de685803211422b98e2c",
+        "flair": "bdf09e77a5778e2f66227610c51aa225f667e8fa80f886a93a3460965237b067"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:13:22Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 6.049851513998874
+  },
+  {
+    "patient_id": "BraTS2021_00008",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 20.094,
+        "TC": 0.439,
+        "ET": 0.436,
+        "ED": 19.655
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 20.094,
+        "tumor_core_ml": 0.439,
+        "enhancing_tumor_ml": 0.436,
+        "edema_region_ml": 19.655,
+        "enhancing_fraction_pct": 2.2,
+        "edema_fraction_pct": 97.8,
+        "summary": "Predicted whole-tumor region: 20.1 mL; enhancing region: 0.4 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.922,
+          "sensitivity": 0.9627
+        },
+        "TC": {
+          "dice": 0.7076,
+          "sensitivity": 0.8287
+        },
+        "ET": {
+          "dice": 0.6827,
+          "sensitivity": 0.8199
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.0606,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.001,
+        "tumor_region_mean": 0.0542,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 7.87,
+      "peak_gpu_mib": 1675.3,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "e039f4aa675511ba075b6c30d2b70df95e3d9c5e2a48f38b6309553ac6388fc4",
+        "t1": "d11e9e39ae693cce3b8a8558c9548f57b99a5d5ee3f6f806b760c5b61a383aff",
+        "t2": "da77f4813a5d83cfc566be8c9e922a97370c85f24f8e5a7072c29dcec41f24af",
+        "flair": "92ecd7b81d60c5faf374fc9e48c55fa83987a765b188b9649ec0062c84073441"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:13:30Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 7.873928713999703
+  },
+  {
+    "patient_id": "BraTS2021_00513",
+    "source": "reinheart/brats2022",
+    "overlap_status": "unknown",
+    "model": "ensemble",
+    "checkpoint_sha256": {
+      "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+      "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+    },
+    "status": "complete",
+    "result": {
+      "case_name": "Uploaded MRI",
+      "model_name": "ensemble",
+      "model": "8:2 Hybrid Ensemble (SwinUNETR BraTS21 (model_weights_BRATS-finetune.pt) + nnU-Net ResEnc M (resenc_m_brats.pt))",
+      "input_channel_order": {
+        "model_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "model_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ]
+      },
+      "sliding_window_roi": [
+        96,
+        96,
+        96
+      ],
+      "volumes_ml": {
+        "WT": 141.243,
+        "TC": 85.441,
+        "ET": 53.054,
+        "ED": 55.802
+      },
+      "volume_summary": {
+        "whole_tumor_ml": 141.243,
+        "tumor_core_ml": 85.441,
+        "enhancing_tumor_ml": 53.054,
+        "edema_region_ml": 55.802,
+        "enhancing_fraction_pct": 37.6,
+        "edema_fraction_pct": 39.5,
+        "summary": "Predicted whole-tumor region: 141.2 mL; enhancing region: 53.1 mL. These are segmentation measurements, not a response assessment."
+      },
+      "metrics": {
+        "WT": {
+          "dice": 0.8646,
+          "sensitivity": 0.767
+        },
+        "TC": {
+          "dice": 0.9821,
+          "sensitivity": 0.9678
+        },
+        "ET": {
+          "dice": 0.9379,
+          "sensitivity": 0.9392
+        }
+      },
+      "uncertainty": {
+        "available": true,
+        "mean_in_tumor": 0.1066,
+        "metric": "voxel_bernoulli_entropy",
+        "interpretation": "Mean Shannon Bernoulli entropy across tumor regions (WT), representing voxel-level prediction confidence. It is not multi-model disagreement or clinical confidence."
+      },
+      "model_disagreement": {
+        "whole_crop_mean": 0.0052,
+        "tumor_region_mean": 0.094,
+        "metric": "mean_absolute_probability_difference",
+        "interpretation": "Voxel-wise absolute difference between Model A (SwinUNETR) and Model B (ResEnc M) predicted probabilities (|p_A - p_B|), measuring genuine inter-model divergence."
+      },
+      "effective_config": {
+        "threshold": 0.5,
+        "fusion_mode": "probability",
+        "temperature": {
+          "model_a": 1.0,
+          "model_b": 1.0
+        },
+        "roi_a": [
+          96,
+          96,
+          96
+        ],
+        "roi_b": [
+          96,
+          96,
+          96
+        ],
+        "overlap_a": 0.5,
+        "overlap_b": 0.5,
+        "mode_a": "gaussian",
+        "mode_b": "gaussian",
+        "channel_order_a": [
+          "flair",
+          "t1c",
+          "t1",
+          "t2"
+        ],
+        "channel_order_b": [
+          "flair",
+          "t1",
+          "t1c",
+          "t2"
+        ],
+        "enforce_hierarchy": true,
+        "min_et_volume_voxels": 0,
+        "export_uncertainty_map": true
+      },
+      "runtime_seconds": 13.51,
+      "peak_gpu_mib": 1682.6,
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "device": "cuda",
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "affine": [
+        [
+          -1.0,
+          -0.0,
+          -0.0,
+          0.0
+        ],
+        [
+          -0.0,
+          -1.0,
+          -0.0,
+          239.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "available_modalities": [
+        "t1",
+        "t1c",
+        "t2",
+        "flair"
+      ],
+      "input_hashes": {
+        "t1c": "3e6f2b9f4686c73e6dc4370220beadf6d1abd839d24d7f92da64ffe4d144f619",
+        "t1": "393661959768f5607946a0c470c203d72aabb34000a04c5aa9f7ee9f36a060cc",
+        "t2": "7bad36be1fb166672db1af94e720b44a951f9aa1d01b7fe1ecc104d994b4c5fa",
+        "flair": "4e46bf58510b5af27177c18bbedd4cf2126a9d0bd9bd36e20e7db7837175b67a"
+      },
+      "spacing_mm": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "meshes": [
+        "brain",
+        "tumor",
+        "core",
+        "et"
+      ],
+      "timestamp": "2026-10-16T20:13:43Z",
+      "checkpoint_hashes": {
+        "model_a": "6fd4ec5dc690f365a99c10b92f0d5519ca8a6b68feb844ff3424e9f6a01f6a39",
+        "model_b": "9e65a271f99f81605bf09cd028382888a318f804a002b459779474698f80b5c6"
+      },
+      "code_commit": "d0cbbf3",
+      "preprocessing": {
+        "canonical": "RAS",
+        "resampling": "1mm isotropic",
+        "normalization": "z-score (nonzero, channel-wise)",
+        "foreground_crop": true
+      },
+      "disclaimer": "Research demonstration only. Not intended for primary clinical diagnosis or treatment decisions. Predicted regions are model estimates, not expert-verified findings.",
+      "note": "Voxel volumes computed via exact 3x3 affine determinant. Segmentation quality depends on model training data and input preprocessing. See MODEL_CARD.md for details."
+    },
+    "end_to_end_seconds": 13.518415262999042
+  }
+]
