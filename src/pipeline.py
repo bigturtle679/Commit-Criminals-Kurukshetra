@@ -18,17 +18,25 @@ torch.set_num_threads(4)
 
 def load_model(model_name='swinunetr'):
     global MODELS
-    model_name = (model_name or 'swinunetr').lower().strip()
+    model_name = (model_name or 'ensemble').lower().strip()
     if model_name in MODELS:
         return MODELS[model_name]
 
-    if not torch.cuda.is_available():
-        raise ValueError('NVIDIA GPU unavailable. Restart the app after checking your driver.')
+    device = 'cuda' if torch.cuda.is_available() else 'mps' if (hasattr(torch.backends, 'mps') and torch.backends.mps.is_available()) else 'cpu'
 
-    if model_name in ('swinunetr', 'swin_unetr', 'swin'):
+    if model_name in ('ensemble', '8_2', 'swin_resenc'):
+        from scripts.models.model_loader import load_ensemble_models, get_device
+        ens = load_ensemble_models(device=get_device(device))
+        title = f"8:2 Hybrid Ensemble ({ens['desc_a']} + {ens['desc_b']})"
+        MODELS['ensemble'] = (ens, title)
+        return MODELS['ensemble']
+
+    elif model_name in ('swinunetr', 'swin_unetr', 'swin'):
         weights_path = ROOT / 'models/swinunetr_brats/model_weights_BRATS-finetune.pt'
         if not weights_path.exists():
-            raise FileNotFoundError(f'SwinUNETR weights not found at {weights_path}')
+            weights_path = ROOT / 'work/models/swinunetr_fold1.pt'
+        if not weights_path.exists():
+            raise FileNotFoundError(f'SwinUNETR weights not found in models/ or work/models/')
 
         model = SwinUNETR(
             spatial_dims=3,
@@ -41,8 +49,8 @@ def load_model(model_name='swinunetr'):
         )
         state = torch.load(weights_path, map_location='cpu', weights_only=False)
         sd = state.get('state_dict', state.get('model', state))
-        model.load_state_dict(sd, strict=True)
-        model = model.eval().cuda()
+        model.load_state_dict(sd, strict=False)
+        model = model.eval().to(device)
         title = 'MONAI SwinUNETR (Vision Transformer) · BraTS21 checkpoint'
         MODELS['swinunetr'] = (model, title)
         return MODELS['swinunetr']
@@ -58,13 +66,13 @@ def load_model(model_name='swinunetr'):
         model = SegResNet(**config)
         state = torch.load(weights_path, map_location='cpu', weights_only=True)
         model.load_state_dict(state.get('model', state), strict=True)
-        model = model.eval().cuda()
+        model = model.eval().to(device)
         title = 'MONAI SegResNet (CNN Autoencoder) · BraTS Winner'
         MODELS['segresnet'] = (model, title)
         return MODELS['segresnet']
 
     else:
-        raise ValueError(f"Unknown model '{model_name}'. Choose 'swinunetr' or 'segresnet'.")
+        raise ValueError(f"Unknown model '{model_name}'. Choose 'ensemble', 'swinunetr' or 'segresnet'.")
 
 
 def read_image(path):
@@ -162,32 +170,62 @@ def run_case(paths, out, update=lambda message: None, expert=None, expert_et=4, 
             can = resample_from_to(can, target, order=1)
         channels.append(can.get_fdata(dtype=np.float32))
 
-    if model_name == 'swinunetr':
-        # Official BraTS21 folds JSON: FLAIR, T1ce, T1, T2.
-        channels = [channels[i] for i in (3, 0, 1, 2)]
-    arr = np.stack(channels)
-    foreground = np.any(arr != 0, axis=0)
+    raw_arr = np.stack(channels)
+    foreground = np.any(raw_arr != 0, axis=0)
     positions = np.where(foreground)
-    slices = tuple(slice(max(0, int(p.min()) - 4), min(arr.shape[i + 1], int(p.max()) + 5)) for i, p in enumerate(positions))
-    arr = NormalizeIntensity(nonzero=True, channel_wise=True)(arr).as_tensor()
-    x = arr[(slice(None),) + slices].unsqueeze(0).contiguous()
+    slices = tuple(slice(max(0, int(p.min()) - 4), min(raw_arr.shape[i + 1], int(p.max()) + 5)) for i, p in enumerate(positions))
+    norm_arr = NormalizeIntensity(nonzero=True, channel_wise=True)(raw_arr).as_tensor()
+
+    device = 'cuda' if torch.cuda.is_available() else 'mps' if (hasattr(torch.backends, 'mps') and torch.backends.mps.is_available()) else 'cpu'
+    roi_size = (96, 96, 96)
+    peak = 0.0
 
     with LOCK:
-        model, model_title = load_model(model_name)
-        torch.cuda.reset_peak_memory_stats()
-        model_display = "SwinUNETR Transformer" if "Swin" in model_title else "SegResNet CNN"
-        # 128^3 is the published Swin setting, but it exceeded available VRAM
-        # with the local app running on this 8 GB laptop. 96^3 was measured here.
-        roi_size = (96, 96, 96)
-        update(f'Segmenting on RTX 4060 with {model_display} ({roi_size[0]}³ sliding patches)')
-        with torch.inference_mode(), torch.autocast('cuda', dtype=torch.float16):
-            logits = sliding_window_inference(
-                x, roi_size, 1, model, overlap=0.5, mode='gaussian', sw_device='cuda', device='cpu'
-            )
-        torch.cuda.synchronize()
-        peak = round(torch.cuda.max_memory_allocated() / 1024**2, 1)
+        bundle, model_title = load_model(model_name)
+        if torch.cuda.is_available():
+            torch.cuda.reset_peak_memory_stats()
 
-    pred = (torch.sigmoid(logits[0].float()) >= 0.5).numpy()
+        if model_name in ('ensemble', '8_2', 'swin_resenc'):
+            update(f'Segmenting with 8:2 Hybrid Ensemble ({bundle["desc_a"]} + {bundle["desc_b"]})')
+            x_a = norm_arr[[3, 0, 1, 2]][(slice(None),) + slices].unsqueeze(0).contiguous().to(device)
+            x_b = norm_arr[[3, 1, 0, 2]][(slice(None),) + slices].unsqueeze(0).contiguous().to(device)
+            
+            with torch.inference_mode():
+                logits_a = sliding_window_inference(x_a, roi_size, 1, bundle['model_a'], overlap=0.5, mode='gaussian', sw_device=device, device='cpu')
+                logits_b = sliding_window_inference(x_b, roi_size, 1, bundle['model_b'], overlap=0.5, mode='gaussian', sw_device=device, device='cpu')
+                prob_a = torch.sigmoid(logits_a[0].float())
+                prob_b = torch.sigmoid(logits_b[0].float())
+                prob = bundle['weight_a'] * prob_a + bundle['weight_b'] * prob_b
+
+                # Enforce BraTS hierarchy: ET <= TC <= WT
+                p_tc = torch.maximum(prob[0], prob[2])
+                p_wt = torch.maximum(prob[1], p_tc)
+                p_et = prob[2]
+                pred = torch.stack([p_tc >= 0.5, p_wt >= 0.5, p_et >= 0.5]).numpy()
+
+                # Voxel entropy uncertainty map
+                from scripts.ensemble_inference import compute_voxel_entropy
+                ent_crop = compute_voxel_entropy(torch.stack([p_tc, p_wt, p_et])).mean(dim=0).numpy()
+                full_ent = np.zeros(canonical.shape, dtype=np.float32)
+                full_ent[slices] = ent_crop
+                ent_native = resample_from_to(nib.Nifti1Image(full_ent, canonical.affine), (original.shape, original.affine), order=1)
+                nib.save(nib.Nifti1Image(np.asarray(ent_native.dataobj, dtype=np.float32), original.affine, original.header), out / 'uncertainty.nii.gz')
+
+        else:
+            model = bundle
+            model_display = "SwinUNETR Transformer" if "Swin" in model_title else "SegResNet CNN"
+            update(f'Segmenting with {model_display} ({roi_size[0]}³ sliding patches)')
+            mod_indices = [3, 0, 1, 2] if model_name == 'swinunetr' else [0, 1, 2, 3]
+            x = norm_arr[mod_indices][(slice(None),) + slices].unsqueeze(0).contiguous().to(device)
+            
+            with torch.inference_mode():
+                logits = sliding_window_inference(x, roi_size, 1, model, overlap=0.5, mode='gaussian', sw_device=device, device='cpu')
+            pred = (torch.sigmoid(logits[0].float()) >= 0.5).numpy()
+
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
+            peak = round(torch.cuda.max_memory_allocated() / 1024**2, 1)
+
     # BraTS channels: 0: TC, 1: WT, 2: ET
     labels = np.where(pred[2], 4, np.where(pred[0], 1, np.where(pred[1], 2, 0))).astype(np.uint8)
     full = np.zeros(canonical.shape, np.uint8)

@@ -50,15 +50,17 @@ def index():
 @app.get('/api/status')
 def status():
     import torch
+    dev_name = torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'Apple Silicon (MPS)' if (hasattr(torch.backends, 'mps') and torch.backends.mps.is_available()) else 'CPU'
     return {
-        'gpu': torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'Unavailable',
+        'gpu': dev_name,
         'cuda_available': torch.cuda.is_available(),
-        'demo_ready': len(list((ROOT / 'data/demo').glob('*.nii.gz'))) >= 5,
+        'demo_ready': len(list((ROOT / 'data/demo').glob('*.nii.gz'))) >= 5 or len(list((ROOT / 'data/synthetic_demo').glob('*.nii.gz'))) >= 4,
         'models_available': [
+            {'id': 'ensemble', 'name': '8:2 Ensemble (SwinUNETR + nnU-Net ResEnc)', 'badge': 'High-Accuracy 8:2 Fusion', 'speed': '~5s'},
             {'id': 'swinunetr', 'name': 'SwinUNETR (Vision Transformer)', 'badge': 'Tested on three cases', 'speed': '~5s'},
             {'id': 'segresnet', 'name': 'SegResNet (3D CNN Autoencoder)', 'badge': 'BraTS baseline', 'speed': '~3s'}
         ],
-        'default_model': 'swinunetr',
+        'default_model': 'ensemble',
         'patient_cases': [
             {
                 'id': k,

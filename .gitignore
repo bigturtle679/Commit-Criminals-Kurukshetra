@@ -1,7 +1,7 @@
 # Local ML environment, datasets, and downloaded weights
 .venv/
-models/
-data/
+/models/
+/data/
 work/
 outputs/
 __pycache__/
