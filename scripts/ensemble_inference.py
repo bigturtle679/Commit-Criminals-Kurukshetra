@@ -159,20 +159,27 @@ def run_ensemble(mri_paths, out_dir, config_path=None, expert_path=None, expert_
     ent_header.set_data_dtype(np.float32)
     nib.save(nib.Nifti1Image(ent_data, ref.affine, ent_header), out_dir / 'uncertainty.nii.gz')
 
-    # Compute physical volumes in mL
-    voxel_ml = abs(float(np.linalg.det(ref.affine[:3, :3]))) / 1000.0
+    # Compute physical volumes using metrics.py (single source of truth)
+    sys.path.insert(0, str(ROOT / 'src'))
+    from metrics import calculate_volume_ml, compute_dice, compute_sensitivity
+
     regions = {
         'WT': np.isin(seg_data, [1, 2, 4]),
         'TC': np.isin(seg_data, [1, 4]),
         'ET': seg_data == 4,
         'ED': seg_data == 2
     }
-    volumes_ml = {k: round(float(m.sum()) * voxel_ml, 3) for k, m in regions.items()}
+    volumes_ml = {k: calculate_volume_ml(m, ref.affine) for k, m in regions.items()}
 
     # Compute validation metrics if ground truth expert mask provided
     metrics = None
     if expert_path is not None and Path(expert_path).exists():
         gt_img = nib.load(str(expert_path))
+        # Validate expert mask geometry against reference
+        if gt_img.shape != ref.shape:
+            raise ValueError('Expert mask shape does not match the MRI volumes.')
+        if not np.allclose(gt_img.affine, ref.affine, atol=1e-3):
+            raise ValueError('Expert mask affine does not match the MRI affine.')
         gt = gt_img.get_fdata()
         gt_regions = {
             'WT': np.isin(gt, [1, 2, expert_et]),
@@ -181,13 +188,10 @@ def run_ensemble(mri_paths, out_dir, config_path=None, expert_path=None, expert_
         }
         metrics = {}
         for k in ['WT', 'TC', 'ET']:
-            pred_m = regions[k]
-            gt_m = gt_regions[k]
-            inter = int(np.count_nonzero(pred_m & gt_m))
-            denom = int(pred_m.sum() + gt_m.sum())
-            dice = round(2.0 * inter / denom, 4) if denom > 0 else 1.0 if (pred_m.sum() == 0 and gt_m.sum() == 0) else 0.0
-            sens = round(inter / int(gt_m.sum()), 4) if gt_m.sum() > 0 else None
-            metrics[k] = {'dice': dice, 'sensitivity': sens}
+            metrics[k] = {
+                'dice': compute_dice(regions[k], gt_regions[k]),
+                'sensitivity': compute_sensitivity(regions[k], gt_regions[k]),
+            }
 
     elapsed = round(time.perf_counter() - started, 2)
     report = {
@@ -202,7 +206,11 @@ def run_ensemble(mri_paths, out_dir, config_path=None, expert_path=None, expert_
         'volumes_ml': volumes_ml,
         'metrics': metrics,
         'mean_uncertainty_in_tumor': round(float(ent_data[regions['WT']].mean()), 4) if regions['WT'].any() else 0.0,
-        'timestamp': time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()),
+        'timestamp': time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        'disclaimer': (
+            'Research demonstration only. Not intended for clinical diagnosis. '
+            'Predicted regions are model estimates, not expert-verified findings.'
+        ),
         'artifacts': {
             'segmentation': str(out_dir / 'segmentation.nii.gz'),
             'uncertainty': str(out_dir / 'uncertainty.nii.gz')
