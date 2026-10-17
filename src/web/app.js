@@ -88,7 +88,7 @@ const nv = new Niivue({
   // (Infinity) projects the whole 3D tumour mesh onto every slice, so slices showed tumour
   // that is not in that plane and the crosshair lines looked misaligned.
   meshThicknessOn2D: 0,
-  show3Dcrosshair: false,
+  show3Dcrosshair: true,
   isColorbar: false,
   multiplanarShowRender: SHOW_RENDER.ALWAYS,
   multiplanarLayout: MULTIPLANAR_TYPE.COLUMN,
@@ -306,9 +306,6 @@ async function loadViewer(token, requestedWorld) {
   }
 
   await nv.loadVolumes(volumes);
-  if (token !== viewerGeneration || currentJob?.id !== jobId) return;
-  // Directional shading gives the real MRI surface depth without changing data.
-  await nv.setVolumeRenderIllumination(0.3);
   if (token !== viewerGeneration || currentJob?.id !== jobId) return;
 
   if (nv.volumes.length > 1 && overlayMode !== 'uncertainty') {
