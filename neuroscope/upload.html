@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#e9eaf5">
+<meta name="description" content="NeuroScope 3D — Compact upload and analysis workspace for MRI research scans.">
+<title>NeuroScope 3D — Upload &amp; Analyze</title>
+<link rel="stylesheet" href="upload.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="navbar">
+  <a class="brand" href="index.html" aria-label="NeuroScope 3D home">
+    <span class="brand-icon">✳</span>Neuro<span>Scope</span><sup>3D</sup>
+  </a>
+  <button class="menu" aria-expanded="false" aria-controls="navigation">Menu <span>☰</span></button>
+  <nav id="navigation" aria-label="Main navigation">
+    <a href="index.html#about">Overview</a>
+    <a href="index.html#modalities">Modalities</a>
+    <a href="index.html#capabilities">Capabilities</a>
+    <a href="index.html#workflow">How it works</a>
+    <a href="upload.html" class="nav-active" aria-current="page">Upload</a>
+  </nav>
+  <a class="nav-cta" href="index.html">Back to Home <span>↗</span></a>
+</header>
+
+<main id="main">
+  <!-- Disclaimer -->
+  <aside class="disclaimer">
+    <span class="info">i</span>
+    <strong>For research &amp; education only.</strong>
+    <span>Suspected tumor regions predicted by models; estimated volumes. Not for clinical diagnosis.</span>
+    <span class="research-tag">RESEARCH PROTOTYPE</span>
+  </aside>
+
+  <!-- Page Header (Compact) -->
+  <section class="page-header" aria-labelledby="page-title">
+    <div class="eyebrow"><span class="dot"></span> RESEARCH WORKSPACE / INTAKE</div>
+    <h1 id="page-title">Upload &amp; Analyze<span class="period">.</span></h1>
+    <p>Upload a complete multi-modal MRI study as a single <strong>.zip archive</strong> or <strong>individual NIfTI sequences</strong> for automated 3D glioblastoma segmentation.</p>
+  </section>
+
+  <!-- Unified Studio Workspace -->
+  <section class="studio-section" aria-label="Study analysis workspace">
+    <div class="studio-card">
+      <div class="studio-grid">
+        
+        <!-- Left Column: Study Intake -->
+        <div class="studio-panel intake-panel">
+          <div class="panel-header">
+            <div>
+              <span class="panel-badge">STEP 01</span>
+              <h2>Study Intake</h2>
+            </div>
+            
+            <!-- Intake Mode Tabs -->
+            <div class="intake-tabs" role="tablist" aria-label="Upload format">
+              <button class="tab-btn active" role="tab" id="tab-btn-zip" aria-selected="true" aria-controls="pane-zip" type="button">
+                📦 Single ZIP
+              </button>
+              <button class="tab-btn" role="tab" id="tab-btn-individual" aria-selected="false" aria-controls="pane-individual" type="button">
+                🗂️ 4 Modalities
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB 1: Direct ZIP Archive (NEW) -->
+          <div class="tab-pane active" id="pane-zip" role="tabpanel" aria-labelledby="tab-btn-zip">
+            <div class="upload-zone zip-zone" id="zone-zip">
+              <label class="zone-label" for="file-zip">
+                <span class="upload-icon" aria-hidden="true">↑</span>
+                <strong>Drop Multi-Modal Study (.zip)</strong>
+                <span class="zone-hint">Archive containing T1, T1c, T2, FLAIR (.nii or .nii.gz)</span>
+                <input id="file-zip" type="file" accept=".zip" aria-label="Upload multi-modal MRI study zip archive">
+              </label>
+              <div class="zone-status" id="status-zip" role="status" aria-live="polite"></div>
+              <button class="zone-remove" id="remove-zip" type="button" hidden aria-label="Remove zip archive">✕ Remove ZIP</button>
+            </div>
+            <div class="zip-help">
+              <span class="info-sm">i</span>
+              <span>Direct ZIP upload automatically identifies <code>t1</code>, <code>t1c</code>, <code>t2</code>, and <code>flair</code> volume channels.</span>
+            </div>
+          </div>
+
+          <!-- TAB 2: Individual 4 Modalities -->
+          <div class="tab-pane" id="pane-individual" role="tabpanel" aria-labelledby="tab-btn-individual" hidden>
+            <div class="compact-grid" role="group" aria-label="Four individual MRI modality inputs">
+              <!-- T1 -->
+              <div class="upload-zone compact-zone" data-field="t1">
+                <label class="zone-label" for="file-t1">
+                  <span class="upload-icon-sm" aria-hidden="true">↑</span>
+                  <div class="zone-text">
+                    <strong>T1 Native</strong>
+                    <span class="zone-hint">.nii / .nii.gz</span>
+                  </div>
+                  <input id="file-t1" type="file" accept=".nii,.gz" aria-label="Upload T1 scan">
+                </label>
+                <div class="zone-status" role="status" aria-live="polite"></div>
+                <button class="zone-remove" type="button" hidden aria-label="Remove T1 file">✕</button>
+              </div>
+
+              <!-- T1Gd / T1-CE -->
+              <div class="upload-zone compact-zone" data-field="t1c">
+                <label class="zone-label" for="file-t1c">
+                  <span class="upload-icon-sm" aria-hidden="true">↑</span>
+                  <div class="zone-text">
+                    <strong>T1Gd / T1-CE</strong>
+                    <span class="zone-hint">.nii / .nii.gz</span>
+                  </div>
+                  <input id="file-t1c" type="file" accept=".nii,.gz" aria-label="Upload T1Gd scan">
+                </label>
+                <div class="zone-status" role="status" aria-live="polite"></div>
+                <button class="zone-remove" type="button" hidden aria-label="Remove T1Gd file">✕</button>
+              </div>
+
+              <!-- T2 -->
+              <div class="upload-zone compact-zone" data-field="t2">
+                <label class="zone-label" for="file-t2">
+                  <span class="upload-icon-sm" aria-hidden="true">↑</span>
+                  <div class="zone-text">
+                    <strong>T2 Weighted</strong>
+                    <span class="zone-hint">.nii / .nii.gz</span>
+                  </div>
+                  <input id="file-t2" type="file" accept=".nii,.gz" aria-label="Upload T2 scan">
+                </label>
+                <div class="zone-status" role="status" aria-live="polite"></div>
+                <button class="zone-remove" type="button" hidden aria-label="Remove T2 file">✕</button>
+              </div>
+
+              <!-- FLAIR -->
+              <div class="upload-zone compact-zone" data-field="flair">
+                <label class="zone-label" for="file-flair">
+                  <span class="upload-icon-sm" aria-hidden="true">↑</span>
+                  <div class="zone-text">
+                    <strong>FLAIR Edema</strong>
+                    <span class="zone-hint">.nii / .nii.gz</span>
+                  </div>
+                  <input id="file-flair" type="file" accept=".nii,.gz" aria-label="Upload FLAIR scan">
+                </label>
+                <div class="zone-status" role="status" aria-live="polite"></div>
+                <button class="zone-remove" type="button" hidden aria-label="Remove FLAIR file">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Collapsible Expert Mask Row -->
+          <details class="expert-accordion">
+            <summary class="accordion-summary">
+              <span>+ Optional Expert Mask &amp; ET Encoding</span>
+              <span class="badge-optional">OPTIONAL</span>
+            </summary>
+            <div class="expert-accordion-content">
+              <div class="upload-zone compact-zone expert-zone" data-field="expert">
+                <label class="zone-label" for="file-expert">
+                  <span class="upload-icon-sm" aria-hidden="true">↑</span>
+                  <div class="zone-text">
+                    <strong>Ground-Truth Expert NIfTI Mask</strong>
+                    <span class="zone-hint">BraTS labels: 1 NCR, 2 ED, 4 ET</span>
+                  </div>
+                  <input id="file-expert" type="file" accept=".nii,.gz" aria-label="Upload expert segmentation mask">
+                </label>
+                <div class="zone-status" role="status" aria-live="polite"></div>
+                <button class="zone-remove" type="button" hidden aria-label="Remove expert mask">✕</button>
+              </div>
+
+              <fieldset class="et-encoding-compact">
+                <legend>Enhancing Tumor (ET) Encoding:</legend>
+                <label class="radio-label">
+                  <input type="radio" name="et-encoding" value="default" checked>
+                  <span class="radio-check"></span>
+                  BraTS 2021 default (1, 2, 4)
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="et-encoding" value="custom">
+                  <span class="radio-check"></span>
+                  Custom ET label:
+                  <input type="number" class="et-custom-input" id="et-custom-value" min="0" max="255" value="3" aria-label="Custom ET label value" disabled>
+                </label>
+              </fieldset>
+            </div>
+          </details>
+
+          <div class="limit-disclaimer">
+            <span class="info-sm">i</span>
+            <span>Maximum deployed intake limit: 150 MB per study. All validation verified locally.</span>
+          </div>
+        </div>
+
+        <!-- Right Column: Engine & Execution -->
+        <div class="studio-panel config-panel">
+          <div class="panel-header">
+            <div>
+              <span class="panel-badge">STEP 02</span>
+              <h2>Model &amp; Execution</h2>
+            </div>
+          </div>
+
+          <!-- Compact Model Selector -->
+          <div class="model-compact-list" role="radiogroup" aria-label="Segmentation model">
+            <!-- 8:2 Ensemble -->
+            <div class="model-row selected" role="radio" aria-checked="true" tabindex="0" data-model="ensemble">
+              <div class="model-radio-icon">✓</div>
+              <div class="model-row-info">
+                <div class="model-title-line">
+                  <strong>8:2 Ensemble</strong>
+                  <span class="badge-rec">RECOMMENDED</span>
+                </div>
+                <p>Combines SwinUNETR (80%) + SegResNet (20%) probabilities for superior boundary accuracy.</p>
+              </div>
+              <button class="specs-toggle" type="button" aria-expanded="false" title="Toggle technical details">Specs</button>
+              <div class="model-drawer" hidden>
+                <div class="drawer-pill adv">Advantage: Multi-scale context + low bias</div>
+                <div class="drawer-pill lim">Limitation: Dual architecture inference time</div>
+              </div>
+            </div>
+
+            <!-- SwinUNETR -->
+            <div class="model-row" role="radio" aria-checked="false" tabindex="-1" data-model="swinunetr">
+              <div class="model-radio-icon">✓</div>
+              <div class="model-row-info">
+                <div class="model-title-line">
+                  <strong>SwinUNETR</strong>
+                  <span class="badge-subtle-sm">TRANSFORMER</span>
+                </div>
+                <p>Hierarchical 3D shifted-window self-attention. Excels at global spatial context across scales.</p>
+              </div>
+              <button class="specs-toggle" type="button" aria-expanded="false" title="Toggle technical details">Specs</button>
+              <div class="model-drawer" hidden>
+                <div class="drawer-pill adv">Advantage: Large receptive field for complex infiltrations</div>
+                <div class="drawer-pill lim">Limitation: Higher memory footprint</div>
+              </div>
+            </div>
+
+            <!-- SegResNet -->
+            <div class="model-row" role="radio" aria-checked="false" tabindex="-1" data-model="segresnet">
+              <div class="model-radio-icon">✓</div>
+              <div class="model-row-info">
+                <div class="model-title-line">
+                  <strong>SegResNet</strong>
+                  <span class="badge-subtle-sm">CONVOLUTIONAL</span>
+                </div>
+                <p>Residual CNN baseline with deep supervision. Highly optimized for rapid, lightweight execution.</p>
+              </div>
+              <button class="specs-toggle" type="button" aria-expanded="false" title="Toggle technical details">Specs</button>
+              <div class="model-drawer" hidden>
+                <div class="drawer-pill adv">Advantage: Fast inference, minimal VRAM</div>
+                <div class="drawer-pill lim">Limitation: CNN-constrained spatial dependencies</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mode Selector (Normal vs Blind) -->
+          <div class="mode-compact-box">
+            <span class="mode-label">Review Protocol:</span>
+            <div class="mode-selector" role="group" aria-label="Review Mode">
+              <button class="mode-btn active" type="button" data-mode="normal" aria-pressed="true">Normal Review</button>
+              <button class="mode-btn" type="button" data-mode="blind" aria-pressed="false">Blind Teaching Mode</button>
+            </div>
+          </div>
+          <p class="mode-description-sm" id="mode-desc">Standard analysis: overlays, physical volumes (mL), and metrics displayed immediately.</p>
+
+          <!-- Run Button & Status Area -->
+          <div class="action-block">
+            <button class="primary run-btn" id="run-analysis" type="button" disabled aria-disabled="true">
+              Run Analysis <span>↗</span>
+            </button>
+
+            <div class="status-box" role="status" aria-live="polite">
+              <div class="status-indicator">
+                <span class="status-dot idle"></span>
+                <span class="status-text">Idle — Upload study or load a demo to begin.</span>
+              </div>
+              <div class="device-status">
+                <span class="info-sm">i</span> Local CPU &amp; WebGL acceleration active.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Quick Public Demo Cases Strip (Compact) -->
+      <div class="quick-demos-strip">
+        <div class="demos-header">
+          <span class="demo-strip-label">⚡ QUICK PUBLIC DEMO CASES:</span>
+          <span class="demo-strip-hint">One-click pre-loaded research cases without manual upload.</span>
+        </div>
+        <div class="demo-buttons-row">
+          <button class="demo-chip" type="button" data-demo="001">
+            <strong>BraTS Case 001</strong>
+            <span>Glioblastoma Standard</span>
+          </button>
+          <button class="demo-chip" type="button" data-demo="002">
+            <strong>BraTS Case 002</strong>
+            <span>Multi-Focal Lesion</span>
+          </button>
+          <button class="demo-chip" type="button" data-demo="003">
+            <strong>BraTS Case 003</strong>
+            <span>Edema-Dominant</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Compact History Strip -->
+  <section class="section history-compact-section">
+    <details class="history-accordion">
+      <summary class="history-summary">
+        <span>Recent Analyses &amp; Sessions (0)</span>
+        <span class="prototype-label">SESSION CACHE</span>
+      </summary>
+      <div class="history-content">
+        <p class="history-empty-text">No completed sessions in this browser session. Choose a demo or upload scans to start.</p>
+      </div>
+    </details>
+  </section>
+</main>
+
+<footer>
+  <a class="brand" href="index.html">Neuro<span>Scope</span><sup>3D</sup></a>
+  <span>A new dimension of understanding.</span>
+  <span>Research interface · 2026</span>
+</footer>
+
+<script src="upload.js"></script>
+</body>
+</html>
