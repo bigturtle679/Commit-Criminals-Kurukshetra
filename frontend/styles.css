@@ -23,3 +23,11 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 .text-link { transition: color .2s; }
 .steps article { transition: border-color .2s; }
 .steps article:hover { border-color: #9386bd; }
+
+/* The hero animation is 16:9; keep its display box aligned with the source frame. */
+.brain-stage { top: 50%; max-width: 1120px; height: auto; aspect-ratio: 16 / 9; transform: translateY(-50%); }
+
+@media (max-width: 700px) {
+  .hero { padding-bottom: 420px; }
+  .brain-stage { top: auto; bottom: 65px; height: auto; aspect-ratio: 16 / 9; transform: none; }
+}
