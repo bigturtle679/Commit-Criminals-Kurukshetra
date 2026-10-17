@@ -5,11 +5,13 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
 
 /* The hero animation is 16:9; keep its display box aligned with the source frame. */
-.brain-stage { top: 50%; max-width: 1120px; height: auto; aspect-ratio: 16 / 9; transform: translateY(-50%); }
+.brain-stage { right: 8%; top: 50%; max-width: 1120px; height: auto; aspect-ratio: 16 / 9; transform: translateY(-50%); }
+
+@media (min-width: 701px) and (max-width: 1000px) { .brain-stage { right: 0; } }
 
 @media (max-width: 700px) {
   .hero { padding-bottom: 420px; }
-  .brain-stage { top: auto; bottom: 65px; height: auto; aspect-ratio: 16 / 9; transform: none; }
+  .brain-stage { right: -5%; top: auto; bottom: 65px; height: auto; aspect-ratio: 16 / 9; transform: none; }
 }
 /* ─── Homepage Expanded Content ─── */
 .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:36px}
