@@ -3,3 +3,23 @@
 @media(min-width:1600px){.hero-copy{max-width:750px}}@media(max-width:1000px){.navbar nav{gap:20px}.hero{padding:0 6%;min-height:610px}.hero-copy{width:60%}h1{font-size:72px}.brain-stage{right:-15%;width:70%;opacity:.85}.actions{gap:16px}.research-tag{display:none}.hero-bottom{left:6%;right:6%}.visual-label{left:30%}.label-muted{display:none}}
 @media(max-width:700px){.navbar{margin:16px 5%;padding:10px 17px;border-radius:20px;flex-wrap:wrap;gap:0}.brand{font-size:21px}.brand-icon{font-size:28px}.nav-cta{display:none}.menu{display:flex;gap:14px;margin-left:auto;background:none;border:0;font-size:12px;padding:10px 0}.navbar nav{display:none;width:100%;padding:23px 0 10px;justify-content:space-between}.navbar nav.open{display:flex}.hero{height:auto;min-height:870px;padding:35px 7% 380px;align-items:flex-start}.hero-copy{width:100%;padding:0}.eyebrow{font-size:8px;letter-spacing:1.5px}h1{font-size:clamp(56px,12vw,82px);margin:24px 0}.hero-copy>p{font-size:14px;line-height:1.8}.primary{padding:15px 20px;font-size:12px}.text-link{font-size:11px}.hero-note{font-size:9px;margin-top:19px}.brain-stage{top:auto;bottom:65px;right:-5%;width:110%;height:365px;opacity:1}.visual-label{bottom:0;left:26%}.motion{bottom:-5px;right:15%}.hero-bottom{bottom:20px}.hero-bottom>span:last-child{display:none}.hero-bottom>span{font-size:7px}.disclaimer{padding:19px 7%;flex-wrap:wrap;justify-content:flex-start;gap:8px;font-size:9px}.disclaimer>span:not(.info):not(.research-tag){width:100%;padding-left:24px;line-height:1.7}.section{padding:60px 7%}.about{grid-template-columns:1fr;gap:5px}.section h2{font-size:32px}.section-heading{display:block}.steps{grid-template-columns:1fr;gap:20px}.steps h3{margin:17px 0 8px}.steps p{margin-bottom:5px}footer{padding:30px 7%;flex-wrap:wrap;gap:22px}footer>span:last-child{width:100%}dialog{padding:35px 25px}dialog h2{font-size:30px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+/* ─── Homepage Expanded Content ─── */
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:36px}
+.feature-card{background:#ffffff45;border:1px solid #c9c6d7;border-radius:20px;padding:30px 24px;display:flex;flex-direction:column;gap:12px;transition:transform .2s,border-color .2s,background .2s}
+.feature-card:hover{transform:translateY(-3px);border-color:#9386bd;background:#ffffff70}
+.card-tag{font-size:9px;letter-spacing:1.5px;font-weight:600;color:var(--purple);display:inline-block}
+.feature-card h3{font-size:19px;font-weight:550;letter-spacing:-.6px;margin:0;color:var(--ink)}
+.feature-card p{font-size:12px;line-height:1.75;color:var(--muted);margin:0}
+.feature-meta{margin-top:auto;padding-top:14px;border-top:1px solid #c9c6d780;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:#7e7d91}
+.badge-subtle{background:#e2e0f0;color:#504d6e;padding:3px 9px;border-radius:8px;font-size:9px;font-weight:600;letter-spacing:.8px}
+.cta-box{background:#ffffff55;border:1px solid #ffffffa0;border-radius:28px;padding:60px 48px;display:flex;align-items:center;justify-content:space-between;gap:40px;backdrop-filter:blur(15px);box-shadow:0 15px 45px #3628520d}
+.cta-box h2{font-size:38px;font-weight:450;letter-spacing:-1.8px;line-height:1.15;margin:12px 0 16px}
+.cta-box p{font-size:14px;line-height:1.8;color:var(--muted);max-width:520px;margin:0}
+.specs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin-top:36px}
+.spec-item{background:#ffffff40;border:1px solid #c9c6d7;border-radius:18px;padding:32px 26px}
+.spec-num{font-size:32px;font-weight:450;letter-spacing:-1px;color:var(--ink);display:block;margin-bottom:8px}
+.spec-item h3{font-size:16px;font-weight:550;margin:0 0 8px;color:var(--ink)}
+.spec-item p{font-size:12px;line-height:1.7;color:var(--muted);margin:0}
+@media(max-width:1000px){.grid-4{grid-template-columns:repeat(2,1fr)}.specs-grid{grid-template-columns:1fr 1fr}.cta-box{flex-direction:column;align-items:flex-start;padding:40px 30px}}
+@media(max-width:700px){.grid-4{grid-template-columns:1fr}.specs-grid{grid-template-columns:1fr}}
+
