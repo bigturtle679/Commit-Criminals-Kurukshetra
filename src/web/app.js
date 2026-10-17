@@ -1,6 +1,5 @@
 import { Niivue, SHOW_RENDER, MULTIPLANAR_TYPE } from '/static/vendor/niivue.js';
 import { ReviewController, worldToVoxel } from '/static/review.js';
-import { renderTrainingCurves } from '/static/training.js';
 import { bindDashboard, allowedOverlay, composition, stageFromMessage, REGION_COLORS } from '/static/dashboard.js';
 
 const $ = id => document.getElementById(id);
@@ -88,13 +87,10 @@ const nv = new Niivue({
   // (Infinity) projects the whole 3D tumour mesh onto every slice, so slices showed tumour
   // that is not in that plane and the crosshair lines looked misaligned.
   meshThicknessOn2D: 0,
-  show3Dcrosshair: false,
+  show3Dcrosshair: true,
   isColorbar: false,
   multiplanarShowRender: SHOW_RENDER.ALWAYS,
   multiplanarLayout: MULTIPLANAR_TYPE.COLUMN,
-  // A modest supersample removes visible stair-stepping on the 3D render while
-  // avoiding the full cost of a high-DPI display's native pixel ratio.
-  forceDevicePixelRatio: 1.5,
   isOrientCube: true,
   heroImageFraction: 0.72,
   crosshairColor: [0.8, 0.86, 0.88, 1]
@@ -105,8 +101,6 @@ try {
     throw new Error('WebGL2 unavailable');
   }
   await nv.attachTo('gl-canvas');
-  window.neuroscopeViewer = nv; // exposed for debugging / browser QA
-
   nv.setSliceType(3);
   // The viewer box is sized by the flex layout; re-measure the WebGL buffer whenever it changes.
   // Watch the canvas itself too: it is hidden while results load, and un-hiding it does not resize the parent.
@@ -309,9 +303,6 @@ async function loadViewer(token, requestedWorld) {
   }
 
   await nv.loadVolumes(volumes);
-  if (token !== viewerGeneration || currentJob?.id !== jobId) return;
-  // Directional shading gives the real MRI surface depth without changing data.
-  await nv.setVolumeRenderIllumination(0.3);
   if (token !== viewerGeneration || currentJob?.id !== jobId) return;
 
   if (nv.volumes.length > 1 && overlayMode !== 'uncertainty') {
@@ -757,7 +748,6 @@ function uploadZip(file) {
   const formData = new FormData();
   formData.set('archive', file);
   formData.set('model', selectedModel);
-  formData.set('use_expert', $('zip-use-expert')?.checked === false ? 'false' : 'true');
   launchAnalysis('/api/analyze-zip', { method: 'POST', body: formData }, res => {
     const parts = Object.entries(res.detected || {}).map(([role, name]) => `${ROLE_LABELS[role] || role} ← ${name}`);
     if (res.expert_et) parts.push(`ET label = ${res.expert_et}`);
@@ -981,5 +971,3 @@ try {
 } catch (err) {
   setStatus(`Failed to connect to local backend: ${err.message}`, true);
 }
-
-renderTrainingCurves();

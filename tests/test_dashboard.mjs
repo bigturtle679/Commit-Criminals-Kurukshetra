@@ -60,10 +60,3 @@ test('workflow stage follows real backend status messages',()=>{
   assert.equal(stageFromMessage('Executing Model A (80%): SwinUNETR'),2);
   assert.equal(stageFromMessage('Synthesizing 3D polygonal meshes and measurement report'),2);
 });
-const { compareSeries } = await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
-test('expert chart plots Dice and sensitivity as percentages',()=>{
-  const s=compareSeries({WT:{dice:0.9,sensitivity:0.8},TC:{dice:1,sensitivity:null},ET:{dice:0.5,sensitivity:0.25}});
-  assert.deepEqual(s.map(r=>r.region),['WT','TC','ET']);
-  assert.ok(Math.abs(s[0].dice-90)<1e-9 && Math.abs(s[0].sensitivity-80)<1e-9);
-  assert.equal(s[1].sensitivity,null);
-});

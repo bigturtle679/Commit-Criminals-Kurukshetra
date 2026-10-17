@@ -888,5 +888,3 @@ footer .brand { font-size: 20px; color: var(--ink); }
   html { scroll-behavior: auto; }
   * { transition: none !important; animation: none !important; }
 }
-.zip-expert-option { display:flex; gap:8px; align-items:flex-start; margin:12px 4px 0; font-size:13px; line-height:1.5; color:#4b4860; cursor:pointer; }
-.zip-expert-option input { margin-top:3px; }

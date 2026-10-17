@@ -127,7 +127,6 @@ def main():
     ap.add_argument('--test-cases', type=int, default=50, help='random patients held out for final testing')
     ap.add_argument('--val-every', type=int, default=5000)
     ap.add_argument('--save-every', type=int, default=1000)
-    ap.add_argument('--log-every', type=int, default=100, help='average and record training loss every N iterations')
     ap.add_argument('--lr', type=float, default=1e-2)
     ap.add_argument('--seed', type=int, default=42)
     args = ap.parse_args()
@@ -193,15 +192,11 @@ def main():
         scaler.step(opt); scaler.update()
         run_loss += loss.item()
 
-        if it % args.log_every == 0:
+        if it % 100 == 0:
             el = time.time() - t0
             rate = el / (it - start_it)
-            mean_loss = run_loss / args.log_every
-            with (args.out / 'loss_history.jsonl').open('a') as f:
-                f.write(json.dumps({'iteration': it, 'loss': mean_loss, 'lr': lr}) + '\n')
-            if it % 100 == 0 or args.log_every >= 100:
-                say(f'it {it}/{args.iters} loss {mean_loss:.4f} lr {lr:.5f} {rate:.3f}s/it '
-                    f'ETA {(args.iters - it) * rate / 3600:.2f}h')
+            say(f'it {it}/{args.iters} loss {run_loss / 100:.4f} lr {lr:.5f} {rate:.3f}s/it '
+                f'ETA {(args.iters - it) * rate / 3600:.2f}h')
             run_loss = 0.0
         if it % args.save_every == 0 or it == args.iters:
             torch.save({'state_dict': model.state_dict(), 'optimizer': opt.state_dict(), 'scaler': scaler.state_dict(),

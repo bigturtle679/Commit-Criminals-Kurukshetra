@@ -184,26 +184,17 @@ def read_image(path, is_expert_mask=False):
     return img
 
 
-def mesh(mask, affine, path, smooth_sigma=1.0, step_size=2):
-    """Generate a triangulated OBJ surface from a 3D binary mask for 3D display.
-
-    The mask is lightly Gaussian-smoothed before marching cubes so the surface is not
-    voxel-blocky. Display only: volumes and metrics are always computed from the
-    unsmoothed voxel mask, never from this mesh.
-    """
+def mesh(mask, affine, path):
+    """Generate a triangulated OBJ mesh from a 3D binary mask."""
     if not mask.any():
         return False
-    from scipy.ndimage import gaussian_filter
-    field = np.pad(mask.astype(np.float32), 2)
-    if smooth_sigma > 0:
-        field = gaussian_filter(field, smooth_sigma)
-    level = 0.5 if field.max() > 0.5 else field.max() / 2   # keep tiny structures visible
+    padded = np.pad(mask.astype(np.uint8), 1)
     try:
-        verts, faces, _, _ = marching_cubes(field, level, step_size=step_size)
-        verts = nib.affines.apply_affine(affine, verts - 2)
+        verts, faces, _, _ = marching_cubes(padded, 0.5, step_size=2)
+        verts = nib.affines.apply_affine(affine, verts - 1)
         with open(path, 'w') as f:
             for v in verts:
-                f.write('v %.3f %.3f %.3f\n' % tuple(v))
+                f.write('v %.4f %.4f %.4f\n' % tuple(v))
             for face in faces + 1:
                 f.write('f %d %d %d\n' % tuple(face))
         return True
@@ -503,7 +494,7 @@ def run_case(paths, out, update=lambda message: None, expert=None,
     update('Synthesizing 3D polygonal meshes and measurement report')
     meshes = []
     # 1. Brain shell from FLAIR foreground
-    if mesh(imgs[3].get_fdata() != 0, original.affine, out / 'brain.obj', smooth_sigma=2.0, step_size=2):
+    if mesh(imgs[3].get_fdata() != 0, original.affine, out / 'brain.obj'):
         meshes.append('brain')
     # 2. Whole Tumor surface
     if mesh(regions['WT'], original.affine, out / 'tumor.obj'):
