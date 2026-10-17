@@ -61,7 +61,7 @@ def test_homepage_launches_real_workspace(client):
     assert 'upload.html' in Elements(landing.text).links
     assert 'NOT A PATIENT SCAN' in landing.text                      # hero video is illustrative only
     assert 'does not present model output as a diagnosis' in landing.text
-    assert client.get('/site/assets/brain-cropped.mp4').status_code == 200
+    assert client.get('/site/assets/neuroport-brain.mp4').status_code == 200
     upload_js = (ROOT / 'neuroscope/upload.js').read_text()
     assert '/api/analyze-zip' in upload_js and '/api/analyze' in upload_js and '/api/samples/' in upload_js
     assert '/workspace?analysis=' in upload_js

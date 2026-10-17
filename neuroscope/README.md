@@ -16,4 +16,4 @@ Inter is requested from Google Fonts (SIL Open Font License); Arial/system sans-
 
 The prior generated mockup itself was not available in the retrieved conversation; this implementation follows the user's written composition and available reference screenshots.
 
-The displayed brain-cropped.mp4 is a cropped, silent derivative of the user-supplied screen recording. The original video is included for provenance; its visible source is NeyroPort. Rights to the underlying animation remain with its owner.
+The displayed `neuroport-brain.mp4` is the supplied 1920×1080 (16:9) illustrative animation. It replaces the earlier screen-recording derivative. Rights to the underlying animation remain with its owner.

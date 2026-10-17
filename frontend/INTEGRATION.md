@@ -11,9 +11,9 @@ Run the project with `./start-neuroscope.sh` (or the existing Windows launcher).
 
 The light lavender workspace shell shares the landing page's palette and typography.
 The MRI canvas stays dark and its segmentation colours are unchanged.
-The original homepage layout and video controls are preserved. Its video asset,
-`frontend/assets/brain-cropped.mp4`, is missing from Git and the local workspace;
-the page displays an unavailable message until that original asset is supplied.
+The original homepage layout and video controls are preserved. Its 16:9 hero video
+is served from `neuroscope/assets/neuroport-brain.mp4` through `/site/assets/`.
+It is committed with the project so the animation is available after a fresh clone.
 Launch buttons open the real workspace instead of the old demo dialog.
 The adapted `home.html` is no longer the application entry point.
 

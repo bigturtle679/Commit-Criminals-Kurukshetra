@@ -1,14 +1,8 @@
-# Assets
+# Landing assets
 
-The brain animation video (rain-cropped.mp4) is not committed to this repository
-because it exceeds GitHub's recommended file size limit.
+The homepage hero animation is stored at
+`neuroscope/assets/neuroport-brain.mp4` and served by the application at
+`/site/assets/neuroport-brain.mp4`.
 
-## To run locally
-
-Place rain-cropped.mp4 in this folder. The index.html expects:
-  rontend/assets/brain-cropped.mp4
-
-The video should be a looping, translucent anatomical brain render (MP4, ~2.7 MB cropped version).
-
-## Alternative
-A public CDN URL can be set in index.html by replacing the <source src="..."> path.
+It is a 1920×1080 (16:9) looping MP4. `frontend/styles.css` sizes the hero stage
+to the same ratio so that the complete frame is visible on desktop and mobile.
