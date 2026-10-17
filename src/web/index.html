@@ -410,6 +410,7 @@
                 <label class="checkbox-tag"><input type="checkbox" id="chk-mesh-brain"><span>Brain shell</span></label>
                 <label class="checkbox-tag"><input type="checkbox" id="chk-mesh-tumor" checked disabled><span>Whole tumour</span></label>
                 <label class="checkbox-tag"><input type="checkbox" id="chk-mesh-core" checked disabled><span>Tumour core</span></label>
+                <label class="checkbox-tag"><input type="checkbox" id="chk-mesh-et" checked disabled><span>Enhancing (ET)</span></label>
               </div>
             </details>
           </div>
@@ -534,13 +535,15 @@
                 <thead>
                   <tr>
                     <th>Subregion</th>
+                    <th>Predicted Vol</th>
+                    <th>Expert Ref Vol</th>
                     <th>Dice Similarity (DSC)</th>
                     <th>Sensitivity (Recall)</th>
                   </tr>
                 </thead>
                 <tbody id="scores-body">
                   <tr>
-                    <td colspan="3" class="muted-td">Run sample or supply ground truth mask for automated scoring.</td>
+                    <td colspan="5" class="muted-td">Run sample or supply ground truth mask for automated scoring.</td>
                   </tr>
                 </tbody>
               </table>

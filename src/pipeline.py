@@ -475,6 +475,14 @@ def run_case(paths, out, update=lambda message: None, expert=None,
     if 'ED' not in volumes:
         volumes['ED'] = calculate_volume_ml(seg_data == 2, ref_img.affine)
 
+    voxel_volume_mm3 = float(abs(np.linalg.det(original.affine[:3, :3])))
+    voxel_counts = {
+        'WT': int(np.count_nonzero(regions['WT'])),
+        'TC': int(np.count_nonzero(regions['TC'])),
+        'ET': int(np.count_nonzero(regions['ET'])),
+        'ED': int(np.count_nonzero(seg_data == 2)),
+    }
+
     # Expert mask: normalize and save for viewer
     if expert_img is not None and metrics is not None:
         gt = expert_img.get_fdata()
@@ -507,6 +515,8 @@ def run_case(paths, out, update=lambda message: None, expert=None,
         'input_channel_order': input_channel_order,
         'sliding_window_roi': list(roi_size),
         'volumes_ml': volumes,
+        'voxel_counts': voxel_counts,
+        'voxel_volume_mm3': round(voxel_volume_mm3, 4),
         'volume_summary': volume_summary,
         'metrics': metrics,
         'uncertainty': uncertainty_info,

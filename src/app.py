@@ -360,8 +360,8 @@ async def analyze(
             with path.open('wb') as dest:
                 while chunk := await f.read(1024 * 1024):
                     size += len(chunk)
-                    if size > 150 * 1024 * 1024:
-                        raise ValueError('Each uploaded file must be under 150 MB.')
+                    if size > 1024 * 1024 * 1024:
+                        raise ValueError('Each uploaded file must be under 1 GB.')
                     dest.write(chunk)
             paths[key] = path
     except Exception as e:

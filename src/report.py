@@ -78,15 +78,15 @@ def render_report(run_dir: Path, job: dict) -> str:
     metrics = r.get('metrics')
     metric_html = '<p class="muted">No expert reference mask was supplied, so overlap metrics were not computed.</p>'
     if metrics:
-        metric_html = '<table><tr><th>Region</th><th>Dice</th><th>Sensitivity</th></tr>' + ''.join(
-            f'<tr><td>{e(k)}</td><td>{e(m.get("dice", "—"))}</td><td>{e(m.get("sensitivity", "—"))}</td></tr>'
+        metric_html = '<table><tr><th>Region</th><th>Predicted estimated volume</th><th>Expert reference volume</th><th>Dice</th><th>Sensitivity</th></tr>' + ''.join(
+            f'<tr><td>{e(k)}</td><td>{e(m.get("pred_volume_ml", v.get(k, "—")))} mL</td><td>{e(m.get("gt_volume_ml", "—"))} mL</td><td>{e(m.get("dice", "—"))}</td><td>{e(m.get("sensitivity", "—"))}</td></tr>'
             for k, m in metrics.items()) + '</table><p class="muted">Dice = 2|P∩G| / (|P|+|G|): overlap with the expert region. ' \
             'Sensitivity = |P∩G| / |G|: share of the expert region the model captured.</p>'
     unc, dis = r.get('uncertainty') or {}, r.get('model_disagreement') or {}
     check_rows = ''.join(f'<tr class="{e(c["status"])}"><td>{e(c["name"])}</td><td>{e(c["status"].upper())}</td><td>{e(c["detail"])}</td></tr>'
                          for c in checks)
     hashes = {**(r.get('input_hashes') or {}), **{f'checkpoint {k}': h for k, h in (r.get('checkpoint_hashes') or {}).items()}}
-    hash_rows = ''.join(f'<tr><td>{e(k)}</td><td class="mono">{e(str(h)[:16])}…</td></tr>' for k, h in hashes.items())
+    hash_rows = ''.join(f'<tr><td>{e(k)}</td><td class="mono" style="word-break:break-all">{e(str(h))}</td></tr>' for k, h in hashes.items())
     images = ''.join(f'<figure><img src="{_img(run_dir, axis, centre[i], "segmentation")}" alt="{axis} slice"><figcaption>{axis.title()} '
                      f'{centre[i] + 1} / {geo["dims_ras"][i]}</figcaption></figure>'
                      for axis, i in (('axial', 2), ('coronal', 1), ('sagittal', 0)))
@@ -105,7 +105,7 @@ table{{border-collapse:collapse;width:100%}} td,th{{border:1px solid #ccc;paddin
 <h1>NeuroScope 3D — research segmentation report</h1>
 <p class="muted">{e(r.get("case_name", ""))} · {e(r.get("timestamp", ""))} · analysis {e(job.get("id", ""))}</p>
 <div class="banner"><b>Research and teaching prototype only.</b> This report does not present model output as a diagnosis.
-Predicted tumour regions and volumes are model estimates, not expert-verified findings, and must not be used for clinical decisions.</div>
+Suspected tumour regions predicted by the model and estimated volumes are model estimates, not expert-verified findings, and must not be used for clinical decisions.</div>
 <h2>Model and run</h2>
 <table><tr><td>Model</td><td>{e(r.get("model", r.get("model_name", "")))}</td></tr>
 <tr><td>Runtime / device</td><td>{e(r.get("runtime_seconds", "—"))} s on {e(r.get("gpu", "—"))}</td></tr>
@@ -114,8 +114,8 @@ Predicted tumour regions and volumes are model estimates, not expert-verified fi
 <h2>Predicted regions (slices through the tumour centre)</h2>
 <div class="figs">{images}</div>
 <p class="legend muted"><span style="background:#47c7c5"></span>Edema (label 2)<span style="background:#e875b7"></span>Non-enhancing core (label 1)<span style="background:#f5a623"></span>Enhancing tumour (label 4)</p>
-<h2>Volumes</h2>
-<table><tr><th>Region</th><th>Volume (mL)</th><th>Share</th></tr>{vol_rows}</table>
+<h2>Estimated volumes on original grid</h2>
+<table><tr><th>Region</th><th>Estimated volume (mL)</th><th>Share</th></tr>{vol_rows}</table>
 <p class="muted">V(mL) = N<sub>voxels</sub> × |det(A<sub>3×3</sub>)| / 1000 = N × s<sub>x</sub>·s<sub>y</sub>·s<sub>z</sub> / 1000. WT ⊇ TC ⊇ ET are nested — do not add them.</p>
 <h2>Accuracy against expert mask</h2>{metric_html}
 <h2>Reliability</h2>

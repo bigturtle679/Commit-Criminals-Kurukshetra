@@ -331,18 +331,26 @@ async function loadViewer(token, requestedWorld) {
   }
 
   if (access.prediction && overlayMode === 'segmentation') {
+    const scale = Math.min(Math.max(opacity / 0.55, 0.2), 1.0);
     if ($('chk-mesh-tumor').checked && availableMeshes.includes('tumor')) {
       meshes.push({
         url: getFileUrl('tumor.obj'),
         rgba255: [71, 199, 197, 255], // Whole tumour boundary, not a disjoint edema mesh
-        opacity: 0.85
+        opacity: Math.min(0.85 * scale, 1.0)
       });
     }
     if ($('chk-mesh-core').checked && availableMeshes.includes('core')) {
       meshes.push({
         url: getFileUrl('core.obj'),
         rgba255: [232, 117, 183, 255], // Nested tumour-core boundary
-        opacity: 0.95
+        opacity: Math.min(0.95 * scale, 1.0)
+      });
+    }
+    if ($('chk-mesh-et')?.checked && availableMeshes.includes('et')) {
+      meshes.push({
+        url: getFileUrl('et.obj'),
+        rgba255: [245, 166, 35, 255], // Enhancing tumour (BraTS ET)
+        opacity: Math.min(0.95 * scale, 1.0)
       });
     }
   }
@@ -379,6 +387,18 @@ function renderResultPanels(job) {
   $('val-TC').textContent = vols.TC.toFixed(2);
   $('val-ET').textContent = vols.ET.toFixed(2);
   $('val-ED').textContent = vols.ED.toFixed(2);
+
+  const voxelMm3 = res.voxel_volume_mm3 || (res.spacing_mm ? res.spacing_mm.reduce((a, b) => a * b, 1) : 1.0);
+  const counts = res.voxel_counts || {};
+  for (const k of ['WT', 'TC', 'ET']) {
+    const el = $(`formula-${k}`);
+    if (el && counts[k] !== undefined) {
+      const expertText = (res.metrics && res.metrics[k] && res.metrics[k].gt_volume_ml !== undefined && review?.access?.expert)
+        ? ` · Expert: ${res.metrics[k].gt_volume_ml.toFixed(2)} mL`
+        : '';
+      el.textContent = `${counts[k].toLocaleString()} voxels × ${voxelMm3.toFixed(2)} mm³ / 1,000 = ${vols[k].toFixed(2)} mL${expertText}`;
+    }
+  }
 
   // Tumour composition chart: disjoint compartments, colours match the viewer legend
   const total = vols.WT;
@@ -441,6 +461,12 @@ function renderResultPanels(job) {
       strong.textContent = key;
       tdKey.appendChild(strong);
 
+      const tdPred = document.createElement('td');
+      tdPred.textContent = score.pred_volume_ml !== undefined ? `${score.pred_volume_ml.toFixed(2)} mL` : '—';
+
+      const tdGt = document.createElement('td');
+      tdGt.textContent = score.gt_volume_ml !== undefined ? `${score.gt_volume_ml.toFixed(2)} mL` : '—';
+
       const dsc = score.dice === null ? 'N/A' : `${(score.dice * 100).toFixed(1)}%`;
       const sens = score.sensitivity === null ? 'N/A' : `${(score.sensitivity * 100).toFixed(1)}%`;
 
@@ -456,13 +482,13 @@ function renderResultPanels(job) {
       badgeSens.textContent = sens;
       tdSens.appendChild(badgeSens);
 
-      tr.append(tdKey, tdDsc, tdSens);
+      tr.append(tdKey, tdPred, tdGt, tdDsc, tdSens);
       tbody.appendChild(tr);
     }
   } else {
     const tr = document.createElement('tr');
     const td = document.createElement('td');
-    td.colSpan = 3;
+    td.colSpan = 5;
     td.className = 'muted-td';
     td.textContent = 'No expert reference provided. Run against BraTS demo to measure Dice/Sensitivity.';
     tr.appendChild(td);
@@ -524,7 +550,7 @@ function applyReviewGate() {
       option.value === 'uncertainty' ? !access.prediction || !currentJob?.result?.uncertainty?.available : false;
   }
   if (overlay.selectedOptions[0]?.disabled) overlay.value = 'none';
-  for (const id of ['chk-mesh-tumor', 'chk-mesh-core']) $(id).disabled = !access.prediction;
+  for (const id of ['chk-mesh-tumor', 'chk-mesh-core', 'chk-mesh-et']) if ($(id)) $(id).disabled = !access.prediction;
   for (const [id, allowed, filename] of [
     ['link-download-mask', access.prediction, 'segmentation.nii.gz'],
     ['link-download-mesh', access.prediction && currentJob?.result.meshes?.includes('tumor'), 'tumor.obj'],
@@ -810,6 +836,7 @@ $('range-opacity').oninput = e => {
 $('chk-mesh-brain').onchange = () => refreshViewer();
 $('chk-mesh-tumor').onchange = () => refreshViewer();
 $('chk-mesh-core').onchange = () => refreshViewer();
+if ($('chk-mesh-et')) $('chk-mesh-et').onchange = () => refreshViewer();
 
 $('btn-reset-view').onclick = () => {
   if (viewerReady) {

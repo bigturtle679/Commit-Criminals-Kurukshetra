@@ -137,6 +137,11 @@ notes/                Research documentation and design decisions
 
 **Commit Criminals** — Kurukshetra Hackathon (DI-02: NeuroScope 3D)
 
+## Dataset Credits & Citations
+
+- **BraTS 2021**: U. Baid, et al., "The RSNA-ASNR-MICCAI BraTS 2021 Benchmark on Brain Tumor Segmentation and Radiogenomic Classification," arXiv:2107.02314, 2021. DOI: [10.7937/jc8x-9874](https://doi.org/10.7937/jc8x-9874). Accessible via The Cancer Imaging Archive (TCIA) under CC BY 4.0.
+- **Medical Segmentation Decathlon (MSD)**: Brain Tumours (Task01_BrainTumour), 750 4D multi-modal volumes from BraTS 2016–2017. Accessible under CC BY-SA 4.0 (http://medicaldecathlon.com/).
+
 ## License
 
 See individual component licenses in [MODEL_CARD.md](MODEL_CARD.md).
