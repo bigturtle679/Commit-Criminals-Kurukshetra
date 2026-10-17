@@ -231,6 +231,7 @@ export function bindDashboard({ nv, getState, getJob, getView, changeOverlay, ch
     const volumes = job()?.result?.volumes_ml;
     if (!volumes) return;
     const shares = measureShares(volumes, geometry?.brain_ml);
+    $('no-tumour-note').hidden = !(Number.isFinite(volumes.WT) && volumes.WT === 0);
     for (const key of ['WT', 'TC', 'ET']) {
       const share = shares[key];
       $(`ring-${key}`).style.setProperty('--p', share === null ? 0 : share * 100);
@@ -273,10 +274,10 @@ export function bindDashboard({ nv, getState, getJob, getView, changeOverlay, ch
     }
     for (const check of checks) {
       const item = document.createElement('li');
-      item.className = `qc-item qc-${check.status === 'pass' ? 'pass' : check.status === 'fail' ? 'fail' : 'na'}`;
+      item.className = `qc-item qc-${['pass', 'fail', 'info'].includes(check.status) ? check.status : 'na'}`;
       const mark = document.createElement('span');
       mark.className = 'qc-mark';
-      mark.textContent = check.status === 'pass' ? '✓' : check.status === 'fail' ? '✗' : '–';
+      mark.textContent = check.status === 'pass' ? '✓' : check.status === 'fail' ? '✗' : check.status === 'info' ? 'i' : '–';
       mark.setAttribute('aria-label', check.status);
       const text = document.createElement('span');
       text.textContent = check.name;

@@ -32,7 +32,12 @@ def quality_checks(run_dir: Path, result: dict):
         f'shape {list(seg_img.shape)} vs {list(ref.shape)}; affine match')
     wt, tc, et = np.isin(seg, [1, 2, 4]), np.isin(seg, [1, 4]), seg == 4
     add('Region nesting ET ⊆ TC ⊆ WT', bool(np.all(tc <= wt) and np.all(et <= tc)), 'enhancing inside core inside whole tumour')
-    add('Tumour detected', bool(wt.any()), f'{int(wt.sum())} whole-tumour voxels')
+    if wt.any():
+        add('Tumour regions predicted', True, f'{int(wt.sum())} whole-tumour voxels')
+    else:
+        # A tumour-free result is valid (e.g. a healthy scan); report it, do not flag it as a failure.
+        checks.append({'name': 'No tumour predicted', 'status': 'info',
+                       'detail': '0 tumour voxels — expected for a tumour-free scan; otherwise review the input'})
     v = result.get('volumes_ml') or {}
     consistent = all(k in v for k in ('WT', 'TC', 'ED')) and abs(v['WT'] - v['TC'] - v['ED']) <= 0.01
     add('Volume consistency WT = TC + ED', consistent,
@@ -91,7 +96,7 @@ body{{font:13px/1.55 Inter,Arial,sans-serif;color:#111;max-width:860px;margin:24
 h1{{font-size:22px;margin:0}} h2{{font-size:15px;margin:22px 0 8px;border-bottom:1px solid #ccc;padding-bottom:4px}}
 table{{border-collapse:collapse;width:100%}} td,th{{border:1px solid #ccc;padding:5px 8px;text-align:left}} th{{background:#f1f3f4}}
 .banner{{background:#fff4e5;border:1px solid #f0b35b;padding:10px 12px;border-radius:6px;margin:14px 0}}
-.muted{{color:#555;font-size:12px}} .mono{{font-family:monospace}} tr.fail td{{background:#fde8e8}} tr.pass td:nth-child(2){{color:#11793b;font-weight:600}}
+.muted{{color:#555;font-size:12px}} .mono{{font-family:monospace}} tr.fail td{{background:#fde8e8}} tr.pass td:nth-child(2){{color:#11793b;font-weight:600}} tr.info td:nth-child(2){{color:#2a5d9f;font-weight:600}}
 .figs{{display:flex;gap:10px}} figure{{margin:0;flex:1;text-align:center}} figure img{{width:100%;background:#000;border-radius:4px}}
 .legend span{{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 4px 0 12px}}
 @media print{{button{{display:none}} body{{margin:0}}}}

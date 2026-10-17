@@ -296,3 +296,6 @@ input[type=range],input[type=checkbox],.checkbox-tag input { accent-color:#c6d5d
 .qc-na .qc-mark { background:#1d2328; color:#8f9aa1; border:1px solid #333c42; }
 .qc-pending { font-size:11px; color:#8f9aa1; }
 .btn-report-primary { background:#e4e7ea!important; color:#101417!important; border-color:#e4e7ea!important; font-weight:600; }
+.no-tumour-note { margin:0 0 6px; padding:10px 12px; border:1px solid #2f6b66; background:#0f2523; border-radius:10px; color:#bfe9e4; font-size:11px; line-height:1.6; }
+.no-tumour-note b { color:#e6fbf8; }
+.qc-info .qc-mark { background:#14243a; color:#9cc3ff; border:1px solid #35557f; }

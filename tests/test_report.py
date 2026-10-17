@@ -57,3 +57,10 @@ def test_report_escapes_text_and_contains_disclaimer(run_dir):
     assert '&lt;script&gt;' in page
     assert 'does not present model output as a diagnosis' in page
     assert page.count('data:image/png;base64,') == 3
+
+
+def test_tumour_free_scan_is_reported_not_failed(run_dir):
+    nib.save(nib.Nifti1Image(np.zeros((20, 24, 16), np.uint8), np.eye(4)), run_dir / 'segmentation.nii.gz')
+    checks = by_name(report.quality_checks(run_dir, {'volumes_ml': {'WT': 0.0, 'TC': 0.0, 'ET': 0.0, 'ED': 0.0}}))
+    assert checks['No tumour predicted'] == 'info'
+    assert 'fail' not in checks.values()
