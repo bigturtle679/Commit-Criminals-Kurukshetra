@@ -78,6 +78,9 @@
               <div class="zone-status" id="status-zip" role="status" aria-live="polite"></div>
               <button class="zone-remove" id="remove-zip" type="button" hidden aria-label="Remove zip archive">✕ Remove ZIP</button>
             </div>
+            <label class="zip-expert-file">Expert mask <small>(optional, separate .nii / .nii.gz — enables the AI-vs-expert graph)</small>
+              <input type="file" id="zip-expert" accept=".nii,.gz,.nii.gz">
+            </label>
             <div class="zip-help">
               <span class="info-sm">i</span>
               <span>Direct ZIP upload automatically identifies <code>t1</code>, <code>t1c</code>, <code>t2</code>, and <code>flair</code> volume channels.</span>

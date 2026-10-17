@@ -299,3 +299,52 @@ input[type=range],input[type=checkbox],.checkbox-tag input { accent-color:#c6d5d
 .no-tumour-note { margin:0 0 6px; padding:10px 12px; border:1px solid #2f6b66; background:#0f2523; border-radius:10px; color:#bfe9e4; font-size:11px; line-height:1.6; }
 .no-tumour-note b { color:#e6fbf8; }
 .qc-info .qc-mark { background:#14243a; color:#9cc3ff; border:1px solid #35557f; }
+
+/* Separate expert mask next to the zip upload */
+.zip-expert-file { display:grid; gap:5px; margin:10px 2px 0; font-size:10.5px; color:#b8c3c9; }
+.zip-expert-file small { color:#7d8890; }
+.zip-expert-file input { font-size:10px; color:#a2adb4; }
+
+/* AI vs expert grouped bar chart */
+.expert-compare-card .card-title-row { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+.seg-toggle { display:flex; background:#101619; border:1px solid #2b3439; border-radius:8px; padding:2px; }
+.seg-toggle button { background:transparent; border:0; color:#98a3aa; font-size:10px; padding:5px 8px; border-radius:6px; cursor:pointer; }
+.seg-toggle button[aria-pressed=true] { background:#303b41; color:#fff; }
+.compare-legend { display:flex; gap:14px; margin:10px 0 2px; font-size:10.5px; color:#c4ced3; }
+.compare-legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
+.expert-chart { margin:4px 0; font-size:10px; color:#8f9aa1; }
+.expert-chart svg { display:block; overflow:visible; }
+.cmp-grid { stroke:#232b30; stroke-width:1; }
+.cmp-baseline { stroke:#4a555c; stroke-width:1; }
+.cmp-axis { fill:#7d8890; font-size:8px; font-variant-numeric:tabular-nums; }
+.cmp-cat { fill:#c4ced3; font-size:10px; font-weight:600; }
+.cmp-value { fill:#e6ecef; font-size:8.5px; font-variant-numeric:tabular-nums; }
+.cmp-bar { cursor:default; outline:none; }
+.cmp-bar:hover path, .cmp-bar:focus-visible path { filter:brightness(1.18); stroke:#e4e7ea; stroke-width:1; }
+.expert-metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:6px 0 8px; }
+.cmp-metric { display:grid; gap:2px; padding:8px; border:1px solid #262e33; border-radius:8px; background:#0f1417; }
+.cmp-metric b { font-size:10px; color:#9aa5ab; font-weight:600; }
+.cmp-dice { font-size:13px; color:#f2f3f4; font-weight:600; font-variant-numeric:tabular-nums; }
+.cmp-metric small { font-size:9px; color:#8f9aa1; line-height:1.4; }
+.compare-table-wrap summary { font-size:10px; color:#8f9aa1; margin:4px 0; }
+.compare-table-wrap table { font-size:10px; }
+.cmp-ref { stroke:#c9d2d7; stroke-width:1; stroke-dasharray:3 3; opacity:.55; }
+.compare-legend { flex-wrap:wrap; row-gap:4px; }
+.compare-legend .legend-dash { width:14px; height:0; border-top:1px dashed #c9d2d7; border-radius:0; vertical-align:3px; }
+
+/* Training curves (horizontal line charts) */
+.training-card .train-fig { margin:10px 0 0; }
+.training-card figcaption { font-size:11px; color:#d6dde1; margin-bottom:2px; }
+.training-card figcaption span { color:#7d8890; font-size:9.5px; margin-left:6px; }
+.line-chart { background:#0c1013; border:1px solid #232a2f; border-radius:8px; padding:4px 2px 0; }
+.line-chart svg { display:block; }
+.lc-grid { stroke:#1f272c; stroke-width:1; }
+.lc-baseline { stroke:#4a555c; stroke-width:1; }
+.lc-axis { fill:#7d8890; font-size:8px; font-variant-numeric:tabular-nums; }
+.lc-cross { stroke:#9aa5ab; stroke-width:1; stroke-dasharray:2 2; }
+.compare-legend .legend-line { width:16px; height:0; border-top:2px solid; border-radius:0; vertical-align:3px; background:none!important; }
+.compare-legend .legend-line.dashed { border-top-style:dashed; }
+.compare-legend .legend-line.dotted { border-top-style:dotted; }
+.cmp-end { font-size:7.5px; font-variant-numeric:tabular-nums; }
+.cmp-point { outline:none; }
+.cmp-point:hover circle:last-child, .cmp-point:focus-visible circle:last-child { r:5; }

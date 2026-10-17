@@ -109,6 +109,10 @@
             <span class="zip-drop-hint">Auto-detects T1, T1c/T1ce, T2, FLAIR and the expert mask (seg) from file names · BraTS 2021 &amp; 2023 naming · ET label detected automatically</span>
             <span id="zip-detected" class="zip-detected" aria-live="polite"></span>
           </label>
+          <label class="zip-expert-file">
+            <span>Expert mask <small>(optional — choose it first, then drop the zip; shows the AI-vs-expert graph)</small></span>
+            <input type="file" id="zip-expert" accept=".nii,.gz,.nii.gz">
+          </label>
           <details class="nifti-details">
             <summary>Or upload the four NIfTI files one by one</summary>
           <form id="upload-form" class="upload-form">
@@ -550,6 +554,23 @@
             </div>
           </div>
 
+          <!-- Training curves of our in-house ResEnc-M (real logged values) -->
+          <div class="card training-card">
+            <div class="card-header-simple">
+              <span class="card-pill">MODEL TRAINING</span>
+              <h3>ResEnc-M training: loss &amp; Dice</h3>
+            </div>
+            <figure class="train-fig">
+              <figcaption>train_loss <span>Dice + BCE, mean of every 10 steps</span></figcaption>
+              <div id="chart-train-loss" class="line-chart" role="img" aria-label="Training loss by training step"></div>
+            </figure>
+            <figure class="train-fig">
+              <figcaption>val_mean_dice <span>mean of WT, TC, ET on 20 validation patients</span></figcaption>
+              <div id="chart-val-dice" class="line-chart" role="img" aria-label="Validation Dice by training step"></div>
+            </figure>
+            <p class="chart-note" id="training-note">Loading training log…</p>
+          </div>
+
           <!-- Validation evidence: measured, not marketing -->
           <div class="card evidence-card">
             <div class="card-header-simple">
@@ -575,6 +596,26 @@
             </ul>
           </div>
 
+        </div>
+
+        <!-- AI vs expert comparison (only when an expert mask was supplied) -->
+        <div class="card expert-compare-card" data-answer="expert" hidden>
+          <div class="card-title-row">
+            <h4>AI vs expert · Dice &amp; Sensitivity</h4>
+          </div>
+          <div class="compare-legend" aria-hidden="true">
+            <span><i class="legend-line" style="border-color:#3b93c9"></i>AI Dice</span>
+            <span><i class="legend-line" style="border-color:#b5862a"></i>AI sensitivity</span>
+            <span><i class="legend-line dashed" style="border-color:#8e6fc4"></i>Expert vs expert (Dice)</span>
+            <span><i class="legend-line dotted" style="border-color:#a7b0b6"></i>Expert reference = 100%</span>
+          </div>
+          <div id="expert-chart" class="expert-chart" role="img" aria-label="Line chart across WT, TC and ET: AI Dice, AI sensitivity, expert-versus-expert agreement and the expert reference"></div>
+          <div id="expert-metrics" class="expert-metrics"></div>
+          <details class="compare-table-wrap">
+            <summary>Table view</summary>
+            <div class="table-container"><table class="metrics-table" id="expert-table"></table></div>
+          </details>
+          <p class="chart-note">Recomputed on the server from the saved AI mask and your expert mask (same grid, labels 1/2/4). Dice 1.0 = identical outlines; expert-vs-expert line = typical agreement between two radiologists (BraTS, Menze et al., IEEE TMI 2015). Y-axis starts at 50%.</p>
         </div>
 
         <!-- Export Suite -->

@@ -64,3 +64,18 @@ def test_tumour_free_scan_is_reported_not_failed(run_dir):
     checks = by_name(report.quality_checks(run_dir, {'volumes_ml': {'WT': 0.0, 'TC': 0.0, 'ET': 0.0, 'ED': 0.0}}))
     assert checks['No tumour predicted'] == 'info'
     assert 'fail' not in checks.values()
+
+
+def test_expert_comparison_matches_known_overlap(run_dir):
+    seg = np.asarray(nib.load(str(run_dir / 'segmentation.nii.gz')).dataobj)
+    nib.save(nib.Nifti1Image(seg, np.eye(4)), run_dir / 'expert.nii.gz')       # identical masks
+    same = report.expert_comparison(run_dir)['regions']
+    assert all(same[k]['dice'] == 1.0 and same[k]['hd95_mm'] == 0.0 for k in ('WT', 'TC', 'ET'))
+    shifted = np.roll(seg, 2, axis=0)                                             # expert shifted by 2 voxels
+    nib.save(nib.Nifti1Image(shifted, np.eye(4)), run_dir / 'expert.nii.gz')
+    wt = report.expert_comparison(run_dir)['regions']['WT']
+    assert 0 < wt['dice'] < 1 and wt['pred_voxels'] == wt['expert_voxels'] and wt['hd95_mm'] == pytest.approx(2.0)
+
+
+def test_expert_comparison_absent_without_expert(run_dir):
+    assert report.expert_comparison(run_dir) is None

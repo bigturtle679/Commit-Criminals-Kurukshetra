@@ -12,6 +12,16 @@ export const LABELS = Object.freeze({
 });
 
 const AXIS_NAMES = ['sagittal', 'coronal', 'axial']; // RAS axis index -> plane name
+// Validated (dark surface, CVD-safe) two-series palette for the AI-vs-expert chart.
+export const COMPARE_COLORS = Object.freeze({ dice: '#3b93c9', sensitivity: '#b5862a', interrater: '#8e6fc4', reference: '#a7b0b6' });
+// Typical agreement between two expert raters (Dice), BraTS benchmark: Menze et al., IEEE TMI 2015.
+export const INTER_RATER_DICE = Object.freeze({ WT: 85, TC: 75, ET: 74 });
+
+// Values for the grouped chart: per region, Dice and sensitivity against the expert mask (in %).
+export function compareSeries(regions) {
+  const pct = v => (v == null ? null : v * 100);
+  return ['WT', 'TC', 'ET'].filter(k => regions?.[k]).map(k => ({ region: k, dice: pct(regions[k].dice), sensitivity: pct(regions[k].sensitivity) }));
+}
 
 export function allowedOverlay(selected, access, uncertaintyAvailable) {
   if (selected === 'expert') return access.expert ? 'expert' : 'none';
@@ -251,12 +261,122 @@ export function bindDashboard({ nv, getState, getJob, getView, changeOverlay, ch
     } catch { geometry = null; }
     if (job()?.id !== current.id) return;
     renderMeasures();
+    loadExpertComparison(current.id);
     loadQuality(current.id);
     const reportLink = $('link-open-report');
     if (reportLink) reportLink.href = `/api/jobs/${encodeURIComponent(current.id)}/report.html`;
     renderModalities();
     centreOnTumour();
   }
+
+  // ---------- AI vs expert grouped bar chart ----------
+  let comparison = null;
+  let compareMeasure = 'ml';
+  const NS = 'http://www.w3.org/2000/svg';
+  const fmt = (v, measure) => (v == null ? 'n/a' : measure === 'share' ? `${v.toFixed(1)}%` : `${v.toFixed(v < 10 ? 2 : 1)}`);
+
+  async function loadExpertComparison(id) {
+    comparison = null;
+    $('expert-chart').replaceChildren();
+    $('expert-metrics').replaceChildren();
+    if (!getState().expert) return;
+    try {
+      const response = await fetch(`/api/jobs/${encodeURIComponent(id)}/expert-comparison`);
+      comparison = response.ok ? await response.json() : null;
+    } catch { comparison = null; }
+    if (job()?.id !== id) return;
+    renderComparison();
+  }
+
+  function renderComparison() {
+    const chart = $('expert-chart');
+    chart.replaceChildren();
+    $('expert-metrics').replaceChildren();
+    $('expert-table').replaceChildren();
+    if (!comparison) {
+      chart.textContent = 'Expert comparison unavailable for this analysis.';
+      return;
+    }
+    const data = compareSeries(comparison.regions);
+    // Line chart, x = region (WT -> TC -> ET), y = percent. Four lines: AI Dice, AI sensitivity,
+    // expert-vs-expert agreement and the expert reference (100% by definition).
+    const W = 340, H = 190, L = 34, R = 96, T = 12, B = 24, yMin = 50, yMax = 100;
+    const xs = data.map((_, i) => L + (W - L - R) * (data.length === 1 ? 0.5 : i / (data.length - 1)));
+    const y = v => T + (H - T - B) * (1 - (Math.max(yMin, Math.min(yMax, v)) - yMin) / (yMax - yMin));
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.setAttribute('width', '100%');
+    const el = (tag, attrs, parent = svg) => { const n = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); parent.append(n); return n; };
+    for (const v of [50, 60, 70, 80, 90, 100]) {
+      el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v), class: 'cmp-grid' });
+      el('text', { x: L - 5, y: y(v) + 3, class: 'cmp-axis', 'text-anchor': 'end' }).textContent = `${v}%`;
+    }
+    data.forEach((d, i) => { el('text', { x: xs[i], y: H - 7, class: 'cmp-cat', 'text-anchor': 'middle' }).textContent = d.region; });
+    const lines = [
+      { key: 'reference', name: 'Expert reference', values: data.map(() => 100), dash: '1 3', tip: () => 'Expert mask = reference (100% by definition)' },
+      { key: 'interrater', name: 'Expert vs expert', values: data.map(d => INTER_RATER_DICE[d.region]), dash: '5 3',
+        tip: (d, v) => `${d.region}: two expert raters typically agree at ~${v}% Dice (BraTS, Menze et al. 2015)` },
+      { key: 'sensitivity', name: 'AI sensitivity', values: data.map(d => d.sensitivity), dash: '',
+        tip: (d, v) => `${d.region} AI sensitivity ${v.toFixed(1)}% — share of the expert's tumour the AI found` },
+      { key: 'dice', name: 'AI Dice', values: data.map(d => d.dice), dash: '',
+        tip: (d, v) => `${d.region} AI Dice ${v.toFixed(1)}% — overlap with the expert outline` },
+    ];
+    const ends = [];
+    for (const line of lines) {
+      const pts = line.values.map((v, i) => (v == null ? null : [xs[i], y(v), v, data[i]])).filter(Boolean);
+      if (!pts.length) continue;
+      el('path', { d: pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(''), fill: 'none',
+        stroke: COMPARE_COLORS[line.key], 'stroke-width': line.dash ? 1.4 : 2, 'stroke-dasharray': line.dash, 'stroke-linejoin': 'round' });
+      for (const p of pts) {
+        const g = el('g', { class: 'hbar-row cmp-point', tabindex: 0, 'data-tip': line.tip(p[3], p[2]) });
+        g.setAttribute('aria-label', g.getAttribute('data-tip'));
+        el('circle', { cx: p[0], cy: p[1], r: 6, fill: 'transparent' }, g);                       // hit target
+        el('circle', { cx: p[0], cy: p[1], r: line.dash ? 2.5 : 3.5, fill: COMPARE_COLORS[line.key], stroke: '#111419', 'stroke-width': 1.5 }, g);
+      }
+      const last = pts.at(-1);
+      ends.push({ y: last[1], text: `${line.name} ${Math.round(last[2])}%`, color: COMPARE_COLORS[line.key] });
+    }
+    // direct labels at line ends, nudged apart so they never overlap
+    ends.sort((a, b) => a.y - b.y);
+    for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 10) ends[i].y = ends[i - 1].y + 10;
+    for (const e of ends) el('text', { x: W - R + 6, y: e.y + 3, class: 'cmp-end', fill: '#d6dde1' }).textContent = e.text;
+    chart.append(svg);
+
+    // agreement strip
+    for (const k of ['WT', 'TC', 'ET']) {
+      const r = comparison.regions[k];
+      if (!r) continue;
+      const cell = document.createElement('div');
+      cell.className = 'cmp-metric';
+      const pct = v => (v == null ? 'n/a' : `${(v * 100).toFixed(1)}%`);
+      cell.innerHTML = '';
+      const title = document.createElement('b'); title.textContent = k;
+      const dice = document.createElement('span'); dice.className = 'cmp-dice'; dice.textContent = `Dice ${pct(r.dice)}`;
+      const rest = document.createElement('small');
+      rest.textContent = `Sens ${pct(r.sensitivity)} · Prec ${pct(r.precision)} · HD95 ${r.hd95_mm == null ? 'n/a' : r.hd95_mm + ' mm'}`;
+      cell.append(title, dice, rest);
+      $('expert-metrics').append(cell);
+    }
+    // table view (accessible equivalent of the chart)
+    const table = $('expert-table');
+    const head = table.createTHead().insertRow();
+    for (const h of ['Region', 'AI mL', 'Expert mL', 'AI voxels', 'Expert voxels', 'Dice', 'Sens.', 'Prec.', 'HD95 mm']) {
+      const th = document.createElement('th'); th.textContent = h; head.append(th);
+    }
+    const body = table.createTBody();
+    for (const k of ['WT', 'TC', 'ET']) {
+      const r = comparison.regions[k]; if (!r) continue;
+      const row = body.insertRow();
+      for (const v of [k, r.pred_ml, r.expert_ml, r.pred_voxels.toLocaleString(), r.expert_voxels.toLocaleString(), r.dice, r.sensitivity ?? 'n/a', r.precision ?? 'n/a', r.hd95_mm ?? 'n/a'])
+        row.insertCell().textContent = v;
+    }
+  }
+
+  for (const button of document.querySelectorAll('[data-measure]')) button.addEventListener('click', () => {
+    compareMeasure = button.dataset.measure;
+    for (const b of document.querySelectorAll('[data-measure]')) b.setAttribute('aria-pressed', String(b === button));
+    renderComparison();
+  });
 
   async function loadQuality(id) {
     const list = $('qc-list');

@@ -888,3 +888,6 @@ footer .brand { font-size: 20px; color: var(--ink); }
   html { scroll-behavior: auto; }
   * { transition: none !important; animation: none !important; }
 }
+
+.zip-expert-file { display:grid; gap:6px; margin:12px 4px 0; font-size:13px; color:#4b4860; }
+.zip-expert-file small { color:#7a7690; }

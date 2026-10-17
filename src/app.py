@@ -208,6 +208,14 @@ def execute(job_id, paths, expert, expert_et, name, model_name='ensemble'):
         job.update(status='running', message=message)
     try:
         result = run_case(paths, RUNS / job_id, update, expert, expert_et, name, model_name=model_name)
+        if expert:
+            # Pre-compute (and cache) the AI-vs-expert comparison here, so opening the result
+            # never runs the heavy HD95 calculation while the browser is loading the MRI.
+            update('Comparing prediction with the expert mask')
+            try:
+                report.expert_comparison(RUNS / job_id)
+            except Exception:
+                logger.warning('Expert comparison pre-compute failed for %s', job_id, exc_info=True)
         job.update(status='complete', message='Analysis complete', result=result)
     except Exception as e:
         traceback.print_exc()
@@ -384,8 +392,12 @@ def detect_et_label(mask_path):
 
 
 @app.post('/api/analyze-zip')
-async def analyze_zip(archive: UploadFile = File(...), model: str = Form('ensemble')):
-    """One-file upload: a .zip with T1, T1c, T2, FLAIR and optionally the expert mask."""
+async def analyze_zip(archive: UploadFile = File(...), model: str = Form('ensemble'),
+                      expert: UploadFile | None = File(None)):
+    """Zip of the four MRI scans (T1, T1c, T2, FLAIR); an expert mask is a separate, optional file.
+
+    Any seg/mask file inside the zip is ignored so the zip path only ever carries scans.
+    """
     import zipfile
     model_name = validate_model(model)
     if not (archive.filename or '').lower().endswith('.zip'):
@@ -408,6 +420,7 @@ async def analyze_zip(archive: UploadFile = File(...), model: str = Form('ensemb
         with bundle:
             members = zip_intake.detect(bundle)
             paths, detected = {}, {}
+            members.pop('expert', None)        # scans only from the zip
             for role, member in members.items():
                 suffix = '.nii.gz' if member.filename.lower().endswith('.nii.gz') else '.nii'
                 target = job_dir / (role + suffix)  # fixed name: never the archive's own path
@@ -416,7 +429,20 @@ async def analyze_zip(archive: UploadFile = File(...), model: str = Form('ensemb
                 paths[role] = target
                 detected[role] = Path(member.filename).name
         zip_path.unlink(missing_ok=True)
-        expert = paths.pop('expert', None)
+        expert_path = None
+        if expert is not None and expert.filename:
+            if not expert.filename.lower().endswith(('.nii', '.nii.gz')):
+                raise ValueError('The expert mask must be a NIfTI file (.nii or .nii.gz).')
+            expert_path = job_dir / ('expert_upload' + ('.nii.gz' if expert.filename.lower().endswith('.nii.gz') else '.nii'))
+            size = 0
+            with expert_path.open('wb') as dest:
+                while chunk := await expert.read(1024 * 1024):
+                    size += len(chunk)
+                    if size > 1024 * 1024 * 1024:
+                        raise ValueError('Expert mask must be under 1 GB.')
+                    dest.write(chunk)
+            detected['expert'] = Path(expert.filename).name
+        expert = expert_path
         expert_et = detect_et_label(expert) if expert else 4
     except Exception as e:
         with GUARD:
@@ -505,6 +531,18 @@ def job_quality(uid: str):
         return {'checks': report.quality_checks(run_dir, JOBS[uid].get('result') or {})}
     except FileNotFoundError:
         raise HTTPException(404, 'Segmentation files for this analysis are no longer available.')
+
+
+@app.get('/api/jobs/{uid}/expert-comparison')
+def job_expert_comparison(uid: str):
+    run_dir = completed_run_dir(uid)
+    try:
+        result = report.expert_comparison(run_dir)
+    except (FileNotFoundError, ValueError) as e:
+        raise HTTPException(404, str(e))
+    if result is None:
+        raise HTTPException(404, 'No expert mask was supplied for this analysis.')
+    return result
 
 
 @app.get('/api/jobs/{uid}/report.html')
