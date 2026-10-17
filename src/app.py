@@ -120,7 +120,7 @@ PATIENT_CASES = {
         'code': 'BraTS-GLI-00000-000',
         'name': 'BraTS GLI-00000',
         'folder': ROOT / 'data/demo',
-        'et_label': 3,
+        'et_label': 4,
         'description': 'Four MRI sequences with an expert reference mask.'
     },
     '00002': {
@@ -128,7 +128,7 @@ PATIENT_CASES = {
         'code': 'BraTS-GLI-00002-000',
         'name': 'BraTS GLI-00002',
         'folder': ROOT / 'data/BraTS-GLI-00002-000',
-        'et_label': 3,
+        'et_label': 4,
         'description': 'Four MRI sequences with an expert reference mask.'
     },
     '00003': {
@@ -136,7 +136,7 @@ PATIENT_CASES = {
         'code': 'BraTS-GLI-00003-000',
         'name': 'BraTS GLI-00003',
         'folder': ROOT / 'data/BraTS-GLI-00003-000',
-        'et_label': 3,
+        'et_label': 4,
         'description': 'Four MRI sequences with an expert reference mask.'
     }
 }
@@ -327,13 +327,21 @@ def demo(model: str = Query('ensemble'), case: str = Query('00000')):
     if not all(p.exists() for p in paths.values()):
         raise HTTPException(404, f"MRI scans missing for case {case_info['name']}.")
 
+    expert_file = expert if expert.exists() else None
+    demo_et = case_info.get('et_label', 4)
+    if expert_file:
+        try:
+            demo_et = detect_et_label(expert_file)
+        except Exception:
+            demo_et = case_info.get('et_label', 4)
+
     uid = new_job()
     POOL.submit(
         execute,
         uid,
         paths,
-        expert if expert.exists() else None,
-        case_info['et_label'],
+        expert_file,
+        demo_et,
         f"{case_info['name']} ({model_name.upper()})",
         model_name=model_name
     )
