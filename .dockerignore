@@ -1,0 +1,14 @@
+.venv/
+.git/
+.gitignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+work/runs/*
+tests/
+.vscode/
+*.swp
+*.DS_Store
+Thumbs.db

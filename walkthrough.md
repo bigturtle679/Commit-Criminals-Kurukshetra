@@ -96,45 +96,47 @@ graph TD
 
 | Metric / Aspect | 80:20 Hybrid Ensemble | SwinUNETR (Model A) | ResEnc-M (Model B) |
 |---|:---:|:---:|:---:|
-| **Overall Mean Dice** | **0.9125 (91.3%)** | 0.9096 (91.0%) | 0.8350 (83.5%) |
-| **Overall Mean Sensitivity** | **0.9057 (90.6%)** | 0.9007 (90.1%) | 0.8579 (85.8%) |
-| **New / Unseen Data Dice** | **0.9149 (91.5%)** | 0.9108 (91.1%) | 0.8430 (84.3%) |
-| **New / Unseen Data Sensitivity** | **0.9097 (91.0%)** | 0.9018 (90.2%) | **0.8725 (87.3%)** |
-| **Whole Tumor (WT) Mean Dice** | **0.9228 (92.3%)** | 0.9205 (92.1%) | 0.8525 (85.3%) |
-| **Tumor Core (TC) Mean Dice** | **0.9282 (92.8%)** | 0.9252 (92.5%) | 0.8390 (83.9%) |
-| **Enhancing Tumor (ET) Mean Dice** | **0.8866 (88.7%)** | 0.8833 (88.3%) | 0.8134 (81.3%) |
+| **50 Held-Out Mean Dice** | **0.9480 (94.8%)** | 0.9479 (94.8%) | **0.8696 (87.0%)** |
+| **50 Held-Out Sensitivity** | **0.9451 (94.5%)** | 0.9450 (94.5%) | **0.9083 (90.8%)** |
+| **Whole Tumor (WT) Dice** | **0.9492 (94.9%)** | 0.9491 (94.9%) | **0.8758 (87.6%)** |
+| **Tumor Core (TC) Dice** | **0.9594 (95.9%)** | 0.9591 (95.9%) | **0.8743 (87.4%)** |
+| **Enhancing Tumor (ET) Dice** | **0.9355 (93.6%)** | 0.9355 (93.6%) | **0.8586 (85.9%)** |
+| **20-Patient Pilot Mean Dice** | **0.9010 (90.1%)** | 0.9015 (90.2%) | 0.7811 (78.1%) |
 | **Inference Latency** | 9.24 s | 6.84 s | **4.01 s** |
-| **Primary Strength** | Fused accuracy & robustness | High precision & global attention | Rapid speed & high boundary recall |
+| **Peak GPU VRAM** | 1.68 GB | 1.65 GB | **1.08 GB** |
+| **Primary Strength** | Consensus stability & hierarchy | High precision & global attention | Rapid speed & high boundary recall |
 
 ---
 
-### Detailed Multi-Cohort Performance
+### Detailed Empirical Cohort Performance
 
-#### A. Overall Mean Performance (Across All Multi-Year Challenge Cohorts)
+#### A. 50 Random Held-Out Patients (Seed 42, `heldout50/results.json`)
+*Strictly unseen data for in-house ResEnc-M; verified zero patient overlap.*
 
-| Model Architecture | Overall Mean Dice | Overall Mean Sensitivity | Whole Tumor (WT) | Tumor Core (TC) | Enhancing Tumor (ET) | Latency |
+| Model Architecture | Overall Mean Dice | Overall Mean Sensitivity | Whole Tumor (WT) | Tumor Core (TC) | Enhancing Tumor (ET) | Latency | Peak VRAM |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **80:20 Hybrid Ensemble** | **0.9480 (94.8%)** | **0.9451 (94.5%)** | **0.9492** (94.4% Sens) | **0.9594** (95.9% Sens) | **0.9355** (93.3% Sens) | 9.24 s | 1.68 GB |
+| **SwinUNETR (Model A)** | 0.9479 (94.8%) | 0.9450 (94.5%) | 0.9491 (94.4% Sens) | 0.9591 (95.8% Sens) | 0.9355 (93.3% Sens) | 6.84 s | 1.65 GB |
+| **ResEnc-M (Model B — Unseen)** | **0.8696 (87.0%)** | **0.9083 (90.8%)** | **0.8758** (91.8% Sens) | **0.8743** (91.4% Sens) | **0.8586** (89.4% Sens) | **4.01 s** | **1.08 GB** |
+
+*Paired 50-Case Analysis*: Ensemble vs. SwinUNETR: WT better in 26 / worse in 21; TC better in 25 / worse in 24; ET better in 23 / worse in 25 (max delta $< 0.01$).
+
+#### B. 20-Patient Multi-Modality Pilot Cohort (`pilot20_ensemble/results.json`)
+
+| Model Architecture | Overall Mean Dice | Overall Mean Sensitivity | WT (Dice / Sens) | TC (Dice / Sens) | ET (Dice / Sens) | Latency |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
-| **80:20 Hybrid Ensemble** | **0.9125 (91.3%)** | **0.9057 (90.6%)** | **0.9228** (91.1% Sens) | **0.9282** (92.2% Sens) | **0.8866** (88.4% Sens) | 9.24 s |
-| **SwinUNETR (Model A)** | 0.9096 (91.0%) | 0.9007 (90.1%) | 0.9205 (90.6% Sens) | 0.9252 (91.8% Sens) | 0.8833 (87.9% Sens) | 6.84 s |
-| **ResEnc-M (Model B)** | 0.8350 (83.5%) | 0.8579 (85.8%) | 0.8525 (87.6% Sens) | 0.8390 (85.9% Sens) | 0.8134 (83.9% Sens) | **4.01 s** |
+| **80:20 Hybrid Ensemble** | **0.9010 (90.1%)** | **0.8768 (87.7%)** | **0.9045** / **0.8896** | **0.9232** / **0.8988** | **0.8753** / **0.8419** | 9.24 s |
+| **SwinUNETR (Model A)** | 0.9015 (90.2%) | 0.8786 (87.9%) | 0.9050 / 0.8910 | 0.9235 / 0.9002 | 0.8759 / 0.8447 | 6.84 s |
+| **ResEnc-M (Model B)** | 0.7811 (78.1%) | 0.7579 (75.8%) | 0.8166 / 0.8094 | 0.7676 / 0.7356 | 0.7592 / 0.7288 | **4.01 s** |
 
-#### B. Performance on Strictly New / Unseen Data (BraTS 2023-GLI, 2024 Multi-Center & Held-Out 50)
+#### C. Real Clinical Smoke & Baseline Cases (`BraTS-GLI` 2023 Cases)
 
-| Model Architecture | New Data Mean Dice | New Data Mean Sensitivity | WT (Dice / Sens) | TC (Dice / Sens) | ET (Dice / Sens) | Generalization Status |
-|---|:---:|:---:|:---:|:---:|:---:|---|
-| **80:20 Hybrid Ensemble** | **0.9149 (91.5%)** | **0.9097 (91.0%)** | **0.9207** / **0.9048** | **0.9318** / **0.9292** | **0.8922** / **0.8951** | **Best (+0.41% over SwinUNETR)** |
-| **SwinUNETR (Model A)** | 0.9108 (91.1%) | 0.9018 (90.2%) | 0.9169 / 0.8966 | 0.9282 / 0.9225 | 0.8874 / 0.8863 | High precision anchor |
-| **ResEnc-M (Model B)** | 0.8430 (84.3%) | 0.8725 (87.3%) | 0.8536 / 0.8809 | 0.8538 / 0.8799 | 0.8215 / 0.8568 | High recall boundary arbitrator |
-
-#### C. Cross-Cohort Breakdown Summary
-
-| Evaluation Cohort | Ensemble Dice | SwinUNETR Dice | ResEnc-M Dice | SegResNet Baseline | Cohort Significance |
+| Evaluation Case / Baseline | Ensemble Dice | SwinUNETR Dice | ResEnc-M Dice | SegResNet Baseline | Significance |
 |---|:---:|:---:|:---:|:---:|---|
-| **BraTS 2018 Benchmark** | **0.9492** | 0.9491 | 0.8758 | 0.9026 | Historical benchmark; ensemble matches/beats best single model |
-| **BraTS 2020 / 2021 (50 Held-Out)** | **0.9492** | 0.9491 | 0.8758 | 0.7356 | Paired testing: ensemble wins on WT in 26/50 and TC in 25/50 cases |
-| **BraTS 2019 (335 Patients)** | **0.9210** | 0.9180 | 0.8620 | 0.8920 | Large-scale multi-institution validation (259 HGG, 76 LGG) |
-| **BraTS 2023 Adult Glioma (GLI)** | **0.9240** | 0.9197 | 0.8540 | 0.7356 | Modern RSNA-ASNR-MICCAI nomenclature with native ET label 3 |
-| **BraTS 2024 Multi-Center (>2,000)** | **0.8890** | 0.8820 | 0.8310 | 0.7840 | Multi-scanner & BraTS-Africa cohort with real-world noise |
+| **BraTS-GLI-00000-000** | — | **0.9677** (Mean) | — | 0.9211 (Mean) | Clean high-contrast glioma delineation |
+| **BraTS-GLI-00002-000** | — | **0.8605** (Mean) | — | 0.5042 (Mean) | SegResNet struggles on diffuse infiltrative edema |
+| **BraTS-GLI-00003-000** | **0.9690** (Mean) | **0.9688** (Mean) | — | 0.9068 (Mean) | End-to-end verified real ensemble prediction |
+| **2D MSD UNet (Held-Out 5)** | — | — | — | **0.6766** (Mean) | Local 100-epoch baseline trained on Apple Silicon MPS |
 
 ---
 
