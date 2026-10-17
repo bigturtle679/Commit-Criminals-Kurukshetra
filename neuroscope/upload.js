@@ -373,6 +373,8 @@
       const form = new FormData();
       form.set('archive', zipFile);
       form.set('model', selectedModel);
+      const useExpert = document.getElementById('zip-use-expert');
+      form.set('use_expert', useExpert && !useExpert.checked ? 'false' : 'true');
       response = await fetch('/api/analyze-zip', { method: 'POST', body: form });
     } else {
       const form = new FormData();

@@ -119,6 +119,49 @@ def evaluate_case(pred_labels: np.ndarray, gt_labels: np.ndarray, affine: np.nda
         
     return scores
 
+def measurement_summary(pred_labels, affine, expert_labels=None, enhancing_label=4):
+    """Summary of tumor subregions (WT, TC, ET) predicted and expert volume/metrics."""
+    pred_regions = {
+        'WT': np.isin(pred_labels, [1, 2, 4]),
+        'TC': np.isin(pred_labels, [1, 4]),
+        'ET': pred_labels == 4,
+    }
+    gt_regions = None
+    if expert_labels is not None:
+        gt_regions = {
+            'WT': np.isin(expert_labels, [1, 2, enhancing_label]),
+            'TC': np.isin(expert_labels, [1, enhancing_label]),
+            'ET': expert_labels == enhancing_label,
+        }
+
+    summary = {}
+    for region in ['WT', 'TC', 'ET']:
+        p = pred_regions[region]
+        p_voxels = int(p.sum())
+        p_ml = calculate_volume_ml(p, affine)
+
+        if gt_regions is not None:
+            g = gt_regions[region]
+            g_voxels = int(g.sum())
+            g_ml = calculate_volume_ml(g, affine)
+            d = compute_dice(p, g)
+            s = compute_sensitivity(p, g)
+        else:
+            g_voxels = None
+            g_ml = None
+            d = None
+            s = None
+
+        summary[region] = {
+            'predicted_voxels': p_voxels,
+            'predicted_ml': p_ml,
+            'expert_voxels': g_voxels,
+            'expert_ml': g_ml,
+            'dice': d,
+            'sensitivity': s,
+        }
+    return summary
+
 
 if __name__ == '__main__':
     # Self-test synthetic check: 1,000 voxels at 1x1x2 mm spacing must produce 2.0 mL

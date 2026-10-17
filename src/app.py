@@ -384,7 +384,7 @@ def detect_et_label(mask_path):
 
 
 @app.post('/api/analyze-zip')
-async def analyze_zip(archive: UploadFile = File(...), model: str = Form('ensemble')):
+async def analyze_zip(archive: UploadFile = File(...), model: str = Form('ensemble'), use_expert: bool = Form(True)):
     """One-file upload: a .zip with T1, T1c, T2, FLAIR and optionally the expert mask."""
     import zipfile
     model_name = validate_model(model)
@@ -417,6 +417,10 @@ async def analyze_zip(archive: UploadFile = File(...), model: str = Form('ensemb
                 detected[role] = Path(member.filename).name
         zip_path.unlink(missing_ok=True)
         expert = paths.pop('expert', None)
+        if expert and not use_expert:          # user chose to ignore the expert mask inside the zip
+            expert.unlink(missing_ok=True)
+            detected.pop('expert', None)
+            expert = None
         expert_et = detect_et_label(expert) if expert else 4
     except Exception as e:
         with GUARD:
@@ -505,6 +509,18 @@ def job_quality(uid: str):
         return {'checks': report.quality_checks(run_dir, JOBS[uid].get('result') or {})}
     except FileNotFoundError:
         raise HTTPException(404, 'Segmentation files for this analysis are no longer available.')
+
+
+@app.get('/api/jobs/{uid}/expert-comparison')
+def job_expert_comparison(uid: str):
+    run_dir = completed_run_dir(uid)
+    try:
+        result = report.expert_comparison(run_dir)
+    except (FileNotFoundError, ValueError) as e:
+        raise HTTPException(404, str(e))
+    if result is None:
+        raise HTTPException(404, 'No expert mask was supplied for this analysis.')
+    return result
 
 
 @app.get('/api/jobs/{uid}/report.html')
