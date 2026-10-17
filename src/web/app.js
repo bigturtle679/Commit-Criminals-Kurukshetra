@@ -1,5 +1,6 @@
 import { Niivue, SHOW_RENDER, MULTIPLANAR_TYPE } from '/static/vendor/niivue.js';
 import { ReviewController, worldToVoxel } from '/static/review.js';
+import { bindDashboard, allowedOverlay, composition, stageFromMessage, REGION_COLORS } from '/static/dashboard.js';
 
 const $ = id => document.getElementById(id);
 
@@ -18,11 +19,11 @@ let loadedJobId = null;
 let pendingBlindJob = null; // blind practice removed: results always open with the AI colours
 let opening = false;
 let gateSignature = '';
+let dashboard = null;
 const denyAccess = {prediction:false, expert:false, report:false};
 // Overlay the user last picked; loading gates temporarily force 'none', this restores it.
 let preferredOverlay = 'segmentation';
 // Validated (dark surface, CVD-safe) steps of the viewer legend hues; order Edema, Necrotic, Enhancing.
-const REGION_COLORS = { edema: '#13a090', necrotic: '#c9651a', enhancing: '#c03a8c' };
 
 // Horizontal bar chart: label · bar from a shared zero baseline · direct value label; hover/focus tooltip.
 function renderHBars(container, rows, { max = 1, ref = null } = {}) {
@@ -81,7 +82,7 @@ function restoreOverlay() {
 
 // Initialize NiiVue WebGL2 Engine
 const nv = new Niivue({
-  backColor: [0.027, 0.039, 0.063, 1], // Deep obsidian match
+  backColor: [0.031, 0.039, 0.051, 1],
   // 2D slices show only the voxel segmentation at the crosshair plane. NiiVue's default
   // (Infinity) projects the whole 3D tumour mesh onto every slice, so slices showed tumour
   // that is not in that plane and the crosshair lines looked misaligned.
@@ -89,7 +90,10 @@ const nv = new Niivue({
   show3Dcrosshair: true,
   isColorbar: false,
   multiplanarShowRender: SHOW_RENDER.ALWAYS,
-  multiplanarLayout: MULTIPLANAR_TYPE.GRID
+  multiplanarLayout: MULTIPLANAR_TYPE.COLUMN,
+  isOrientCube: true,
+  heroImageFraction: 0.72,
+  crosshairColor: [0.8, 0.86, 0.88, 1]
 });
 
 try {
@@ -111,6 +115,7 @@ try {
 // Coordinate & HUD Listener
 if (viewerReady) {
   nv.onLocationChange = data => {
+    dashboard?.syncSlice();
     if (!data) return;
     const { mm } = data;
     if (mm && mm.length >= 3) {
@@ -121,19 +126,23 @@ if (viewerReady) {
   };
 }
 
+let failedStage = null;
+let lastJobMessage = ''; // workflow stage where the last analysis failed (null = no failure)
 function setStatus(text, isError = false) {
   $('status-text').textContent = text;
   $('status-text').classList.toggle('error', isError);
   $('status-icon').hidden = !isBusy;
+  dashboard?.sync();
 }
 
 function setBusy(value) {
   isBusy = value;
-  document.querySelectorAll('.patient-case-btn, .model-btn').forEach(b => b.disabled = value);
+  document.querySelectorAll('.patient-case-btn, .model-btn, .sample-run').forEach(b => b.disabled = value);
   $('btn-analyze').disabled = value;
   $('history-select').disabled = value;
   $('progress-container').hidden = !value;
   $('status-icon').hidden = !value;
+  dashboard?.sync();
 }
 
 async function fetchApi(endpoint, options = {}) {
@@ -259,7 +268,7 @@ async function loadViewer(token, requestedWorld) {
   const previousWorld = requestedWorld || (loadedJobId === jobId && nv.volumes.length ? Array.from(nv.frac2mm(nv.scene.crosshairPos)).slice(0, 3) : null);
   const bgKey = $('select-background').value; // 't1c' or 'flair'
   const selectedOverlay = $('select-overlay').value;
-  const overlayMode = selectedOverlay === 'expert' ? (access.expert ? 'expert' : 'none') : selectedOverlay === 'segmentation' && access.prediction ? 'segmentation' : 'none'; // 'segmentation', 'expert', or 'none'
+  const overlayMode = allowedOverlay(selectedOverlay, access, Boolean(currentJob.result?.uncertainty?.available));
   const opacity = parseFloat($('range-opacity').value);
 
   const volumes = [
@@ -279,8 +288,9 @@ async function loadViewer(token, requestedWorld) {
         url: getFileUrl('uncertainty.nii.gz'),
         opacity: opacity,
         colormap: 'warm',
-        cal_min: 0.0,
-        cal_max: 1.0
+        // Entropy is ~0 almost everywhere; start just above 0 so confident voxels stay transparent.
+        cal_min: 0.05,
+        cal_max: 0.8
       });
     } else if (!isExpert || review.document.metadata.has_expert) {
       volumes.push({
@@ -296,12 +306,11 @@ async function loadViewer(token, requestedWorld) {
   if (token !== viewerGeneration || currentJob?.id !== jobId) return;
 
   if (nv.volumes.length > 1 && overlayMode !== 'uncertainty') {
-    // Custom clinical BraTS subregion palette
-    // 0: Background, 1: Necrotic/Non-enhancing Core (Amber), 2: Edema (Teal), 3: Unused, 4: Enhancing Tumor (Rose)
+    // Backend output labels: 1 non-enhancing core (magenta), 2 edema (teal), 4 enhancing (amber).
     nv.volumes[1].setColormapLabel({
-      R: [0, 251, 45, 0, 244],
-      G: [0, 146, 212, 0, 114],
-      B: [0, 60, 191, 0, 182],
+      R: [0, 232, 71, 0, 245],
+      G: [0, 117, 199, 0, 166],
+      B: [0, 183, 197, 0, 35],
       A: [0, 255, 255, 0, 255],
       I: [0, 1, 2, 3, 4],
       labels: ['Background', 'Necrotic Core', 'Peritumoral Edema', 'Unused', 'Enhancing Tumor']
@@ -313,10 +322,10 @@ async function loadViewer(token, requestedWorld) {
   const meshes = [];
   const availableMeshes = currentJob.result.meshes || [];
 
-  if ($('chk-mesh-brain').checked && availableMeshes.includes('brain')) {
+  if ($('chk-mesh-brain').checked && availableMeshes.includes('brain') && !dashboard?.isSegmentation()) {
     meshes.push({
       url: getFileUrl('brain.obj'),
-      rgba255: [56, 189, 248, 255],
+      rgba255: [195, 202, 207, 255],
       opacity: 0.10 // Translucent skull/brain shell
     });
   }
@@ -325,14 +334,14 @@ async function loadViewer(token, requestedWorld) {
     if ($('chk-mesh-tumor').checked && availableMeshes.includes('tumor')) {
       meshes.push({
         url: getFileUrl('tumor.obj'),
-        rgba255: [244, 63, 94, 255], // Enhancing / Whole tumor outer rim
+        rgba255: [71, 199, 197, 255], // Whole tumour boundary, not a disjoint edema mesh
         opacity: 0.85
       });
     }
     if ($('chk-mesh-core').checked && availableMeshes.includes('core')) {
       meshes.push({
         url: getFileUrl('core.obj'),
-        rgba255: [251, 146, 60, 255], // Solid Core
+        rgba255: [232, 117, 183, 255], // Nested tumour-core boundary
         opacity: 0.95
       });
     }
@@ -349,6 +358,8 @@ async function loadViewer(token, requestedWorld) {
   $('gl-canvas').hidden = false;
   review?.render();
   $('empty-state').hidden = true;
+  if (!requestedWorld && loadedJobId === jobId) nv.scene.volScaleMultiplier = Math.max(nv.scene.volScaleMultiplier, 1.4);
+  dashboard?.loaded();
 }
 
 // Display Complete Analysis Results
@@ -357,7 +368,9 @@ function renderResultPanels(job) {
 
   // Header and Metadata
   $('active-case-title').textContent = res.case_name;
-  $('active-model-tag').textContent = res.model || 'MONAI SegResNet';
+  const MODEL_SHORT = { ensemble: '8:2 Ensemble · SwinUNETR + in-house ResEnc-M', swinunetr: 'SwinUNETR (BraTS 2021 checkpoint)', segresnet: 'SegResNet (MONAI bundle)' };
+  $('active-model-tag').textContent = MODEL_SHORT[res.model_name] || res.model || 'Model';
+  $('active-model-tag').title = res.model || '';
   $('hud-spacing').textContent = `${res.spacing_mm.join(' × ')} mm`;
 
   // Volumetric Diagnostics
@@ -369,6 +382,14 @@ function renderResultPanels(job) {
 
   // Tumour composition chart: disjoint compartments, colours match the viewer legend
   const total = vols.WT;
+  const stack = $('composition-stack');
+  stack.replaceChildren();
+  for (const part of composition(vols)) {
+    const segment = document.createElement('span');
+    segment.style.width = `${part.share*100}%`;
+    segment.style.background = part.color;
+    stack.append(segment);
+  }
   $('composition-total').textContent = `Whole tumour: ${total.toFixed(1)} mL`;
   const necrotic = Math.max(0, vols.TC - vols.ET);
   const share = v => (total > 0 ? (v / total) * 100 : 0);
@@ -498,7 +519,9 @@ function applyReviewGate() {
   $('analysis-empty').hidden = !!access.prediction;
   const overlay = $('select-overlay');
   for (const option of overlay.options) {
-    option.disabled = option.value === 'expert' ? !access.expert : option.value === 'segmentation' ? !access.prediction : false;
+    option.disabled = option.value === 'expert' ? !access.expert :
+      option.value === 'segmentation' ? !access.prediction :
+      option.value === 'uncertainty' ? !access.prediction || !currentJob?.result?.uncertainty?.available : false;
   }
   if (overlay.selectedOptions[0]?.disabled) overlay.value = 'none';
   for (const id of ['chk-mesh-tumor', 'chk-mesh-core']) $(id).disabled = !access.prediction;
@@ -511,6 +534,7 @@ function applyReviewGate() {
     else $(id).removeAttribute('href');
   }
   if (opening || review?.loading) $('gl-canvas').hidden = true;
+  dashboard?.sync();
 }
 
 async function showResult(job) {
@@ -574,6 +598,7 @@ async function refreshHistory() {
 async function pollJob(jobId) {
   try {
     const job = await fetchApi(`/api/jobs/${jobId}`);
+    if (job.status !== 'error') lastJobMessage = job.message;
     setStatus(job.message);
 
     if (job.status === 'complete') {
@@ -582,6 +607,7 @@ async function pollJob(jobId) {
       $('history-select').value = jobId;
       await showResult(job);
     } else if (job.status === 'error') {
+      failedStage = stageFromMessage(lastJobMessage);
       setBusy(false);
       setStatus(job.message, true);
     } else {
@@ -597,7 +623,19 @@ async function pollJob(jobId) {
 async function launchAnalysis(endpoint, options = {}, onStart = null) {
   if (isBusy) return;
   if (review?.saving || review?.pending) { setStatus('Save or reload the pending review change before switching cases.', true); return; }
+  failedStage = null;
+  lastJobMessage = 'Uploading scans';
   setBusy(true);
+  // Never present the previous patient's result as the pending analysis.
+  currentJob = null;
+  loadedJobId = null;
+  opening = true;
+  ++viewerGeneration;
+  applyReviewGate();
+  $('empty-state').hidden = false;
+  $('active-case-title').textContent = 'Preparing analysis…';
+  dashboard?.reset();
+  $('active-model-tag').textContent = 'Waiting for the new result';
   const gpuLabel = $('gpu-text')?.textContent || 'GPU';
   setStatus(`Running ${MODEL_INFO[selectedModel].name} segmentation on ${gpuLabel}…`);
 
@@ -611,6 +649,7 @@ async function launchAnalysis(endpoint, options = {}, onStart = null) {
     }
     await pollJob(res.id);
   } catch (err) {
+    failedStage = 0; // the server rejected the upload before a job started
     setBusy(false);
     setStatus(err.message, true);
   }
@@ -740,15 +779,22 @@ $('view-tabs').onclick = e => {
     el.classList.toggle('active', el === btn);
   }
   if (viewerReady) nv.setSliceType(currentView);
+  if (currentView < 3) $('slice-axis').value = ({0:2, 1:1, 2:0})[currentView];
+  dashboard?.syncSlice();
 };
 
 // Controls Change
 $('select-background').onchange = () => refreshViewer();
-$('select-overlay').onchange = () => { preferredOverlay = $('select-overlay').value; refreshViewer(); };
+$('select-overlay').onchange = () => {
+  preferredOverlay = $('select-overlay').value;
+  dashboard?.overlayChanged(preferredOverlay);
+  refreshViewer();
+};
 $('btn-show-uncertainty').onclick = () => {
   const overlay = $('select-overlay');
   if ([...overlay.options].some(o => o.value === 'uncertainty' && !o.disabled)) {
     overlay.value = preferredOverlay = 'uncertainty';
+    dashboard?.overlayChanged('uncertainty');
     refreshViewer();
   }
 };
@@ -770,6 +816,7 @@ $('btn-reset-view').onclick = () => {
     nv.scene.crosshairPos = [0.5, 0.5, 0.5];
     nv.setRenderAzimuthElevation(120, 15);
     nv.drawScene();
+    nv.onLocationChange?.({mm:Array.from(nv.frac2mm(nv.scene.crosshairPos)).slice(0,3)});
   }
 };
 
@@ -833,6 +880,31 @@ document.querySelectorAll('#upload-form input[type="file"]').forEach(input => {
       label.style.color = input.files[0] ? 'var(--primary)' : 'var(--text-dim)';
     }
   };
+});
+
+dashboard = bindDashboard({
+  nv,
+  getState: () => ({
+    ready: viewerReady && !!currentJob && !opening && loadedJobId === currentJob.id,
+    busy: isBusy,
+    message: lastJobMessage,
+    loadingResult: failedStage === null && (opening ? lastJobMessage !== '' : /analysis complete/i.test(lastJobMessage)),
+    failedStage,
+    prediction: !!review?.access.prediction && !opening,
+    expert: !!review?.access.expert && !!currentJob?.result?.metrics && !opening,
+    uncertainty: !!currentJob?.result?.uncertainty?.available && !!review?.access.prediction && !opening
+  }),
+  getJob: () => currentJob,
+  getView: () => currentView,
+  changeOverlay: async value => {
+    $('select-overlay').value = preferredOverlay = value;
+    await refreshViewer();
+  },
+  changeBackground: async modality => {
+    $('select-background').value = modality;
+    await refreshViewer();
+  },
+  setStatus
 });
 
 // App Startup Initialization

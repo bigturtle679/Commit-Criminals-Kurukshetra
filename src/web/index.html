@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
   <link rel="stylesheet" href="/static/workspace.css">
+  <link rel="stylesheet" href="/static/dashboard.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e4e7ea' stroke-width='1.8'%3E%3Cpath d='M12 4c-2-3-6-1-6 2-3 0-4 4-2 6-2 3 0 6 3 6 0 3 3 4 5 2V4Zm0 0c2-3 6-1 6 2 3 0 4 4 2 6 2 3 0 6-3 6 0 3-3 4-5 2'/%3E%3C/svg%3E">
 </head>
 <body>
   <a class="skip-workspace" href="#workspace-main">Skip to workspace</a>
@@ -17,18 +19,18 @@
     <div class="header-left">
       <div class="logo-badge">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="9"/>
-          <path d="M12 3a9 9 0 0 1 9 9"/>
-          <path d="M12 7a5 5 0 0 1 5 5"/>
-          <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+          <path d="M12 4c-2-3-6-1-6 2-3 0-4 4-2 6-2 3 0 6 3 6 0 3 3 4 5 2V4Zm0 0c2-3 6-1 6 2 3 0 4 4 2 6 2 3 0 6-3 6 0 3-3 4-5 2"/>
+          <path d="M7 7c3 0 3 3 2 4m-4 1c3-1 4 2 3 4m9-9c-3 0-3 3-2 4m4 1c-3-1-4 2-3 4M8 19l1-2m7 2-1-2"/>
         </svg>
       </div>
       <div>
         <a class="brand-title" href="/" aria-label="NeuroScope home">Neuro<span class="brand-light">Scope</span> <sup>3D</sup></a>
-        <div class="brand-subtitle">A NEW PERSPECTIVE ON BRAIN IMAGING</div>
+        <div class="brand-subtitle">MRI SEGMENTATION · RESEARCH ENVIRONMENT</div>
       </div>
     </div>
 
+    <nav class="workflow-header" aria-label="Analysis workflow"><button type="button" data-stage="0" ><span class="workflow-number">1</span><span>Upload</span></button><button type="button" data-stage="1" ><span class="workflow-number">2</span><span>Validate</span></button><button type="button" data-stage="2" ><span class="workflow-number">3</span><span>Segment</span></button><button type="button" data-stage="3" disabled><span class="workflow-number">4</span><span>Explore</span></button><button type="button" data-stage="4" disabled><span class="workflow-number">5</span><span>Insights</span></button><button type="button" data-stage="5" disabled><span class="workflow-number">6</span><span>Export</span></button></nav>
+    <div class="research-mode"><span></span><div>Research Mode<small>Not for clinical use</small></div></div>
     <div class="header-badges">
       <div class="status-pill gpu-pill">
         <span class="pulse-dot"></span>
@@ -77,7 +79,18 @@
     <div class="workspace-grid">
       
       <!-- Left Sidebar: Controls & Pipeline -->
-      <aside class="sidebar-panel">
+      <aside class="sidebar-panel" id="workspace-inputs">
+        <nav class="workflow-rail" aria-label="Workspace sections"><button type="button" data-stage="0" ><span class="workflow-number">1</span><span>Upload<small>4 modalities · NIfTI</small></span></button><button type="button" data-stage="1" ><span class="workflow-number">2</span><span>Validate<small>Alignment & quality</small></span></button><button type="button" data-stage="2" ><span class="workflow-number">3</span><span>Segment<small>AI ensemble</small></span></button><button type="button" data-stage="3" disabled><span class="workflow-number">4</span><span>Explore<small>3D & slice view</small></span></button><button type="button" data-stage="4" disabled><span class="workflow-number">5</span><span>Insights<small>Measurements & uncertainty</small></span></button><button type="button" data-stage="5" disabled><span class="workflow-number">6</span><span>Export<small>Report & downloads</small></span></button></nav>
+        <section class="modality-panel" aria-labelledby="modality-heading">
+          <h3 id="modality-heading" class="rail-section-title">MRI MODALITIES</h3>
+          <div class="modality-grid" id="modality-grid" role="radiogroup" aria-label="Background MRI sequence">
+            <button type="button" class="modality-thumb" data-modality="flair" role="radio" aria-checked="false" disabled><span class="thumb-img"></span><span>FLAIR</span></button>
+            <button type="button" class="modality-thumb" data-modality="t1" role="radio" aria-checked="false" disabled><span class="thumb-img"></span><span>T1</span></button>
+            <button type="button" class="modality-thumb" data-modality="t1c" role="radio" aria-checked="true" disabled><span class="thumb-img"></span><span>T1c</span></button>
+            <button type="button" class="modality-thumb" data-modality="t2" role="radio" aria-checked="false" disabled><span class="thumb-img"></span><span>T2</span></button>
+          </div>
+        </section>
+        <div class="rail-section-title">CASE &amp; ANALYSIS</div>
         
         <!-- Upload: zip first, individual files optional -->
         <section class="card upload-card">
@@ -223,70 +236,17 @@
           <div class="card-header">
             <span class="step-num">04</span>
             <div>
-              <h3>Unseen Test Patients</h3>
-              <p class="card-caption">BraTS 2021 cases never used to train ResEnc · download or run</p>
+              <h3>Sample Patients</h3>
+              <p class="card-caption">Real BraTS 2021 scans with expert masks, held out from our ResEnc training</p>
             </div>
           </div>
           <ul id="sample-list" class="sample-list" aria-live="polite">
             <li class="muted-td">Loading test cases…</li>
           </ul>
-          <p class="model-selection-note">Download saves <code>NeuroScope_TestCase_&lt;ID&gt;.zip</code> to your Downloads folder: four MRI scans, the expert mask and upload instructions. Drag the zip straight onto the upload box at the top — no need to unzip.</p>
+          <p class="samples-help"><b>▶ Run</b> analyses the patient right away. <b>⬇ Download</b> saves <code>NeuroScope_TestCase_&lt;ID&gt;.zip</code> to Downloads — drop that zip on the upload box above to test the upload path yourself. (This list itself is not a drop zone.)</p>
         </section>
 
-        <!-- Real Patient Cases Selection Card -->
-        <section class="card input-card">
-          <div class="card-header">
-            <span class="step-num">05</span>
-            <div>
-              <h3>Demo Patients (BraTS 2023)</h3>
-              <p class="card-caption">Click to run real 3D multimodal patient data</p>
-            </div>
-          </div>
 
-          <!-- Patient Case Cards Gallery -->
-          <div class="patient-cases-list">
-            
-            <button type="button" class="patient-case-btn active-case" data-case="00002" id="case-btn-00002">
-              <div class="patient-case-header">
-                <span class="case-code">CASE 02 · GLI-00002</span>
-                <span class="case-tag tag-contrast">PUBLIC RESEARCH CASE</span>
-              </div>
-              <div class="patient-case-name">BraTS GLI-00002</div>
-              <div class="patient-case-summary">Four MRI sequences and an expert mask for comparing model predictions.</div>
-              <div class="patient-case-action">
-                <span>⚡ Run Case 02 on GPU</span>
-                <span class="arrow-glyph">→</span>
-              </div>
-            </button>
-
-            <button type="button" class="patient-case-btn" data-case="00000" id="case-btn-00000">
-              <div class="patient-case-header">
-                <span class="case-code">CASE 01 · GLI-00000</span>
-                <span class="case-tag tag-edema">PUBLIC RESEARCH CASE</span>
-              </div>
-              <div class="patient-case-name">BraTS GLI-00000</div>
-              <div class="patient-case-summary">Four MRI sequences and an expert mask for comparing model predictions.</div>
-              <div class="patient-case-action">
-                <span>⚡ Run Case 01 on GPU</span>
-                <span class="arrow-glyph">→</span>
-              </div>
-            </button>
-
-            <button type="button" class="patient-case-btn" data-case="00003" id="case-btn-00003">
-              <div class="patient-case-header">
-                <span class="case-code">CASE 03 · GLI-00003</span>
-                <span class="case-tag tag-mixed">PUBLIC RESEARCH CASE</span>
-              </div>
-              <div class="patient-case-name">BraTS GLI-00003</div>
-              <div class="patient-case-summary">Four MRI sequences and an expert mask for comparing model predictions.</div>
-              <div class="patient-case-action">
-                <span>⚡ Run Case 03 on GPU</span>
-                <span class="arrow-glyph">→</span>
-              </div>
-            </button>
-
-          </div>
-        </section>
 
         <section class="card review-panel" aria-labelledby="review-heading">
           <h3 id="review-heading">Spatial bookmarks &amp; blind practice</h3>
@@ -329,25 +289,23 @@
         <div class="viewer-card">
           <div class="viewer-topbar">
             <div class="case-meta-group">
-              <span class="case-badge">ACTIVE SUBJECT</span>
+              <span class="case-badge">ACTIVE RESEARCH CASE</span>
               <h2 id="active-case-title">No case selected</h2>
               <div id="active-model-tag" class="model-used-tag">Select a case to begin</div>
             </div>
-
-            <!-- View Slice Mode Buttons -->
-            <div class="view-mode-tabs" id="view-tabs">
-              <button class="view-tab active" data-view="3">Multiplanar</button>
+            <div class="view-mode-tabs" id="view-tabs" role="group" aria-label="Viewer layout">
+              <button class="view-tab active" data-view="3">3D + Slices</button>
               <button class="view-tab" data-view="0">Axial</button>
               <button class="view-tab" data-view="1">Coronal</button>
               <button class="view-tab" data-view="2">Sagittal</button>
-              <button class="view-tab highlight" data-view="4">3D Volume</button>
+              <button class="view-tab highlight" data-view="4">3D</button>
             </div>
           </div>
 
-          <!-- NiiVue Canvas Viewport -->
+          <!-- NiiVue canvas: hero 3D render with the three linked slices in a column on the right -->
           <div class="canvas-container">
-            <canvas id="gl-canvas" aria-label="3D Neuro-Oncology MRI Viewer"></canvas>
-            
+            <canvas id="gl-canvas" aria-label="3D MRI viewer with linked axial, coronal and sagittal slices"></canvas>
+
             <div id="empty-state" class="empty-state-overlay">
               <div class="empty-icon-wrap">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -355,95 +313,105 @@
                   <circle cx="12" cy="12" r="4"/>
                 </svg>
               </div>
-              <h3>Your scan, in perspective.</h3>
-              <p>Upload a patient ZIP or choose a sample case to explore the MRI and predicted regions here.</p>
+              <h3>Begin with a brain scan.</h3>
+              <p>Drop a patient ZIP or run an unseen test patient to explore the MRI and predicted regions here.</p>
             </div>
 
-            <!-- In-Canvas Coordinates HUD -->
+            <!-- Live labels for the three slice tiles (positions follow NiiVue's column layout) -->
+            <div class="slice-tile-labels" id="slice-tile-labels" hidden>
+              <span class="slice-tile-label" data-axis="axial"><b>Axial</b><em id="tile-axial">— / —</em></span>
+              <span class="slice-tile-label" data-axis="coronal"><b>Coronal</b><em id="tile-coronal">— / —</em></span>
+              <span class="slice-tile-label" data-axis="sagittal"><b>Sagittal</b><em id="tile-sagittal">— / —</em></span>
+            </div>
+
+            <!-- Region under the crosshair, read from the loaded segmentation -->
+            <div class="region-callout" id="region-callout" role="status" hidden>
+              <span class="region-dot" id="region-dot"></span>
+              <div><strong id="region-name">—</strong><span id="region-detail">—</span></div>
+            </div>
+
+            <!-- Split view: original vs overlay of the same real slice, rendered by the backend -->
+            <div class="split-view" id="split-view" hidden>
+              <figure><img id="split-original" alt="Original MRI slice"><figcaption>Original</figcaption></figure>
+              <figure><img id="split-overlay" alt="MRI slice with predicted tumour regions"><figcaption>Overlay</figcaption></figure>
+            </div>
+
             <div class="hud-coords">
               <span id="hud-crosshair">Crosshairs: Centered</span>
               <span id="hud-spacing">Spacing —</span>
             </div>
-
-            <!-- In-Canvas Action Controls -->
-            <div class="hud-quick-actions">
-              <button id="btn-reset-view" class="hud-btn" title="Reset View & Camera">↺ Reset Camera</button>
-              <button id="btn-snapshot" class="hud-btn" title="Save Snapshot">📸 Snapshot</button>
-            </div>
           </div>
 
-          <!-- Bottom Viewport Controls Toolbar -->
-          <div class="viewer-bottom-bar">
-            <div class="control-cluster">
-              <label class="toolbar-label">
-                <span>MRI Scan:</span>
-                <select id="select-background">
-                  <option value="t1">T1</option>
-                  <option value="t2">T2</option>
-                  <option value="t1c" selected>T1-CE (Enhancing Core View)</option>
-                  <option value="flair">T2-FLAIR (Peritumoral Edema View)</option>
-                </select>
-              </label>
+          <!-- Bottom control deck -->
+          <div class="viewer-deck">
+            <div class="display-modes" role="group" aria-label="Image display mode">
+              <button type="button" data-display="overlay" disabled aria-pressed="true">Overlay</button>
+              <button type="button" data-display="original" disabled aria-pressed="false">Original</button>
+              <button type="button" data-display="segmentation" disabled aria-pressed="false">Segmentation</button>
+              <button type="button" data-display="uncertainty" disabled aria-pressed="false" title="Available when the active result includes an uncertainty map">Uncertainty</button>
+              <button type="button" data-display="expert" disabled aria-pressed="false" title="Available when an expert reference mask was supplied">Expert mask</button>
+              <button type="button" data-display="split" disabled aria-pressed="false">Split View</button>
+            </div>
 
-              <label class="toolbar-label">
-                <span>Overlay:</span>
-                <select id="select-overlay">
-                  <option value="segmentation">AI Prediction Mask</option>
-                  <option value="uncertainty" id="opt-uncertainty">Uncertainty Entropy Map</option>
-                  <option value="expert">Expert Reference Mask</option>
-                  <option value="none">Scan Only (No Mask)</option>
-                </select>
-              </label>
+            <div class="filmstrip" id="filmstrip" aria-label="Slice filmstrip">
+              <button type="button" class="filmstrip-nav" id="filmstrip-prev" aria-label="Previous slices" disabled>‹</button>
+              <div class="filmstrip-track" id="filmstrip-track" role="listbox" aria-label="Slices"></div>
+              <button type="button" class="filmstrip-nav" id="filmstrip-next" aria-label="Next slices" disabled>›</button>
+            </div>
 
+            <div class="deck-controls">
+              <div class="slice-navigation">
+                <label for="slice-position">Slice Position</label>
+                <select id="slice-axis" aria-label="Slice orientation"><option value="2">Axial</option><option value="1">Coronal</option><option value="0">Sagittal</option></select>
+                <output id="slice-position-label" for="slice-position">— / —</output>
+                <input id="slice-position" aria-label="Slice position" type="range" min="0" max="0" value="0" disabled>
+              </div>
               <div class="slider-control">
-                <label for="range-opacity">Mask Opacity: <span id="opacity-val">55%</span></label>
+                <label for="range-opacity">Mask Opacity</label>
                 <input id="range-opacity" type="range" min="0" max="1" step="0.05" value="0.55">
+                <span id="opacity-val">55%</span>
+              </div>
+              <div class="deck-icons">
+                <button type="button" id="centre-crosshair" class="deck-icon" title="Centre crosshair on the tumour" aria-label="Centre crosshair on the tumour" disabled>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg>
+                </button>
+                <button type="button" id="btn-reset-view" class="deck-icon" title="Reset view and camera" aria-label="Reset view and camera">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 9V4h5M20 15v5h-5M4 4l6 6m10 10-6-6"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+                </button>
+                <button type="button" id="btn-snapshot" class="deck-icon" title="Save a PNG snapshot" aria-label="Save a PNG snapshot">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+                </button>
+                <button type="button" id="viewer-fullscreen" class="deck-icon" title="Fullscreen viewer" aria-label="Fullscreen viewer">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg>
+                </button>
               </div>
             </div>
 
-            <!-- 3D Mesh Toggle Toggles -->
-            <div class="mesh-toggles-cluster">
-              <span class="cluster-title">3D Surfaces:</span>
-              <label class="checkbox-tag">
-                <input type="checkbox" id="chk-mesh-brain" checked>
-                <span>Brain Shell</span>
-              </label>
-              <label class="checkbox-tag">
-                <input type="checkbox" id="chk-mesh-tumor" checked disabled>
-                <span>Whole Tumor</span>
-              </label>
-              <label class="checkbox-tag">
-                <input type="checkbox" id="chk-mesh-core" checked disabled>
-                <span>Tumor Core</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Color-Coded Anatomical Subregion Legend -->
-          <div class="anatomical-legend" data-answer="prediction" hidden>
-            <div class="legend-item">
-              <span class="legend-swatch necrotic"></span>
-              <div class="legend-text">
-                <strong>Necrotic & Non-Enhancing Core (NC)</strong>
-                <small>Label 1 · Devascularized / Dead Tissue</small>
+            <details class="deck-more">
+              <summary>More options</summary>
+              <div class="deck-more-body">
+                <label class="toolbar-label"><span>MRI scan</span>
+                  <select id="select-background">
+                    <option value="t1">T1</option>
+                    <option value="t2">T2</option>
+                    <option value="t1c" selected>T1c (contrast)</option>
+                    <option value="flair">FLAIR</option>
+                  </select>
+                </label>
+                <label class="toolbar-label"><span>Overlay</span>
+                  <select id="select-overlay">
+                    <option value="segmentation">AI prediction</option>
+                    <option value="uncertainty" id="opt-uncertainty">Uncertainty map</option>
+                    <option value="expert">Expert reference mask</option>
+                    <option value="none">Scan only</option>
+                  </select>
+                </label>
+                <span class="cluster-title">3D surfaces</span>
+                <label class="checkbox-tag"><input type="checkbox" id="chk-mesh-brain"><span>Brain shell</span></label>
+                <label class="checkbox-tag"><input type="checkbox" id="chk-mesh-tumor" checked disabled><span>Whole tumour</span></label>
+                <label class="checkbox-tag"><input type="checkbox" id="chk-mesh-core" checked disabled><span>Tumour core</span></label>
               </div>
-            </div>
-
-            <div class="legend-item">
-              <span class="legend-swatch edema"></span>
-              <div class="legend-text">
-                <strong>Peritumoral Edema (ED)</strong>
-                <small>Label 2 · Vasogenic Swelling / Infiltration</small>
-              </div>
-            </div>
-
-            <div class="legend-item">
-              <span class="legend-swatch enhancing"></span>
-              <div class="legend-text">
-                <strong>Enhancing Active Tumor (ET)</strong>
-                <small>Label 4 · Proliferating Malignant Rim</small>
-              </div>
-            </div>
+            </details>
           </div>
         </div>
 
@@ -451,60 +419,44 @@
       </section>
 
       <!-- Right: tumour analysis, visible alongside the viewer -->
-      <aside class="analysis-panel" aria-label="Tumour analysis">
+      <aside class="analysis-panel" id="workspace-measurements" aria-label="Tumour analysis">
+        <header class="measurements-heading"><h2>Tumour Measurements</h2><p>WHOLE BRAIN MRI ANALYSIS</p></header>
         <div class="analysis-empty" id="analysis-empty">
           <h3>Analysis</h3>
           <p>Drop a patient zip or run a test patient — volumes, charts, accuracy and uncertainty appear here next to the 3D view.</p>
         </div>
         <!-- Quantitative Volumetric Diagnostics Grid -->
-        <div class="metrics-grid" data-answer="prediction" hidden>
-          <div class="metric-card wt-card">
-            <div class="metric-top">
-              <span class="metric-name">WHOLE TUMOR (WT)</span>
-              <span class="metric-tag">Total Disease</span>
+        <!-- WT / TC / ET are nested regions: each ring states its own denominator -->
+        <div class="measure-list" data-answer="prediction" hidden>
+          <div class="measure-row" data-region="WT" tabindex="0">
+            <div class="measure-text">
+              <span class="measure-name"><i class="dot dot-wt"></i>Whole Tumour (WT)</span>
+              <span class="measure-value"><b id="val-WT">—</b> mL</span>
+              <span class="measure-bar"><span id="bar-WT"></span></span>
             </div>
-            <div class="metric-value-wrap">
-              <span id="val-WT" class="metric-value">—</span>
-              <span class="metric-unit">mL</span>
-            </div>
-            <div class="metric-subnote">Includes Necrotic Core + Enhancing + Edema</div>
+            <div class="measure-ring" id="ring-WT" style="--p:0"><span id="pct-WT">—</span></div>
+            <small class="measure-denom">of brain volume</small>
           </div>
-
-          <div class="metric-card tc-card">
-            <div class="metric-top">
-              <span class="metric-name">TUMOR CORE (TC)</span>
-              <span class="metric-tag">Surgical Target</span>
+          <div class="measure-row" data-region="TC" tabindex="0">
+            <div class="measure-text">
+              <span class="measure-name"><i class="dot dot-tc"></i>Tumour Core (TC)</span>
+              <span class="measure-value"><b id="val-TC">—</b> mL</span>
+              <span class="measure-bar"><span id="bar-TC"></span></span>
             </div>
-            <div class="metric-value-wrap">
-              <span id="val-TC" class="metric-value">—</span>
-              <span class="metric-unit">mL</span>
-            </div>
-            <div class="metric-subnote">Solid bulk tissue (Necrotic + Enhancing)</div>
+            <div class="measure-ring" id="ring-TC" style="--p:0"><span id="pct-TC">—</span></div>
+            <small class="measure-denom">of whole tumour</small>
           </div>
-
-          <div class="metric-card et-card">
-            <div class="metric-top">
-              <span class="metric-name">ENHANCING TUMOR (ET)</span>
-              <span class="metric-tag">Contrast Avid</span>
+          <div class="measure-row" data-region="ET" tabindex="0">
+            <div class="measure-text">
+              <span class="measure-name"><i class="dot dot-et"></i>Enhancing Tumour (ET)</span>
+              <span class="measure-value"><b id="val-ET">—</b> mL</span>
+              <span class="measure-bar"><span id="bar-ET"></span></span>
             </div>
-            <div class="metric-value-wrap">
-              <span id="val-ET" class="metric-value">—</span>
-              <span class="metric-unit">mL</span>
-            </div>
-            <div class="metric-subnote">Viable neo-vascularized active tumor rim</div>
+            <div class="measure-ring" id="ring-ET" style="--p:0"><span id="pct-ET">—</span></div>
+            <small class="measure-denom">of whole tumour</small>
           </div>
-
-          <div class="metric-card ed-card">
-            <div class="metric-top">
-              <span class="metric-name">PERITUMORAL EDEMA (ED)</span>
-              <span class="metric-tag">Mass Effect</span>
-            </div>
-            <div class="metric-value-wrap">
-              <span id="val-ED" class="metric-value">—</span>
-              <span class="metric-unit">mL</span>
-            </div>
-            <div class="metric-subnote">FLAIR hyperintensity surrounding core</div>
-          </div>
+          <span id="val-ED" hidden>—</span>
+          <p class="chart-note">WT ⊇ TC ⊇ ET are nested — do not add them. Volumes from voxel count × voxel size.</p>
         </div>
 
         <!-- Tumour composition chart: one bar per disjoint compartment, colours match the viewer legend -->
@@ -513,6 +465,7 @@
             <h4>Tumour composition</h4>
             <span class="card-aux" id="composition-total">Whole tumour: —</span>
           </div>
+          <div id="composition-stack" class="composition-stack" aria-hidden="true"></div>
           <div id="volume-chart" class="hbar-chart" role="list" aria-label="Predicted volume of each tumour compartment in millilitres"></div>
           <p class="chart-note">Predicted volume per compartment (mL) · share of whole tumour</p>
         </div>
@@ -521,22 +474,28 @@
         <div class="card explain-card" data-answer="prediction" hidden>
           <div class="card-header-simple">
             <span class="card-pill explain-pill">EXPLAINABILITY</span>
-            <h3>How sure is the AI?</h3>
+            <h3>Uncertainty</h3>
           </div>
           <div class="explain-grid">
             <div class="explain-stat">
-              <span class="explain-label">Uncertainty inside tumour</span>
+              <span class="explain-label">Voxel entropy</span>
               <strong id="explain-entropy">—</strong>
               <span class="explain-help">Mean voxel entropy, 0 = certain, 1 = coin-flip</span>
             </div>
             <div class="explain-stat" id="explain-disagree-wrap">
-              <span class="explain-label">Swin vs ResEnc disagreement</span>
+              <span class="explain-label">Model disagreement</span>
               <strong id="explain-disagree">—</strong>
               <span class="explain-help">Mean |p<sub>Swin</sub> − p<sub>ResEnc</sub>| in tumour</span>
             </div>
           </div>
-          <button type="button" id="btn-show-uncertainty" class="btn-explain">Show uncertainty map on the scan</button>
+          <button type="button" id="btn-show-uncertainty" class="btn-explain">View uncertainty map →</button>
           <p class="chart-note">Bright areas on the map are where the boundary is least certain — usually the tumour edge.</p>
+        </div>
+
+        <!-- Post-segmentation quality checks, re-verified by the backend from the saved mask -->
+        <div class="card qc-card" data-answer="prediction" hidden>
+          <div class="card-header-simple"><h3>Quality checks</h3></div>
+          <ul id="qc-list" class="qc-list" aria-live="polite"><li class="qc-pending">Checking…</li></ul>
         </div>
 
         <!-- Volume Summary & Reference Validation Grid -->
@@ -618,7 +577,7 @@
         <div class="card export-card" data-answer="prediction" hidden>
           <div class="export-header">
             <div>
-              <h3>Clinical Deliverables & Exports</h3>
+              <h3>Report & Downloads</h3>
               <p class="card-caption">All outputs are co-registered in native patient coordinates</p>
             </div>
             <button id="btn-print-report" data-answer="report" hidden class="btn-print">
@@ -647,6 +606,11 @@
               <span>Download 3D Tumor Mesh (.obj)</span>
             </a>
 
+            <a id="link-open-report" data-answer="report" hidden class="btn-export btn-report-primary" target="_blank" rel="noopener">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h8M9 9h2"/></svg>
+              <span>Open research report (print / PDF)</span>
+            </a>
+
             <a id="link-download-report" data-answer="report" hidden class="btn-export disabled" download="report.json">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
               <span>Download Structured Report (.json)</span>
@@ -657,6 +621,7 @@
 
     </div>
 
+    <div class="compact-navigation"><button type="button" id="toggle-inputs" aria-expanded="true" aria-controls="workspace-inputs">Scans &amp; models</button><button type="button" id="toggle-measurements" aria-expanded="true" aria-controls="workspace-measurements">Measurements</button></div>
     <!-- App Footer -->
     <footer class="app-footer">
       <div>NeuroScope 3D · Autonomous 3D Segmentation Platform</div>

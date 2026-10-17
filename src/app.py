@@ -10,6 +10,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 from pipeline import ROOT, run_case, _gpu_name
 from review_store import load_review, save_review, ReviewConflict
 import zip_intake
+import slices
+import report
 
 logger = logging.getLogger(__name__)
 
@@ -464,6 +466,63 @@ def put_review(uid: str, document: dict = Body(...)):
         raise HTTPException(409, str(error))
     except (ValueError, TypeError, KeyError) as error:
         raise HTTPException(400, str(error))
+
+
+def completed_run_dir(uid: str) -> Path:
+    """Run folder for a finished, unexpired analysis (same guards as file downloads)."""
+    if not uid.isalnum() or len(uid) > 64 or uid not in JOBS:
+        raise HTTPException(404, 'Analysis not found.')
+    if JOBS[uid].get('status') != 'complete':
+        raise HTTPException(409, 'Analysis is not complete yet.')
+    job_dir = (RUNS / uid).resolve()
+    if not job_dir.is_relative_to(RUNS.resolve()):
+        raise HTTPException(403, 'Path traversal forbidden.')
+    if is_run_expired(job_dir, time.time() - RETENTION_HOURS * 3600.0):
+        sweep_expired_runs()
+        raise HTTPException(404, 'Analysis has expired under the 24-hour retention policy.')
+    return job_dir
+
+
+@app.get('/api/jobs/{uid}/geometry')
+def job_geometry(uid: str):
+    try:
+        return slices.geometry(completed_run_dir(uid))
+    except FileNotFoundError:
+        raise HTTPException(404, 'Scan files for this analysis are no longer available.')
+
+
+@app.get('/api/jobs/{uid}/quality')
+def job_quality(uid: str):
+    run_dir = completed_run_dir(uid)
+    try:
+        return {'checks': report.quality_checks(run_dir, JOBS[uid].get('result') or {})}
+    except FileNotFoundError:
+        raise HTTPException(404, 'Segmentation files for this analysis are no longer available.')
+
+
+@app.get('/api/jobs/{uid}/report.html')
+def job_report(uid: str):
+    from fastapi.responses import HTMLResponse
+    run_dir = completed_run_dir(uid)
+    try:
+        page = report.render_report(run_dir, JOBS[uid])
+    except FileNotFoundError:
+        raise HTTPException(404, 'Files for this analysis are no longer available.')
+    return HTMLResponse(page, headers={'Content-Security-Policy': "default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'"})
+
+
+@app.get('/api/jobs/{uid}/slice.png')
+def job_slice(uid: str, modality: str = Query('flair'), axis: str = Query('axial'), index: int = Query(..., ge=0, le=4096),
+              overlay: str = Query('none'), size: int = Query(128, ge=32, le=512)):
+    from fastapi.responses import Response
+    run_dir = completed_run_dir(uid)
+    try:
+        png = slices.render(run_dir, modality, axis, index, overlay, size)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e))
+    return Response(png, media_type='image/png', headers={'Cache-Control': 'private, max-age=3600'})
 
 
 @app.get('/api/files/{uid}/{name}')
