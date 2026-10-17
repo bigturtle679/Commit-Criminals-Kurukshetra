@@ -378,7 +378,18 @@
       response = await fetch('/api/analyze-zip', { method: 'POST', body: form });
     } else {
       const form = new FormData();
-      for (const key of REQUIRED_MODALITIES) form.set(key, files[key]);
+      const seen = new Map();
+      for (const key of REQUIRED_MODALITIES) {
+        const f = files[key];
+        if (f && f.name) {
+          const lower = f.name.trim().toLowerCase();
+          if (seen.has(lower)) {
+            throw new Error(`Duplicate file "${f.name}" selected for ${seen.get(lower).toUpperCase()} and ${key.toUpperCase()}. All 4 modalities must be distinct files.`);
+          }
+          seen.set(lower, key);
+        }
+        form.set(key, f);
+      }
       if (files.expert) { form.set('expert', files.expert); form.set('expert_et', String(etLabel())); }
       form.set('model', selectedModel);
       response = await fetch('/api/analyze', { method: 'POST', body: form });

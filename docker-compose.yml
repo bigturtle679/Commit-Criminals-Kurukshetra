@@ -1,0 +1,36 @@
+services:
+  neuroscope:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Default to CPU wheels. For CUDA 12.4 hosts, change to:
+        # TORCH_INDEX_URL: https://download.pytorch.org/whl/cu124
+        TORCH_INDEX_URL: https://download.pytorch.org/whl/cpu
+    container_name: neuroscope_3d
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist job runs and generated NIfTI / 3D OBJ meshes across container restarts
+      - ./work/runs:/app/work/runs
+      # Mount model checkpoints if managing weights outside the container image
+      - ./models:/app/models:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PORT=8000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/status"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+    # Enable for NVIDIA GPU hosts (Linux / WSL2):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]

@@ -781,6 +781,19 @@ window.addEventListener('drop', e => {
 $('upload-form').onsubmit = e => {
   e.preventDefault();
   const formData = new FormData(e.target);
+  const modalities = ['t1c', 't1', 't2', 'flair'];
+  const seenFiles = new Map();
+  for (const mod of modalities) {
+    const file = formData.get(mod);
+    if (file && file.name) {
+      const lower = file.name.trim().toLowerCase();
+      if (seenFiles.has(lower)) {
+        setStatus(`Duplicate file "${file.name}" selected for ${seenFiles.get(lower).toUpperCase()} and ${mod.toUpperCase()}. All 4 modalities must be distinct files.`, true);
+        return;
+      }
+      seenFiles.set(lower, mod);
+    }
+  }
   formData.set('model', selectedModel);
   launchAnalysis('/api/analyze', { method: 'POST', body: formData });
 };

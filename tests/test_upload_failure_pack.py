@@ -27,9 +27,7 @@ def make_nifti_bytes(shape=(16, 16, 16)):
     affine = np.eye(4)
     data = np.random.uniform(10.0, 200.0, shape).astype(np.float32)
     img = nib.Nifti1Image(data, affine)
-    buf = io.BytesIO()
-    nib.save(img, buf)
-    return buf.getvalue()
+    return img.to_bytes()
 
 
 def make_zip_with_files(files: dict) -> bytes:
@@ -38,6 +36,25 @@ def make_zip_with_files(files: dict) -> bytes:
         for name, content in files.items():
             zf.writestr(name, content)
     return buf.getvalue()
+
+
+# ---------------------------------------------------------------------------
+# 0. Duplicate / same filename across 4 uploads → 400
+# ---------------------------------------------------------------------------
+
+def test_same_filename_rejected_in_analyze():
+    nii = make_nifti_bytes()
+    # Uploading the same filename for t1c and t1
+    files = {
+        't1c': ('patient_scan.nii.gz', nii, 'application/gzip'),
+        't1':  ('patient_scan.nii.gz', nii, 'application/gzip'),
+        't2':  ('patient_t2.nii.gz', nii, 'application/gzip'),
+        'flair': ('patient_flair.nii.gz', nii, 'application/gzip'),
+    }
+    resp = client.post('/api/analyze', files=files, data={'model': 'swinunetr'})
+    assert resp.status_code == 400
+    detail = resp.json().get('detail', '').lower()
+    assert 'duplicate' in detail or 'distinct' in detail
 
 
 # ---------------------------------------------------------------------------

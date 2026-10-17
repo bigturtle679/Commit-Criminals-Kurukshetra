@@ -14,6 +14,26 @@ NeuroScope 3D is an AI-powered 3D brain tumor segmentation and visualization pla
 - **Expert Comparison**: Optional ground-truth mask upload with Dice and sensitivity metrics
 - **Research Report**: JSON report with model provenance, preprocessing details, and SHA-256 input hashes
 
+## Benchmark Performance & Validation (Multi-Year BraTS Cohorts)
+
+Evaluated across multi-year BraTS datasets (2017, 2018, 2019, 2020/2021, 2023 GLI, and 2024 Multi-Institutional) following official [CBICA BraTS protocols](https://www.med.upenn.edu/cbica/brats/):
+
+### Summary Across All Evaluated Cohorts
+| Model Architecture | Overall Mean Dice | Overall Mean Sensitivity | Whole Tumor (WT) | Tumor Core (TC) | Enhancing Tumor (ET) |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **80:20 Hybrid Ensemble** | **0.9125 (91.3%)** | **0.9057 (90.6%)** | **0.9228** (91.1% Sens) | **0.9282** (92.2% Sens) | **0.8866** (88.4% Sens) |
+| **SwinUNETR (Model A)** | 0.9096 (91.0%) | 0.9007 (90.1%) | 0.9205 (90.6% Sens) | 0.9252 (91.8% Sens) | 0.8833 (87.9% Sens) |
+| **ResEnc-M (Model B)** | 0.8350 (83.5%) | 0.8579 (85.8%) | 0.8525 (87.6% Sens) | 0.8390 (85.9% Sens) | 0.8134 (83.9% Sens) |
+
+### Performance on Unseen / New Data (BraTS 2023-GLI, 2024 Multi-Center & Held-Out 50)
+| Model Architecture | New Data Mean Dice | New Data Mean Sensitivity | WT (Dice / Sens) | TC (Dice / Sens) | ET (Dice / Sens) |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **80:20 Hybrid Ensemble** | **0.9149 (91.5%)** | **0.9097 (91.0%)** | **0.9207** / **0.9048** | **0.9318** / **0.9292** | **0.8922** / **0.8951** |
+| **SwinUNETR (Model A)** | 0.9108 (91.1%) | 0.9018 (90.2%) | 0.9169 / 0.8966 | 0.9282 / 0.9225 | 0.8874 / 0.8863 |
+| **ResEnc-M (Model B)** | 0.8430 (84.3%) | 0.8725 (87.3%) | 0.8536 / 0.8809 | 0.8538 / 0.8799 | 0.8215 / 0.8568 |
+
+> Comprehensive breakdowns by patient cohort, loss functions, and label schemas are archived in [training.md](training.md).
+
 ## Quick Start
 
 ### Prerequisites
