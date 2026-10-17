@@ -176,7 +176,7 @@
                   <input type="radio" name="et-encoding" value="custom">
                   <span class="radio-check"></span>
                   Custom ET label:
-                  <input type="number" class="et-custom-input" id="et-custom-value" min="0" max="255" value="3" aria-label="Custom ET label value" disabled>
+                  <input type="number" class="et-custom-input" id="et-custom-value" min="3" max="4" value="3" aria-label="Custom ET label value" disabled>
                 </label>
               </fieldset>
             </div>
@@ -207,7 +207,7 @@
                   <strong>8:2 Ensemble</strong>
                   <span class="badge-rec">RECOMMENDED</span>
                 </div>
-                <p>Combines SwinUNETR (80%) + SegResNet (20%) probabilities for superior boundary accuracy.</p>
+                <p>Weighted probability fusion: SwinUNETR (80%) + our in-house ResEnc-M (20%). Also produces an uncertainty and model-disagreement map.</p>
               </div>
               <button class="specs-toggle" type="button" aria-expanded="false" title="Toggle technical details">Specs</button>
               <div class="model-drawer" hidden>
@@ -241,7 +241,7 @@
                   <strong>SegResNet</strong>
                   <span class="badge-subtle-sm">CONVOLUTIONAL</span>
                 </div>
-                <p>Residual CNN baseline with deep supervision. Highly optimized for rapid, lightweight execution.</p>
+                <p>MONAI SegResNet residual CNN baseline (BraTS bundle). A separate comparison model, not part of the ensemble.</p>
               </div>
               <button class="specs-toggle" type="button" aria-expanded="false" title="Toggle technical details">Specs</button>
               <div class="model-drawer" hidden>
@@ -252,7 +252,7 @@
           </div>
 
           <!-- Mode Selector (Normal vs Blind) -->
-          <div class="mode-compact-box">
+          <div class="mode-compact-box" hidden>
             <span class="mode-label">Review Protocol:</span>
             <div class="mode-selector" role="group" aria-label="Review Mode">
               <button class="mode-btn active" type="button" data-mode="normal" aria-pressed="true">Normal Review</button>
@@ -284,21 +284,21 @@
       <!-- Quick Public Demo Cases Strip (Compact) -->
       <div class="quick-demos-strip">
         <div class="demos-header">
-          <span class="demo-strip-label">⚡ QUICK PUBLIC DEMO CASES:</span>
-          <span class="demo-strip-hint">One-click pre-loaded research cases without manual upload.</span>
+          <span class="demo-strip-label">⚡ SAMPLE PATIENTS:</span>
+          <span class="demo-strip-hint">Real BraTS 2021 scans with expert masks (held out from our ResEnc training). Select one, then Run.</span>
         </div>
         <div class="demo-buttons-row">
-          <button class="demo-chip" type="button" data-demo="001">
-            <strong>BraTS Case 001</strong>
-            <span>Glioblastoma Standard</span>
+          <button class="demo-chip" type="button" data-demo="BraTS2021_00144">
+            <strong>Patient 00144</strong>
+            <span>BraTS 2021 · with expert mask</span>
           </button>
-          <button class="demo-chip" type="button" data-demo="002">
-            <strong>BraTS Case 002</strong>
-            <span>Multi-Focal Lesion</span>
+          <button class="demo-chip" type="button" data-demo="BraTS2021_01014">
+            <strong>Patient 01014</strong>
+            <span>BraTS 2021 · with expert mask</span>
           </button>
-          <button class="demo-chip" type="button" data-demo="003">
-            <strong>BraTS Case 003</strong>
-            <span>Edema-Dominant</span>
+          <button class="demo-chip" type="button" data-demo="BraTS2021_01050">
+            <strong>Patient 01050</strong>
+            <span>BraTS 2021 · with expert mask</span>
           </button>
         </div>
       </div>

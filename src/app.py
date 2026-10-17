@@ -23,6 +23,8 @@ POOL = ThreadPoolExecutor(max_workers=1)
 GUARD = threading.Lock()
 app.mount('/static', StaticFiles(directory=ROOT / 'src/web'), name='static')
 app.mount('/landing-static', StaticFiles(directory=ROOT / 'frontend'), name='landing-static')
+# Atharva's landing + upload pages (frontend-1 branch); upload.js calls the real API above.
+app.mount('/site', StaticFiles(directory=ROOT / 'neuroscope', html=True), name='site')
 
 # Upload retention: delete run directories older than this many hours (default: 24h)
 RETENTION_HOURS = 24
@@ -143,7 +145,12 @@ PATIENT_CASES = {
 def index(request: Request):
     if 'analysis' in request.query_params:
         return RedirectResponse('/workspace?' + request.url.query, status_code=307)
-    return FileResponse(ROOT / 'frontend/index.html')
+    return RedirectResponse('/site/', status_code=307)
+
+
+@app.get('/upload')
+def upload_page():
+    return RedirectResponse('/site/upload.html', status_code=307)
 
 
 @app.get('/workspace')

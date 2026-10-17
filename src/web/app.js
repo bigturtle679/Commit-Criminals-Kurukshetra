@@ -552,7 +552,7 @@ async function showResult(job) {
     if (generation !== openingGeneration) return;
     if (review.pending) throw Error('Blind attempt could not be saved. Retry the review save before continuing.');
     currentJob = job;
-    try { sessionStorage.setItem('neuroscope-open-analysis', job.id); } catch {}
+    try { history.replaceState(null, '', `/workspace?analysis=${encodeURIComponent(job.id)}`); } catch {}
     pendingBlindJob = null;
     try { sessionStorage.removeItem('neuroscope-blind-job'); } catch {}
     const modalities = review.document.metadata.available_modalities;
@@ -931,7 +931,7 @@ try {
     setBusy(true);
     pollJob(running.id);
   } else {
-    const requestedId = new URLSearchParams(window.location.search).get('analysis') || (() => { try { return sessionStorage.getItem('neuroscope-open-analysis'); } catch { return null; } })();
+    const requestedId = new URLSearchParams(window.location.search).get('analysis');
     const completed = jobs.filter(j => j.status === 'complete');
     const requested = completed.find(j => j.id === requestedId);
     const latest = requested;

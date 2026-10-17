@@ -351,35 +351,73 @@
     });
   });
 
-  /* ─── Run Analysis Execution (Simulation) ────────────── */
+  /* ─── Run Analysis: real backend (FastAPI on the same origin) ─── */
   function setPipelineStatus(state, msg) {
     statusDot.className = 'status-dot ' + state;
     statusText.textContent = msg;
   }
 
-  if (runBtn) {
-    runBtn.addEventListener('click', function () {
-      if (runBtn.disabled || analysisRunning) return;
+  function etLabel() {
+    const custom = document.querySelector('input[name="et-encoding"][value="custom"]');
+    if (!custom || !custom.checked) return 4;
+    const value = Number(document.getElementById('et-custom-value').value);
+    if (value !== 3 && value !== 4) throw new Error('Enhancing-tumour label must be 3 (BraTS 2023+) or 4 (BraTS 2018–2021).');
+    return value;
+  }
 
+  async function startJob() {
+    let response;
+    if (demoLoaded) {
+      response = await fetch('/api/samples/' + encodeURIComponent(demoLoaded) + '/run?model=' + encodeURIComponent(selectedModel), { method: 'POST' });
+    } else if (activeTab === 'zip' && zipFile) {
+      const form = new FormData();
+      form.set('archive', zipFile);
+      form.set('model', selectedModel);
+      response = await fetch('/api/analyze-zip', { method: 'POST', body: form });
+    } else {
+      const form = new FormData();
+      for (const key of REQUIRED_MODALITIES) form.set(key, files[key]);
+      if (files.expert) { form.set('expert', files.expert); form.set('expert_et', String(etLabel())); }
+      form.set('model', selectedModel);
+      response = await fetch('/api/analyze', { method: 'POST', body: form });
+    }
+    const data = await response.json().catch(function () { return {}; });
+    if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : 'The server rejected this upload (HTTP ' + response.status + ').');
+    return data;
+  }
+
+  async function waitForJob(id) {
+    for (;;) {
+      const response = await fetch('/api/jobs/' + encodeURIComponent(id));
+      const job = await response.json();
+      if (!response.ok) throw new Error(job.detail || 'Lost track of the analysis.');
+      if (job.status === 'complete') return job;
+      if (job.status === 'error') throw new Error(job.message || 'The analysis failed.');
+      setPipelineStatus(job.status === 'queued' ? 'queued' : 'running', job.message || 'Running…');
+      await new Promise(function (resolve) { setTimeout(resolve, 1000); });
+    }
+  }
+
+  if (runBtn) {
+    runBtn.addEventListener('click', async function () {
+      if (runBtn.disabled || analysisRunning) return;
       analysisRunning = true;
       runBtn.disabled = true;
       runBtn.setAttribute('aria-disabled', 'true');
-
-      // 1. Queued
-      setPipelineStatus('queued', 'Queued — Checking volume alignment & NIfTI affine matrix…');
-
-      setTimeout(function () {
-        // 2. Running
-        const modelLabel = selectedModel === 'ensemble' ? '8:2 SwinUNETR/SegResNet Ensemble' : selectedModel.toUpperCase();
-        setPipelineStatus('running', 'Running — Generating sub-region masks with ' + modelLabel + '…');
-
-        setTimeout(function () {
-          // 3. Complete
-          setPipelineStatus('complete', 'Complete — Volumetric segmentation ready (WT, TC, ET calculated).');
-          analysisRunning = false;
-          updateRunButton();
-        }, 3200);
-      }, 1400);
+      setPipelineStatus('queued', demoLoaded ? 'Starting sample patient…' : 'Uploading scans…');
+      try {
+        const started = await startJob();
+        if (started.detected) {
+          setPipelineStatus('queued', 'Detected ' + Object.keys(started.detected).length + ' files in the zip — validating…');
+        }
+        await waitForJob(started.id);
+        setPipelineStatus('complete', 'Complete — opening the workspace…');
+        window.location.href = '/workspace?analysis=' + encodeURIComponent(started.id);
+      } catch (error) {
+        analysisRunning = false;
+        updateRunButton();                       // resets the button; status text set after so it is not overwritten
+        setPipelineStatus('failed', 'Failed — ' + error.message);
+      }
     });
   }
 

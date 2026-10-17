@@ -52,14 +52,21 @@ def client():
 
 
 def test_homepage_launches_real_workspace(client):
-    response = client.get('/')
-    assert response.status_code == 200
-    document = Elements(response.text)
-    assert document.links.count('/workspace') == 2
-    assert response.text == (ROOT / 'frontend/index.html').read_text()
-    assert '/landing-static/assets/brain-cropped.mp4' in response.text
-    assert '<dialog' not in response.text
-    assert 'Demo only' not in response.text
+    # '/' serves Atharva's landing page (frontend-1 branch, neuroscope/) under /site/.
+    response = client.get('/', follow_redirects=False)
+    assert response.status_code == 307 and response.headers['location'] == '/site/'
+    landing = client.get('/site/')
+    assert landing.status_code == 200
+    assert landing.text == (ROOT / 'neuroscope/index.html').read_text()
+    assert 'upload.html' in Elements(landing.text).links
+    assert 'NOT A PATIENT SCAN' in landing.text                      # hero video is illustrative only
+    assert 'does not present model output as a diagnosis' in landing.text
+    assert client.get('/site/assets/brain-cropped.mp4').status_code == 200
+    upload_js = (ROOT / 'neuroscope/upload.js').read_text()
+    assert '/api/analyze-zip' in upload_js and '/api/analyze' in upload_js and '/api/samples/' in upload_js
+    assert '/workspace?analysis=' in upload_js
+    assert 'Simulation' not in upload_js                              # no fake completion timers
+    assert client.get('/upload', follow_redirects=True).status_code == 200
 
 
 def test_workspace_retains_production_controls(client):
