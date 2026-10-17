@@ -12,6 +12,7 @@ from review_store import load_review, save_review, ReviewConflict
 import zip_intake
 import slices
 import report
+from validation import validate_upload_filenames, InputValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -355,6 +356,10 @@ async def analyze(
     files = {'t1c': t1c, 't1': t1, 't2': t2, 'flair': flair}
     if expert and expert.filename:
         files['expert'] = expert
+    try:
+        validate_upload_filenames(files)
+    except (ValueError, InputValidationError) as e:
+        raise HTTPException(400, str(e))
     for f in files.values():
         if not (f.filename or '').lower().endswith(('.nii', '.nii.gz')):
             raise HTTPException(400, 'Upload NIfTI MRI files (.nii or .nii.gz), not JPG/PNG screenshots.')

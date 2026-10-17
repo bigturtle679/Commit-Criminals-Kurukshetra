@@ -163,6 +163,59 @@ def measurement_summary(pred_labels, affine, expert_labels=None, enhancing_label
     return summary
 
 
+def measurement_summary(
+    pred_labels: np.ndarray,
+    affine: np.ndarray,
+    expert_labels: np.ndarray | None = None,
+    enhancing_label: int = 4
+) -> dict:
+    """Compute region volumetric measurements and optional comparison against expert reference."""
+    pred = np.asarray(pred_labels)
+    pred_regions = {
+        'WT': np.isin(pred, [1, 2, 4]),
+        'TC': np.isin(pred, [1, 4]),
+        'ET': pred == 4
+    }
+
+    gt_regions = None
+    if expert_labels is not None:
+        gt = np.asarray(expert_labels)
+        gt_regions = {
+            'WT': np.isin(gt, [1, 2, enhancing_label]),
+            'TC': np.isin(gt, [1, enhancing_label]),
+            'ET': gt == enhancing_label
+        }
+
+    summary = {}
+    for region in ['WT', 'TC', 'ET']:
+        p_mask = pred_regions[region]
+        p_voxels = int(np.count_nonzero(p_mask))
+        p_ml = calculate_volume_ml(p_mask, affine)
+
+        if gt_regions is not None:
+            g_mask = gt_regions[region]
+            g_voxels = int(np.count_nonzero(g_mask))
+            g_ml = calculate_volume_ml(g_mask, affine)
+            dice_val = compute_dice(p_mask, g_mask)
+            sens_val = compute_sensitivity(p_mask, g_mask)
+        else:
+            g_voxels = None
+            g_ml = None
+            dice_val = None
+            sens_val = None
+
+        summary[region] = {
+            'predicted_voxels': p_voxels,
+            'predicted_ml': p_ml,
+            'expert_voxels': g_voxels,
+            'expert_ml': g_ml,
+            'dice': dice_val,
+            'sensitivity': sens_val
+        }
+
+    return summary
+
+
 if __name__ == '__main__':
     # Self-test synthetic check: 1,000 voxels at 1x1x2 mm spacing must produce 2.0 mL
     synthetic_mask = np.ones((10, 10, 10), dtype=bool) # 1,000 voxels

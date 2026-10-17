@@ -53,8 +53,10 @@ def classify(name):
 def detect(archive: zipfile.ZipFile):
     """Map each role to one archive member. Raises ValueError with a readable message."""
     members = [m for m in archive.infolist() if not m.is_dir()]
+    if any('..' in PurePosixPath(m.filename).parts or m.filename.startswith('/') for m in members):
+        raise ValueError('Unsafe path traversal detected in zip archive.')
     if len(members) > MAX_MEMBERS:
-        raise ValueError(f'Zip contains {len(members)} files; expected one patient (5 files).')
+        raise ValueError(f'Zip contains {len(members)} entries (limit is {MAX_MEMBERS}); expected one patient (5 files).')
     if sum(m.file_size for m in members) > MAX_TOTAL_BYTES:
         raise ValueError('Zip expands to more than 2 GB; upload one patient at a time.')
     found = {}

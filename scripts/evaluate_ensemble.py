@@ -47,9 +47,24 @@ def load_manifest(manifest_path: str | Path) -> list[dict]:
     cases = []
     if path.suffix.lower() == '.json':
         data = json.loads(path.read_text(encoding='utf-8'))
+        if isinstance(data, dict) and "patients" in data:
+            data = data["patients"]
         if not isinstance(data, list):
             raise ValueError("JSON manifest must be an array of patient case objects.")
-        cases = data
+        cases = []
+        for c in data:
+            if isinstance(c, dict) and "modalities" in c:
+                cases.append({
+                    "patient_id": c.get("patient_id"),
+                    "t1c": c["modalities"].get("t1c"),
+                    "t1": c["modalities"].get("t1"),
+                    "t2": c["modalities"].get("t2"),
+                    "flair": c["modalities"].get("flair"),
+                    "expert_mask": c.get("expert_mask"),
+                    "overlap_status": c.get("overlap_status", "unknown")
+                })
+            else:
+                cases.append(c)
     elif path.suffix.lower() == '.csv':
         with open(path, mode='r', encoding='utf-8', newline='') as f:
             reader = csv.DictReader(f)
